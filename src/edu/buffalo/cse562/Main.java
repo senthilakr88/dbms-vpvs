@@ -1,14 +1,32 @@
 package edu.buffalo.cse562;
 
+import java.util.logging.Level;
+
+import edu.buffalo.cse562.controller.controllerMain;
+import edu.buffalo.cse562.logger.logManager;
+
 public class Main {
 
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		System.out
-				.println("We, the members of our team, agree that we will not submit any code that we have not written ourselves, share our code with anyone outside of our group, or use code that we have not written ourselves as a reference.");
-
-
-
+		logManager lg = new logManager();
+		lg.logger.log(Level.INFO, "Started Execution");
+		
+		controllerMain  main = new controllerMain(args);
+		if(args.length > 3) {
+			main.parseInput();
+			lg.logger.log(Level.INFO, main.toString());
+		} else {
+			try {
+				throw new Exception("");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		
 	}
 
 }
