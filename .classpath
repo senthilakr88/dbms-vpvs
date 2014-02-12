@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Pals/Graduate_Course/Subjects/Database Management Systems/Projects/Checkpoint 1/Checkpoint_1/Checkpoint 1/jsqlparser.jar"/>
+	<classpathentry kind="lib" path="other/jsqlparser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
