@@ -54,7 +54,7 @@ public class queryParser {
 				 * logic - create a hashMap with table name as the key and array list of column names as value
 				 */
 				if(statement instanceof CreateTable) {
-					System.out.println("QUERY TYPE: create");
+					lg.logger.log(Level.INFO, "QUERY TYPE: create");
 					CreateTable createTableStatement = (CreateTable) statement;
 					ArrayList<String> columnNameList = new ArrayList<String>();
 					ArrayList<ColumnDefinition> columnDefinitionList = (ArrayList) createTableStatement.getColumnDefinitions();
@@ -65,7 +65,7 @@ public class queryParser {
 					tableColumnMap.put(createTableStatement.getTable().getName(), columnNameList);
 					//Printing the contents of the HashMap
 					for (Map.Entry<String, ArrayList<String>> entry : tableColumnMap.entrySet()){
-						System.out.println(entry.getKey() + "/" + entry.getValue());
+						lg.logger.log(Level.INFO, entry.getKey() + "/" + entry.getValue());
 					}	
 				} else if(statement instanceof Select) {
 					
