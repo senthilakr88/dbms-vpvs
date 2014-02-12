@@ -19,10 +19,11 @@ public class Main {
 			lg.logger.log(Level.INFO, main.toString());
 		} else {
 			try {
-				throw new Exception("");
+				throw new Exception("Not enough arguments");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
+				lg.logger.log(Level.SEVERE, e.getMessage());
 			}
 		}
 		
