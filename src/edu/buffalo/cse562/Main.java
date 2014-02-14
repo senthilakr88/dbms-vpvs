@@ -14,7 +14,7 @@ public class Main {
 		lg.logger.log(Level.INFO, "Started Execution");
 		
 		controllerMain  main = new controllerMain(args);
-		if(args.length > 3) {
+		if(args.length > 2) {
 			main.parseInput();
 			lg.logger.log(Level.INFO, main.toString());
 		} else {
