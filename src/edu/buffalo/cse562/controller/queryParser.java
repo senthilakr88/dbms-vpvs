@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -23,10 +24,11 @@ public class queryParser {
 	List<String> sqlQueryList;
 	logManager lg;
 	components comp;
+	String tableDir;
 
-	public queryParser(List<String> sqlFiles) {
-		// TODO Auto-generated constructor stub
+	public queryParser(String tableDir,List<String> sqlFiles) {
 		this.sqlFiles = sqlFiles;
+		this.tableDir=tableDir;
 		lg = new logManager();
 
 	}
@@ -70,6 +72,7 @@ public class queryParser {
 					// Adding table name and column names to the map
 					comp.addColsToTable(createTableStatement.getTable()
 							.getName(), columnNameList);
+					comp.setTableDirectory(tableDir);
 					// Printing the contents of the HashMap
 					lg.logger.log(Level.INFO, comp.toString());
 
@@ -80,8 +83,8 @@ public class queryParser {
 					lg.logger.log(Level.INFO, "plainSelect :: " + plainSelect.toString());
 					comp.addProjectStmts(plainSelect.getSelectItems());
 					lg.logger.log(Level.INFO,plainSelect.getSelectItems().toString());
-					
 					lg.logger.log(Level.INFO,"from :: " + plainSelect.getFromItem().toString());
+					comp.setFromItems(plainSelect.getFromItem());
 					//lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
 					comp.addWhereConditions(plainSelect.getWhere());
 					lg.logger.log(Level.INFO,"where :: "+plainSelect.getWhere().toString());
@@ -92,8 +95,8 @@ public class queryParser {
 					//lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 					lg.logger.log(Level.INFO, comp.toString());
-					
-					
+					comp.executePhysicalPlan();
+			
 				}
 			} catch (JSQLParserException e) {
 				// TODO Auto-generated catch block

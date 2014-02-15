@@ -4,6 +4,7 @@ import java.util.logging.Level;
 
 import edu.buffalo.cse562.controller.controllerMain;
 import edu.buffalo.cse562.logger.logManager;
+//import edu.buffalo.cse562.logger.logManager;
 
 public class Main {
 

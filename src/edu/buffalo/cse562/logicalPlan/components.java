@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import edu.buffalo.cse562.logger.logManager;
+import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.FromItem;
 
 
 public class components {
@@ -16,6 +19,8 @@ public class components {
 	Map<String,ArrayList<String>> tableMap;
 	ArrayList<String> projectStmt;
 	Expression whereClause;
+	String tableDir;
+	FromItem tableName;
 	
 	public components () {
 		tableMap = new HashMap<String,ArrayList<String>>();
@@ -52,6 +57,26 @@ public class components {
 		toPrint.append("SCAN ["	+ entry.getKey() + "(" +entry.getValue() +")]");
 		}
 		return toPrint.toString();
+	}
+
+	public void executePhysicalPlan() {
+		Table t = (Table) tableName;
+		FileScanOperator f = new FileScanOperator(t.getName(),tableDir,tableMap);
+		System.out.println(f.readOneTuple());
+		lg.logger.log(Level.INFO, new FileScanOperator(t.getName(),tableDir,tableMap).readOneTuple().toString());
+		System.out.println(f.readOneTuple());
+		
+	}
+
+	public void setTableDirectory(String tableDir) {
+		this.tableDir=tableDir;
+		
+		
+	}
+
+	public void setFromItems(FromItem fromItem) {
+		tableName = fromItem;
+		
 	}
 
 	

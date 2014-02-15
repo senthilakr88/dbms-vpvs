@@ -14,7 +14,6 @@ public class controllerMain {
 	logManager lg;
 	
 	public controllerMain(String[] args) {
-		// TODO Auto-generated constructor stub
 		this.input = args;
 		sqlFiles = new ArrayList<String>();
 		lg = new logManager();
@@ -31,7 +30,7 @@ public class controllerMain {
 			}
 		}
 		if(sqlFiles != null) {
-			queryParser qp = new queryParser(sqlFiles);
+			queryParser qp = new queryParser(tableDir,sqlFiles);
 			qp.interpretFile();
 		}
 		else {
