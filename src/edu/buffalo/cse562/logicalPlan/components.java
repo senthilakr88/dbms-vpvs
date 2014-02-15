@@ -17,6 +17,7 @@ public class components {
 
 	logManager lg;
 	Map<String,ArrayList<String>> tableMap;
+	Map<String,ArrayList<String>> tableColTypeMap;
 	ArrayList<String> projectStmt;
 	Expression whereClause;
 	String tableDir;
@@ -24,6 +25,7 @@ public class components {
 	
 	public components () {
 		tableMap = new HashMap<String,ArrayList<String>>();
+		tableColTypeMap = new HashMap<String,ArrayList<String>>();
 		lg = new logManager();
 	}
 	
@@ -61,9 +63,8 @@ public class components {
 
 	public void executePhysicalPlan() {
 		Table t = (Table) tableName;
-		FileScanOperator f = new FileScanOperator(t.getName(),tableDir,tableMap);
+		FileScanOperator f = new FileScanOperator(t.getName(),tableDir,tableMap,tableColTypeMap);
 		System.out.println(f.readOneTuple());
-		lg.logger.log(Level.INFO, new FileScanOperator(t.getName(),tableDir,tableMap).readOneTuple().toString());
 		System.out.println(f.readOneTuple());
 		
 	}
@@ -76,6 +77,16 @@ public class components {
 
 	public void setFromItems(FromItem fromItem) {
 		tableName = fromItem;
+		
+	}
+
+	public void addColsTypeToTable(String table, ArrayList<String> columnTypeList) {
+		if(tableColTypeMap.containsKey(table)) {
+			tableColTypeMap.remove(table);
+			tableColTypeMap.put(table, columnTypeList);
+		} else {
+			tableColTypeMap.put(table, columnTypeList);
+		}
 		
 	}
 

@@ -64,14 +64,18 @@ public class queryParser {
 					lg.logger.log(Level.INFO, "QUERY TYPE: create");
 					CreateTable createTableStatement = (CreateTable) statement;
 					ArrayList<String> columnNameList = new ArrayList<String>();
+					ArrayList<String> columnTypeList = new ArrayList<String>();
 					ArrayList<ColumnDefinition> columnDefinitionList = (ArrayList) createTableStatement
 							.getColumnDefinitions();
 					for (ColumnDefinition s : columnDefinitionList) {
 						columnNameList.add(s.getColumnName());
+						columnTypeList.add(s.getColDataType().toString());
 					}
 					// Adding table name and column names to the map
 					comp.addColsToTable(createTableStatement.getTable()
 							.getName(), columnNameList);
+					comp.addColsTypeToTable(createTableStatement.getTable()
+							.getName(), columnTypeList);
 					comp.setTableDirectory(tableDir);
 					// Printing the contents of the HashMap
 					lg.logger.log(Level.INFO, comp.toString());

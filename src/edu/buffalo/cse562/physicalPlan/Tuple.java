@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Tuple {
-	Map<String,String> tableMap;
+	Map tableMap;
 	
-	public Tuple(Map<String,String> tableMap){
+	public Tuple(Map tableMap){
 		this.tableMap = tableMap;
 	}
 	
