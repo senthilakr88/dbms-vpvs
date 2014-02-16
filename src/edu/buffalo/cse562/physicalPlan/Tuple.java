@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class Tuple {
 	Map<String,String> tableMap;
 	
@@ -14,5 +15,12 @@ public class Tuple {
 	public String toString(){
 		return tableMap.toString();
 	}
-	
+	public boolean contains(String str)
+	{
+		return tableMap.containsKey(str);
+	}
+	public String valueof(String str)
+	{
+		return tableMap.get(str);
+	}
 }
