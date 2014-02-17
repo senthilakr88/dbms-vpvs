@@ -27,13 +27,10 @@ public class FileScanOperator implements Operator {
 		this.tableMap = tableMap;
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
-		try {
-			tablefile = new File("").getAbsolutePath() + dirName
+		tablefile = new File("").getAbsolutePath() + dirName
 					+ File.separator + tableName + ".dat";
-			reader = new BufferedReader(new FileReader(tablefile));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+			
+		resetStream();
 	}
 
 	/*
@@ -43,6 +40,10 @@ public class FileScanOperator implements Operator {
 	 */
 	@Override
 	public Tuple readOneTuple() {
+		if(reader == null) {
+			System.out.println("Buffer not initialized for table ::" + tableName);
+			return null;
+		}
 		Tuple oneTupleFromDat = null;
 		try {
 			String line = null;
@@ -51,6 +52,10 @@ public class FileScanOperator implements Operator {
 				String[] singleTableElement = line.split("\\|");
 
 				oneTupleFromDat = new Tuple(convertType(singleTableElement));
+			} else {
+				reader.close();
+				reader = null;
+				return null;
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -97,10 +102,9 @@ public class FileScanOperator implements Operator {
 	@Override
 	public void resetStream() {
 		try {
-			reader.close();
 			reader = new BufferedReader(new FileReader(tablefile));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			reader = null;
 			e.printStackTrace();
 		}
 
