@@ -57,8 +57,7 @@ public class FileScanOperator implements Operator {
 
 				oneTupleFromDat = new Tuple(convertType(singleTableElement));
 			} else {
-				reader.close();
-				reader = null;
+				
 				return null;
 			}
 		} catch (FileNotFoundException e) {

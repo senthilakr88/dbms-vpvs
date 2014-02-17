@@ -18,8 +18,8 @@ public class Tuple {
 		return tableMap.containsKey(key);
 	}
 	
-	public String valueOf(String key) {
-		return (String)tableMap.get(key);
+	public Object valueOf(String key) {
+		return tableMap.get(key);
 	}
 	
 	public String toString(){

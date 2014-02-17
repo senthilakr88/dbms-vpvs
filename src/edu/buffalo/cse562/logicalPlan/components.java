@@ -9,9 +9,11 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
+import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 
 public class components {
@@ -19,7 +21,7 @@ public class components {
 	logManager lg;
 	List<Column> tableMap;
 	Map<String, ArrayList<String>> tableColTypeMap;
-	ArrayList<String> projectStmt;
+	ArrayList<SelectExpressionItem> projectStmt;
 	Expression whereClause;
 	String tableDir;
 	FromItem tableName;
@@ -33,11 +35,11 @@ public class components {
 	}
 
 	public void initializeNewStatement() {
-		projectStmt = new ArrayList<String>();
+		projectStmt = new ArrayList<SelectExpressionItem>();
 
 	}
 
-	public void addProjectStmts(List list) {
+	public void addProjectStmts(List<SelectExpressionItem> list) {
 		projectStmt.addAll(list);
 	}
 
@@ -59,6 +61,7 @@ public class components {
 	public void executePhysicalPlan() {
 		Table table = (Table) tableName;
 		Operator oper = new FileScanOperator(table, tableDir, tableMap, tableColTypeMap);
+		oper=new ProjectionOperator(oper,projectStmt);
 		Tuple t = oper.readOneTuple();
 		while (t != null) {
 			System.out.println(t.toString());

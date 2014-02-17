@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.logicalPlan.components;
 import edu.buffalo.cse562.utilities.fileReader;
@@ -87,7 +88,7 @@ public class queryParser {
 					PlainSelect plainSelect = (PlainSelect) selectStmt.getSelectBody();
 					lg.logger.log(Level.INFO, "plainSelect :: " + plainSelect.toString());
 					comp.addProjectStmts(plainSelect.getSelectItems());
-					lg.logger.log(Level.INFO,plainSelect.getSelectItems().toString());
+					
 					lg.logger.log(Level.INFO,"from :: " + plainSelect.getFromItem().toString());
 					comp.setFromItems(plainSelect.getFromItem());
 					//lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
