@@ -59,7 +59,7 @@ public class ProjectionOperator implements Operator {
 //					lg.logger.log(Level.INFO, temp.getAlias().toString());
 					//lg.logger.log(Level.INFO, calc.getResult().toString());
 				}
-				lg.logger.log(Level.INFO, map.keySet().toString());
+//				lg.logger.log(Level.INFO, map.keySet().toString());
 
 			}
 
