@@ -1,5 +1,6 @@
 package edu.buffalo.cse562.sql.expression.evaluator;
 
+import java.sql.Date;
 import java.util.logging.Level;
 
 import net.sf.jsqlparser.expression.*;
@@ -33,13 +34,16 @@ public class CalcTools extends AbstractExpressionVisitor
         Object leftValue = accumulator;
         addition.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        accumulator = Double.parseDouble(leftValue.toString()) + Double.parseDouble(rightValue.toString());
-        //lg.logger.log(Level.INFO, "Addition result is"+accumulator.toString());
-    }
+        if (leftValue instanceof Double && rightValue instanceof Double) {
+        	accumulator = Double.parseDouble(leftValue.toString())+Double.parseDouble(rightValue.toString());
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	accumulator = Long.parseLong(leftValue.toString())+Long.parseLong(rightValue.toString());
+        }
+     }
 
     public void visit(Column column) {
         //lg.logger.log(Level.INFO, "Came to get column name"+column.getWholeColumnName());
-        accumulator = String.valueOf(t.valueOf((column.getColumnName())));
+        accumulator = t.valueOf((column.getColumnName()));
         //lg.logger.log(Level.INFO, String.valueOf(accumulator));
     }
     
@@ -73,7 +77,11 @@ public class CalcTools extends AbstractExpressionVisitor
         Object leftValue = accumulator;
         division.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        accumulator = Double.parseDouble(leftValue.toString())/Double.parseDouble(rightValue.toString());
+        if (leftValue instanceof Double && rightValue instanceof Double) {
+        	accumulator = Double.parseDouble(leftValue.toString())/Double.parseDouble(rightValue.toString());
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	accumulator = Long.parseLong(leftValue.toString())/Long.parseLong(rightValue.toString());
+        }
         //lg.logger.log(Level.INFO, "Division result is"+accumulator.toString());
     }
 
@@ -98,6 +106,16 @@ public class CalcTools extends AbstractExpressionVisitor
         	}
         } else if (leftValue instanceof Double && rightValue instanceof Double) {
         	if (Double.parseDouble(leftValue.toString())==Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	if (Long.parseLong(leftValue.toString())==Long.parseLong(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Date && rightValue instanceof Date) {
+        	if (Date.valueOf(leftValue.toString()).compareTo(Date.valueOf(rightValue.toString()))==0){
                 //lg.logger.log(Level.INFO, "GREATER GREATER");
             	accumulatorBoolean=true;
             } 
@@ -127,27 +145,55 @@ public class CalcTools extends AbstractExpressionVisitor
                 //lg.logger.log(Level.INFO, "GREATER GREATER");
             	accumulatorBoolean=true;
             } 
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	if (Long.parseLong(leftValue.toString())>Long.parseLong(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Date && rightValue instanceof Date) {
+        	if (Date.valueOf(leftValue.toString()).compareTo(Date.valueOf(rightValue.toString()))>0){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
         } 
     }
 
     @Override
     public void visit(GreaterThanEquals greaterThanEquals) {
     	accumulatorBoolean=false;
-        //lg.logger.log(Level.INFO, "Came to greater than equals");
+        lg.logger.log(Level.INFO, "Came to greater than equals");
         greaterThanEquals.getLeftExpression().accept(this);
         Object leftValue = accumulator;
+    	lg.logger.log(Level.INFO, leftValue.toString());
+    	lg.logger.log(Level.INFO, leftValue.getClass().getName());
         greaterThanEquals.getRightExpression().accept(this);
         Object rightValue = accumulator;
+        lg.logger.log(Level.INFO, rightValue.toString());
+        lg.logger.log(Level.INFO, rightValue.getClass().getName());
         if (leftValue instanceof String && rightValue instanceof String) {
+        	lg.logger.log(Level.INFO, "String Value");
         	if(leftValue.toString().compareTo(rightValue.toString())>=0){
         		accumulatorBoolean=true;
         	}
         } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	lg.logger.log(Level.INFO, "Double Value");
         	if (Double.parseDouble(leftValue.toString())>=Double.parseDouble(rightValue.toString())){
                 //lg.logger.log(Level.INFO, "GREATER GREATER");
             	accumulatorBoolean=true;
             } 
-        }
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	lg.logger.log(Level.INFO, "Long Value");
+        	if (Long.parseLong(leftValue.toString())>=Long.parseLong(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Date && rightValue instanceof Date) {
+        	lg.logger.log(Level.INFO, "Date Value");
+        	if (Date.valueOf(leftValue.toString()).compareTo(Date.valueOf(rightValue.toString()))>=0){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } 
     }
 
     /*@Override
@@ -208,7 +254,17 @@ public class CalcTools extends AbstractExpressionVisitor
                 //lg.logger.log(Level.INFO, "GREATER GREATER");
             	accumulatorBoolean=true;
             } 
-        }
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	if (Long.parseLong(leftValue.toString())<Long.parseLong(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Date && rightValue instanceof Date) {
+        	if (Date.valueOf(leftValue.toString()).compareTo(Date.valueOf(rightValue.toString()))<0){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } 
     }
 
     @Override
@@ -228,7 +284,17 @@ public class CalcTools extends AbstractExpressionVisitor
                 //lg.logger.log(Level.INFO, "GREATER GREATER");
             	accumulatorBoolean=true;
             } 
-        }
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	if (Long.parseLong(leftValue.toString())<=Long.parseLong(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } else if (leftValue instanceof Date && rightValue instanceof Date) {
+        	if (Date.valueOf(leftValue.toString()).compareTo(Date.valueOf(rightValue.toString()))<=0){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } 
     }
 
     @Override
@@ -238,8 +304,11 @@ public class CalcTools extends AbstractExpressionVisitor
         Object leftValue = accumulator;
         multiplication.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        accumulator = Double.parseDouble(leftValue.toString()) + Double.parseDouble(rightValue.toString());
-        //lg.logger.log(Level.INFO, "Multiplication result is"+accumulator.toString());
+        if (leftValue instanceof Double && rightValue instanceof Double) {
+        	accumulator = Double.parseDouble(leftValue.toString())*Double.parseDouble(rightValue.toString());
+        } else if (leftValue instanceof Long && rightValue instanceof Long) {
+        	accumulator = Long.parseLong(leftValue.toString())*Long.parseLong(rightValue.toString());
+        }
     }
 
     @Override
@@ -285,8 +354,11 @@ public class CalcTools extends AbstractExpressionVisitor
             Object leftValue = accumulator;
             subtraction.getRightExpression().accept(this);
             Object rightValue = accumulator;
-            accumulator = Double.parseDouble(leftValue.toString()) - Double.parseDouble(rightValue.toString());
-            //lg.logger.log(Level.INFO, "Subtraction result is"+accumulator.toString());
+            if (leftValue instanceof Double && rightValue instanceof Double) {
+            	accumulator = Double.parseDouble(leftValue.toString())-Double.parseDouble(rightValue.toString());
+            } else if (leftValue instanceof Long && rightValue instanceof Long) {
+            	accumulator = Long.parseLong(leftValue.toString())-Long.parseLong(rightValue.toString());
+            }
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
