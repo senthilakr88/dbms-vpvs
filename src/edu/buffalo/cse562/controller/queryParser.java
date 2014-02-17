@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
@@ -63,17 +64,17 @@ public class queryParser {
 				if (statement instanceof CreateTable) {
 					lg.logger.log(Level.INFO, "QUERY TYPE: create");
 					CreateTable createTableStatement = (CreateTable) statement;
-					ArrayList<String> columnNameList = new ArrayList<String>();
+					ArrayList<Column> columnNameList = new ArrayList<Column>();
 					ArrayList<String> columnTypeList = new ArrayList<String>();
 					ArrayList<ColumnDefinition> columnDefinitionList = (ArrayList) createTableStatement
 							.getColumnDefinitions();
+					Table table = createTableStatement.getTable();
 					for (ColumnDefinition s : columnDefinitionList) {
-						columnNameList.add(s.getColumnName());
+						columnNameList.add(new Column(table, s.getColumnName()));
 						columnTypeList.add(s.getColDataType().toString());
 					}
 					// Adding table name and column names to the map
-					comp.addColsToTable(createTableStatement.getTable()
-							.getName(), columnNameList);
+					comp.addColsToTable(columnNameList);
 					comp.addColsTypeToTable(createTableStatement.getTable()
 							.getName(), columnTypeList);
 					comp.setTableDirectory(tableDir);

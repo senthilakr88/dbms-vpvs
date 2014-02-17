@@ -9,22 +9,26 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+
 public class FileScanOperator implements Operator {
 	private String dirName;
-	private Map<String, ArrayList<String>> tableMap, tableColTypeMap;
+	private List<Column> tableMap;
+	private Map<String, ArrayList<String>> tableColTypeMap;
 	BufferedReader reader;
-	String tableName;
+	Table tableName;
 	String tablefile;
 
-	public FileScanOperator(String tableName, String dirName,
-			Map<String, ArrayList<String>> tableMap,
+	public FileScanOperator(Table tableName, String dirName,
+			List<Column> tableMap2,
 			Map<String, ArrayList<String>> tableColTypeMap) {
 		this.dirName = dirName;
-		this.tableMap = tableMap;
+		this.tableMap = tableMap2;
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
 		tablefile = new File("").getAbsolutePath() + dirName
@@ -70,9 +74,13 @@ public class FileScanOperator implements Operator {
 		String key = null, value = null, type = null;
 		int i = 0;
 		while (i < singleTableElement.length) {
-			key = tableMap.get(tableName).get(i);
+			//key = tableMap.get.get(tableName).get(i);
+			if(tableMap.get(i).getTable().toString().equalsIgnoreCase(tableName.toString()))
+			key = tableMap.get(i).getColumnName();
+			else
+				continue;
 			value = singleTableElement[i];
-			type = tableColTypeMap.get(tableName).get(i);
+			type = tableColTypeMap.get(tableName.toString()).get(i);
 			if (type.equalsIgnoreCase("int"))
 				tupleKeyValueMap.put(key, Integer.parseInt(value));
 			else if (type.equalsIgnoreCase("String")) {

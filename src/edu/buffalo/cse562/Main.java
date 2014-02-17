@@ -22,8 +22,8 @@ public class Main {
 			try {
 				throw new Exception("Not enough arguments");
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				
+				e.printStackTrace();
 				lg.logger.log(Level.SEVERE, e.getMessage());
 			}
 		}
