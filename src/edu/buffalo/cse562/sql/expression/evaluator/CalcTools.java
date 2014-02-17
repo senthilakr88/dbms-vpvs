@@ -102,24 +102,30 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(DoubleValue doubleValue) {
-    	
+    	accumulator = doubleValue.getValue();
     }
 
     @Override
     public void visit(EqualsTo equalsTo) {
         //lg.logger.log(Level.INFO, "Came to greater than");
+    	accumulatorBoolean = false;
         equalsTo.getLeftExpression().accept(this);
         Object leftValue = accumulator;
+        lg.logger.log(Level.INFO, leftValue.getClass().getName());
         equalsTo.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        if (Double.parseDouble(leftValue.toString())==Double.parseDouble(rightValue.toString())){
-            //lg.logger.log(Level.INFO, "GREATER GREATER");
-
-        	accumulatorBoolean=true;
-        } else {
-        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	accumulatorBoolean=false;
-        }
+        lg.logger.log(Level.INFO, rightValue.getClass().getName());
+        if (leftValue instanceof String && rightValue instanceof String) {
+        	if(leftValue.toString().equals(rightValue.toString())){
+        		accumulatorBoolean=true;
+        	}
+        } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	if (Double.parseDouble(leftValue.toString())==Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } 
+        
     }
 
     @Override
@@ -130,34 +136,40 @@ public class CalcTools extends AbstractExpressionVisitor
     @Override
     public void visit(GreaterThan greaterThan) {
         //lg.logger.log(Level.INFO, "Came to greater than");
+    	accumulatorBoolean=false;
         greaterThan.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         greaterThan.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        if (Double.parseDouble(leftValue.toString())>Double.parseDouble(rightValue.toString())){
-            //lg.logger.log(Level.INFO, "GREATER GREATER");
-
-        	accumulatorBoolean=true;
-        } else {
-        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	accumulatorBoolean=false;
-        }
+        if (leftValue instanceof String && rightValue instanceof String) {
+        	if(leftValue.toString().compareTo(rightValue.toString())>0){
+        		accumulatorBoolean=true;
+        	}
+        } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	if (Double.parseDouble(leftValue.toString())>Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
+        } 
     }
 
     @Override
     public void visit(GreaterThanEquals greaterThanEquals) {
+    	accumulatorBoolean=false;
         //lg.logger.log(Level.INFO, "Came to greater than equals");
         greaterThanEquals.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         greaterThanEquals.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        if (Double.parseDouble(leftValue.toString())>=Double.parseDouble(rightValue.toString())){
-            //lg.logger.log(Level.INFO, "GREATER GREATER");
-
-        	accumulatorBoolean=true;
-        } else {
-        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	accumulatorBoolean=false;
+        if (leftValue instanceof String && rightValue instanceof String) {
+        	if(leftValue.toString().compareTo(rightValue.toString())>=0){
+        		accumulatorBoolean=true;
+        	}
+        } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	if (Double.parseDouble(leftValue.toString())>=Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
         }
     }
 
@@ -204,35 +216,41 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(MinorThan minorThan) {
+    	accumulatorBoolean = false;
         //lg.logger.log(Level.INFO, "Came to greater than equals");
         minorThan.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         minorThan.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        if (Double.parseDouble(leftValue.toString())<Double.parseDouble(rightValue.toString())){
-            //lg.logger.log(Level.INFO, "MINOR");
-
-        	accumulatorBoolean=true;
-        } else {
-        	//lg.logger.log(Level.INFO, "NOT NOT NOT MINOR");
-        	accumulatorBoolean=false;
+        if (leftValue instanceof String && rightValue instanceof String) {
+        	if(leftValue.toString().compareTo(rightValue.toString())<0){
+        		accumulatorBoolean=true;
+        	}
+        } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	if (Double.parseDouble(leftValue.toString())<Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
         }
     }
 
     @Override
     public void visit(MinorThanEquals minorThanEquals) {
+    	accumulatorBoolean=false;
         //lg.logger.log(Level.INFO, "Came to minor than equals");
         minorThanEquals.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         minorThanEquals.getRightExpression().accept(this);
         Object rightValue = accumulator;
-        if (Double.parseDouble(leftValue.toString())<=Double.parseDouble(rightValue.toString())){
-            //lg.logger.log(Level.INFO, "minor than equals");
-
-        	accumulatorBoolean=true;
-        } else {
-        	//lg.logger.log(Level.INFO, "NOT minor than equals");
-        	accumulatorBoolean=false;
+        if (leftValue instanceof String && rightValue instanceof String) {
+        	if(leftValue.toString().compareTo(rightValue.toString())<=0){
+        		accumulatorBoolean=true;
+        	}
+        } else if (leftValue instanceof Double && rightValue instanceof Double) {
+        	if (Double.parseDouble(leftValue.toString())<=Double.parseDouble(rightValue.toString())){
+                //lg.logger.log(Level.INFO, "GREATER GREATER");
+            	accumulatorBoolean=true;
+            } 
         }
     }
 
@@ -292,7 +310,6 @@ public class CalcTools extends AbstractExpressionVisitor
             Object rightValue = accumulator;
             accumulator = Double.parseDouble(leftValue.toString()) - Double.parseDouble(rightValue.toString());
             //lg.logger.log(Level.INFO, "Subtraction result is"+accumulator.toString());
-      
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
