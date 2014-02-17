@@ -29,6 +29,9 @@ public class SelectionOperator implements Operator {
 		Tuple t = null;
 		do {
 			t = input.readOneTuple();
+			if(t == null) {
+				return null;
+			}
 			if(!evaluate(t,condition)) {
 				t = null;
 			}
