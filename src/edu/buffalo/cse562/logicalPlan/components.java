@@ -14,6 +14,7 @@ import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
+import edu.buffalo.cse562.physicalPlan.SelectionOperator;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 
 public class components {
@@ -61,6 +62,9 @@ public class components {
 	public void executePhysicalPlan() {
 		Table table = (Table) tableName;
 		Operator oper = new FileScanOperator(table, tableDir, tableMap, tableColTypeMap);
+		if (!whereClause.equals(null)){
+			oper = new SelectionOperator(oper, whereClause);
+		}
 		oper=new ProjectionOperator(oper,projectStmt);
 		Tuple t = oper.readOneTuple();
 		while (t != null) {
