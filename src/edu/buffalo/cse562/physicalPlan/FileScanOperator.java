@@ -54,7 +54,10 @@ public class FileScanOperator implements Operator {
 			if ((line = reader.readLine()) != null) {
 
 				String[] singleTableElement = line.split("\\|");
-
+//				Datum[] t = new Datum[singleTableElement.length];
+//				for(int i=0; i < singleTableElement.length;i++) {
+//					t[i] = new Datum.Long(singleTableElement[i]);
+//				}
 				oneTupleFromDat = new Tuple(convertType(singleTableElement));
 			} else {
 				
@@ -111,8 +114,9 @@ public class FileScanOperator implements Operator {
 		try {
 			reader = new BufferedReader(new FileReader(tablefile));
 		} catch (IOException e) {
-			reader = null;
+			
 			e.printStackTrace();
+			reader = null;
 		}
 
 	}

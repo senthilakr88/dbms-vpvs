@@ -6,9 +6,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.org.apache.xpath.internal.operations.Lt;
+
 
 public class Tuple {
+	
 	Map tableMap;
+	
 	
 	public Tuple(Map tableMap){
 		this.tableMap = tableMap;
@@ -31,5 +35,13 @@ public class Tuple {
 			output += mapEntry.getValue() +"|";
 		}
 		return output;
+	}
+
+	public Tuple combine(Tuple rt) {
+		
+		Map m = new HashMap();
+		m.putAll(tableMap);
+		m.putAll(rt.tableMap);
+		return new Tuple(m);
 	}
 }
