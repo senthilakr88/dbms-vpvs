@@ -1,6 +1,5 @@
 package edu.buffalo.cse562.sql.expression.evaluator;
 
-//import java.util.List;
 import java.util.logging.Level;
 
 import net.sf.jsqlparser.expression.*;
@@ -8,20 +7,13 @@ import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
-//import net.sf.jsqlparser.schema.*;
-//import net.sf.jsqlparser.statement.select.*;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 
-/**
- *
- * @author Niccolo' Meneghetti
- */
 public class CalcTools extends AbstractExpressionVisitor
 {
     private Object accumulator;
     private boolean accumulatorBoolean;
-//    private List columns;
     logManager lg = new logManager();
     Tuple t;
     public Object getResult()
@@ -31,9 +23,7 @@ public class CalcTools extends AbstractExpressionVisitor
     	return accumulator; }
 
     public CalcTools(Tuple t2) {
-		// TODO Auto-generated constructor stub
     	t = t2;
-    	
 	}
 
 	@Override
@@ -76,19 +66,6 @@ public class CalcTools extends AbstractExpressionVisitor
         between.getBetweenExpressionEnd().accept(this);
     }
 
-  /*  @Override
-    public void visit(Column tableColumn) {
-        if (!(columns == null)) {
-            columns.add(tableColumn.getWholeColumnName());
-        }
-        if (!(metaDataColumns == null)) {
-            meta = new NaviSoftRealMeta();
-            nameColumn = tableColumn.getColumnName();
-            meta.setTable(tableColumn.getTable().getName());
-            meta.setFieldName(nameColumn);
-        }
-    }
-*/
     @Override
     public void visit(Division division) {
 		//lg.logger.log(Level.INFO, "Came to addition");
@@ -397,11 +374,4 @@ public class CalcTools extends AbstractExpressionVisitor
 	public void setAccumulatorBoolean(boolean accumulatorBoolean) {
 		this.accumulatorBoolean = accumulatorBoolean;
 	}
-
-
-   /* @Override
-    public void visit(Parenthesis prnths) 
-    { prnths.getExpression().accept(this); }
-    */
-    
 }
