@@ -3,6 +3,7 @@ package edu.buffalo.cse562.physicalPlan;
 //import net.sf.jsqlparser.expression.Expression;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class ProjectionOperator implements Operator {
 
 	public Tuple readOneTuple() {
 
-		map = new HashMap();
+		map = new LinkedHashMap();
 		Tuple t = null;
 		t = input.readOneTuple();
 

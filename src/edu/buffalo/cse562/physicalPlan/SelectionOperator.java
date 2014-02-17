@@ -38,11 +38,11 @@ public class SelectionOperator implements Operator {
 				return null;
 			}
 			if(!evaluate(t,condition)) {
-				System.out.println("Condition not Satisfied");
+				//System.out.println("Condition not Satisfied");
 				t = null;
-			} else {
-				System.out.println("Condition satisfied");
-			}
+			} //else {
+				//System.out.println("Condition satisfied");
+			//}
 		} while(t==null);
 		//System.out.println("Came here 2");
 		return t;
@@ -50,7 +50,6 @@ public class SelectionOperator implements Operator {
 	
 	private boolean evaluate(Tuple t, Expression condition2) {
 		logManager lg = new logManager();
-		// TODO Auto-generated method stub
 		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
 		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());
 		//t.tableMap.get(key)

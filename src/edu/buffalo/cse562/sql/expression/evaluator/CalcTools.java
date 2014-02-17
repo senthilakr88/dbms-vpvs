@@ -55,7 +55,18 @@ public class CalcTools extends AbstractExpressionVisitor
     
     @Override
     public void visit(AndExpression andExpression) {
-        visitBinaryExpression(andExpression);
+        lg.logger.log(Level.INFO, "Came to and expression");
+        andExpression.getLeftExpression().accept(this);
+        boolean leftValue = accumulatorBoolean;
+        andExpression.getRightExpression().accept(this);
+        boolean rightValue = accumulatorBoolean;
+        if (leftValue && rightValue){
+            lg.logger.log(Level.INFO, "TRUE");
+        	accumulatorBoolean=true;
+        } else {
+        	lg.logger.log(Level.INFO, "FALSE");
+        	accumulatorBoolean=false;
+        }
     }
 
     @Override
@@ -104,10 +115,10 @@ public class CalcTools extends AbstractExpressionVisitor
         if (Double.parseDouble(leftValue.toString())==Double.parseDouble(rightValue.toString())){
             lg.logger.log(Level.INFO, "GREATER GREATER");
 
-        	setAccumulatorBoolean(true);
+        	accumulatorBoolean=true;
         } else {
         	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	setAccumulatorBoolean(false);
+        	accumulatorBoolean=false;
         }
     }
 
@@ -126,10 +137,10 @@ public class CalcTools extends AbstractExpressionVisitor
         if (Double.parseDouble(leftValue.toString())>Double.parseDouble(rightValue.toString())){
             lg.logger.log(Level.INFO, "GREATER GREATER");
 
-        	setAccumulatorBoolean(true);
+        	accumulatorBoolean=true;
         } else {
         	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	setAccumulatorBoolean(false);
+        	accumulatorBoolean=false;
         }
     }
 
@@ -143,10 +154,10 @@ public class CalcTools extends AbstractExpressionVisitor
         if (Double.parseDouble(leftValue.toString())>=Double.parseDouble(rightValue.toString())){
             lg.logger.log(Level.INFO, "GREATER GREATER");
 
-        	setAccumulatorBoolean(true);
+        	accumulatorBoolean=true;
         } else {
         	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
-        	setAccumulatorBoolean(false);
+        	accumulatorBoolean=false;
         }
     }
 
@@ -193,12 +204,36 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(MinorThan minorThan) {
-        visitBinaryExpression(minorThan);
+        lg.logger.log(Level.INFO, "Came to greater than equals");
+        minorThan.getLeftExpression().accept(this);
+        Object leftValue = accumulator;
+        minorThan.getRightExpression().accept(this);
+        Object rightValue = accumulator;
+        if (Double.parseDouble(leftValue.toString())<Double.parseDouble(rightValue.toString())){
+            lg.logger.log(Level.INFO, "MINOR");
+
+        	accumulatorBoolean=true;
+        } else {
+        	lg.logger.log(Level.INFO, "NOT NOT NOT MINOR");
+        	accumulatorBoolean=false;
+        }
     }
 
     @Override
     public void visit(MinorThanEquals minorThanEquals) {
-        visitBinaryExpression(minorThanEquals);
+        lg.logger.log(Level.INFO, "Came to minor than equals");
+        minorThanEquals.getLeftExpression().accept(this);
+        Object leftValue = accumulator;
+        minorThanEquals.getRightExpression().accept(this);
+        Object rightValue = accumulator;
+        if (Double.parseDouble(leftValue.toString())<=Double.parseDouble(rightValue.toString())){
+            lg.logger.log(Level.INFO, "minor than equals");
+
+        	accumulatorBoolean=true;
+        } else {
+        	lg.logger.log(Level.INFO, "NOT minor than equals");
+        	accumulatorBoolean=false;
+        }
     }
 
     @Override
@@ -224,7 +259,18 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(OrExpression orExpression) {
-        visitBinaryExpression(orExpression);
+    	lg.logger.log(Level.INFO, "Came to OR expression");
+        orExpression.getLeftExpression().accept(this);
+        boolean leftValue = accumulatorBoolean;
+        orExpression.getRightExpression().accept(this);
+        boolean rightValue = accumulatorBoolean;
+        if (leftValue || rightValue){
+            lg.logger.log(Level.INFO, "TRUE");
+        	accumulatorBoolean=true;
+        } else {
+        	lg.logger.log(Level.INFO, "FALSE");
+        	accumulatorBoolean=false;
+        }
     }
 
     @Override
