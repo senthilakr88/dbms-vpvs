@@ -24,11 +24,11 @@ public class CalcTools extends AbstractExpressionVisitor
 //    private List columns;
     logManager lg = new logManager();
     Tuple t;
-    /*public boolean getResult()
+    public Object getResult()
     
     { 	
-        lg.logger.log(Level.INFO, String.valueOf(accumulator));
-    	return accumulator; }*/
+        //lg.logger.log(Level.INFO, String.valueOf(accumulator));
+    	return accumulator; }
 
     public CalcTools(Tuple t2) {
 		// TODO Auto-generated constructor stub
@@ -38,33 +38,33 @@ public class CalcTools extends AbstractExpressionVisitor
 
 	@Override
     public void visit(Addition addition) {
-		lg.logger.log(Level.INFO, "Came to addition");
+		//lg.logger.log(Level.INFO, "Came to addition");
         addition.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         addition.getRightExpression().accept(this);
         Object rightValue = accumulator;
         accumulator = Double.parseDouble(leftValue.toString()) + Double.parseDouble(rightValue.toString());
-        lg.logger.log(Level.INFO, "Addition result is"+accumulator.toString());
+        //lg.logger.log(Level.INFO, "Addition result is"+accumulator.toString());
     }
 
     public void visit(Column column) {
-        lg.logger.log(Level.INFO, "Came to get column name"+column.getWholeColumnName());
+        //lg.logger.log(Level.INFO, "Came to get column name"+column.getWholeColumnName());
         accumulator = String.valueOf(t.valueOf((column.getColumnName())));
-        lg.logger.log(Level.INFO, String.valueOf(accumulator));
+        //lg.logger.log(Level.INFO, String.valueOf(accumulator));
     }
     
     @Override
     public void visit(AndExpression andExpression) {
-        lg.logger.log(Level.INFO, "Came to and expression");
+        //lg.logger.log(Level.INFO, "Came to and expression");
         andExpression.getLeftExpression().accept(this);
         boolean leftValue = accumulatorBoolean;
         andExpression.getRightExpression().accept(this);
         boolean rightValue = accumulatorBoolean;
         if (leftValue && rightValue){
-            lg.logger.log(Level.INFO, "TRUE");
+            //lg.logger.log(Level.INFO, "TRUE");
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "FALSE");
+        	//lg.logger.log(Level.INFO, "FALSE");
         	accumulatorBoolean=false;
         }
     }
@@ -91,13 +91,13 @@ public class CalcTools extends AbstractExpressionVisitor
 */
     @Override
     public void visit(Division division) {
-		lg.logger.log(Level.INFO, "Came to addition");
+		//lg.logger.log(Level.INFO, "Came to addition");
         division.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         division.getRightExpression().accept(this);
         Object rightValue = accumulator;
         accumulator = Double.parseDouble(leftValue.toString())/Double.parseDouble(rightValue.toString());
-        lg.logger.log(Level.INFO, "Division result is"+accumulator.toString());
+        //lg.logger.log(Level.INFO, "Division result is"+accumulator.toString());
     }
 
     @Override
@@ -107,17 +107,17 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(EqualsTo equalsTo) {
-        lg.logger.log(Level.INFO, "Came to greater than");
+        //lg.logger.log(Level.INFO, "Came to greater than");
         equalsTo.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         equalsTo.getRightExpression().accept(this);
         Object rightValue = accumulator;
         if (Double.parseDouble(leftValue.toString())==Double.parseDouble(rightValue.toString())){
-            lg.logger.log(Level.INFO, "GREATER GREATER");
+            //lg.logger.log(Level.INFO, "GREATER GREATER");
 
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
+        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
         	accumulatorBoolean=false;
         }
     }
@@ -129,34 +129,34 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(GreaterThan greaterThan) {
-        lg.logger.log(Level.INFO, "Came to greater than");
+        //lg.logger.log(Level.INFO, "Came to greater than");
         greaterThan.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         greaterThan.getRightExpression().accept(this);
         Object rightValue = accumulator;
         if (Double.parseDouble(leftValue.toString())>Double.parseDouble(rightValue.toString())){
-            lg.logger.log(Level.INFO, "GREATER GREATER");
+            //lg.logger.log(Level.INFO, "GREATER GREATER");
 
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
+        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
         	accumulatorBoolean=false;
         }
     }
 
     @Override
     public void visit(GreaterThanEquals greaterThanEquals) {
-        lg.logger.log(Level.INFO, "Came to greater than equals");
+        //lg.logger.log(Level.INFO, "Came to greater than equals");
         greaterThanEquals.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         greaterThanEquals.getRightExpression().accept(this);
         Object rightValue = accumulator;
         if (Double.parseDouble(leftValue.toString())>=Double.parseDouble(rightValue.toString())){
-            lg.logger.log(Level.INFO, "GREATER GREATER");
+            //lg.logger.log(Level.INFO, "GREATER GREATER");
 
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
+        	//lg.logger.log(Level.INFO, "NOT NOT NOT GREATER");
         	accumulatorBoolean=false;
         }
     }
@@ -193,58 +193,58 @@ public class CalcTools extends AbstractExpressionVisitor
     @Override
     public void visit(LongValue longValue) {
     	accumulator=longValue.getValue(); 
-    	lg.logger.log(Level.INFO, "Returning long value"+accumulator.toString());
+    	//lg.logger.log(Level.INFO, "Returning long value"+accumulator.toString());
     }
     
     @Override
     public void visit(Object longValue) {
     	accumulator=longValue; 
-    	lg.logger.log(Level.INFO, "Returning object value"+accumulator.toString());
+    	//lg.logger.log(Level.INFO, "Returning object value"+accumulator.toString());
     }
 
     @Override
     public void visit(MinorThan minorThan) {
-        lg.logger.log(Level.INFO, "Came to greater than equals");
+        //lg.logger.log(Level.INFO, "Came to greater than equals");
         minorThan.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         minorThan.getRightExpression().accept(this);
         Object rightValue = accumulator;
         if (Double.parseDouble(leftValue.toString())<Double.parseDouble(rightValue.toString())){
-            lg.logger.log(Level.INFO, "MINOR");
+            //lg.logger.log(Level.INFO, "MINOR");
 
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "NOT NOT NOT MINOR");
+        	//lg.logger.log(Level.INFO, "NOT NOT NOT MINOR");
         	accumulatorBoolean=false;
         }
     }
 
     @Override
     public void visit(MinorThanEquals minorThanEquals) {
-        lg.logger.log(Level.INFO, "Came to minor than equals");
+        //lg.logger.log(Level.INFO, "Came to minor than equals");
         minorThanEquals.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         minorThanEquals.getRightExpression().accept(this);
         Object rightValue = accumulator;
         if (Double.parseDouble(leftValue.toString())<=Double.parseDouble(rightValue.toString())){
-            lg.logger.log(Level.INFO, "minor than equals");
+            //lg.logger.log(Level.INFO, "minor than equals");
 
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "NOT minor than equals");
+        	//lg.logger.log(Level.INFO, "NOT minor than equals");
         	accumulatorBoolean=false;
         }
     }
 
     @Override
     public void visit(Multiplication multiplication) {
-		lg.logger.log(Level.INFO, "Came to multiplication");
+		//lg.logger.log(Level.INFO, "Came to multiplication");
         multiplication.getLeftExpression().accept(this);
         Object leftValue = accumulator;
         multiplication.getRightExpression().accept(this);
         Object rightValue = accumulator;
         accumulator = Double.parseDouble(leftValue.toString()) + Double.parseDouble(rightValue.toString());
-        lg.logger.log(Level.INFO, "Multiplication result is"+accumulator.toString());
+        //lg.logger.log(Level.INFO, "Multiplication result is"+accumulator.toString());
     }
 
     @Override
@@ -259,16 +259,16 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(OrExpression orExpression) {
-    	lg.logger.log(Level.INFO, "Came to OR expression");
+    	//lg.logger.log(Level.INFO, "Came to OR expression");
         orExpression.getLeftExpression().accept(this);
         boolean leftValue = accumulatorBoolean;
         orExpression.getRightExpression().accept(this);
         boolean rightValue = accumulatorBoolean;
         if (leftValue || rightValue){
-            lg.logger.log(Level.INFO, "TRUE");
+            //lg.logger.log(Level.INFO, "TRUE");
         	accumulatorBoolean=true;
         } else {
-        	lg.logger.log(Level.INFO, "FALSE");
+        	//lg.logger.log(Level.INFO, "FALSE");
         	accumulatorBoolean=false;
         }
     }
@@ -285,18 +285,18 @@ public class CalcTools extends AbstractExpressionVisitor
 
     @Override
     public void visit(Subtraction subtraction) {
-    		lg.logger.log(Level.INFO, "Came to subtraction");
+    		//lg.logger.log(Level.INFO, "Came to subtraction");
             subtraction.getLeftExpression().accept(this);
             Object leftValue = accumulator;
             subtraction.getRightExpression().accept(this);
             Object rightValue = accumulator;
             accumulator = Double.parseDouble(leftValue.toString()) - Double.parseDouble(rightValue.toString());
-            lg.logger.log(Level.INFO, "Subtraction result is"+accumulator.toString());
+            //lg.logger.log(Level.INFO, "Subtraction result is"+accumulator.toString());
       
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
-    	lg.logger.log(Level.INFO, "binary msg");
+    	//lg.logger.log(Level.INFO, "binary msg");
     	//binaryExpression.getRightExpression().accept(this);
     	binaryExpression.getLeftExpression().accept(this);
         binaryExpression.getRightExpression().accept(this);

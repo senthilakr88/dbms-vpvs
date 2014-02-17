@@ -50,11 +50,11 @@ public class SelectionOperator implements Operator {
 	
 	private boolean evaluate(Tuple t, Expression condition2) {
 		logManager lg = new logManager();
-		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
-		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());
+//		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
+//		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());
 		//t.tableMap.get(key)
 		CalcTools calc = new CalcTools(t);
-		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+//		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
 		condition2.accept(calc);
 		return calc.getAccumulatorBoolean();
 	}
