@@ -6,7 +6,7 @@ public class JoinOperator implements Operator {
 
 	Operator left;
 	Operator right;
-	Tuple leftTuple;
+	Datum[] leftTuple;
 	Boolean firstEntry;
 
 	public JoinOperator(Operator left, Operator right) {
@@ -21,9 +21,9 @@ public class JoinOperator implements Operator {
 	}
 
 	@Override
-	public Tuple readOneTuple() {
-		Tuple lt = null, rt = null;
-		Tuple t = null;
+	public Datum[] readOneTuple() {
+		Datum[] lt = null, rt = null;
+		Datum[] t = null;
 		if(firstEntry) {
 			lt = left.readOneTuple();
 			setTuple(lt);
@@ -45,19 +45,34 @@ public class JoinOperator implements Operator {
 			}
 			System.out.println("left :: "+lt);
 			System.out.println("right :: "+rt);
-			t = lt.combine(rt);
+			t = combine(lt,rt);
 			System.out.println("join:: "+t);
 			return t;
 		} else
 			return null;
 	}
 	
-	public Tuple getTuple() {
+	private Datum[] combine(Datum[] lt, Datum[] rt) {
+		int i=0,j=0;
+		Datum[] temp = new Datum[lt.length+rt.length];
+		
+		for(i=0;i<lt.length;i++){
+			temp[i] = lt[i];
+		} 
+		for(j=0;j<lt.length;j++,i++){
+			temp[i] = rt[j];
+		}
+		return temp;
+	}
+
+	public Datum[] getTuple() {
 		return leftTuple;
 	}
 	
-	public void setTuple(Tuple leftTuple) {
-		this.leftTuple = leftTuple;
+	public void setTuple(Datum[] lt) {
+		this.leftTuple = lt;
 	}
+	
+	
 
 }

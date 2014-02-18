@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.logicalPlan.components;
@@ -84,8 +85,9 @@ public class queryParser {
 
 				} else if (statement instanceof Select) {
 					comp.initializeNewStatement();
-					Select selectStmt = (Select) statement;
-					PlainSelect plainSelect = (PlainSelect) selectStmt.getSelectBody();
+					SelectBody selectStmt = ((Select)statement).getSelectBody();
+					if(selectStmt instanceof PlainSelect) {
+					PlainSelect plainSelect = (PlainSelect) selectStmt;
 					lg.logger.log(Level.INFO, "plainSelect :: " + plainSelect.toString());
 					comp.addProjectStmts(plainSelect.getSelectItems());
 					
@@ -102,7 +104,12 @@ public class queryParser {
 					//lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 					lg.logger.log(Level.INFO, comp.toString());
 					comp.executePhysicalPlan();
+					} else {
+						System.out.println("Select type of statement !!! still not handled");
+					}
 			
+				} else {
+					System.out.println("Not a create or select statement !!! Skipped from validation");
 				}
 			} catch (JSQLParserException e) {
 				// TODO Auto-generated catch block

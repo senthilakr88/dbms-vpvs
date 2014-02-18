@@ -28,9 +28,9 @@ public class SelectionOperator implements Operator {
 	}
 
 	@Override
-	public Tuple readOneTuple() {
+	public Datum[] readOneTuple() {
 		//System.out.println("Came here");
-		Tuple t = null;
+		Datum[] t = null;
 		do {
 			//System.out.println("Doing now");
 			t = input.readOneTuple();
@@ -48,7 +48,7 @@ public class SelectionOperator implements Operator {
 		return t;
 	}
 	
-	private boolean evaluate(Tuple t, Expression condition2) {
+	private boolean evaluate(Datum[] t, Expression condition2) {
 		logManager lg = new logManager();
 //		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
 //		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());

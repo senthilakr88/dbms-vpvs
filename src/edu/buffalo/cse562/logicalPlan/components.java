@@ -11,6 +11,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
+import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
@@ -65,13 +66,25 @@ public class components {
 		if (!whereClause.equals(null)){
 			oper = new SelectionOperator(oper, whereClause);
 		}
-		oper=new ProjectionOperator(oper,projectStmt);
-		Tuple t = oper.readOneTuple();
+//		oper=new ProjectionOperator(oper,projectStmt);
+		Datum[] t = oper.readOneTuple();
+//		tableMap = ((ProjectionOperator)oper).getTableMap();
+				
 		while (t != null) {
-			System.out.println(t.toString());
+//			System.out.println(t.toString());
+			printTuple(t);
 			t = oper.readOneTuple();
 		}
 
+	}
+
+	private void printTuple(Datum[] row) {
+		if(row!=null && row.length !=0) {
+		for(Datum col : row) {
+			System.out.print(col + "|");
+		}
+		System.out.println();
+		}
 	}
 
 	public void setTableDirectory(String tableDir) {

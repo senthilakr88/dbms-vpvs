@@ -3,6 +3,6 @@ package edu.buffalo.cse562.physicalPlan;
 public interface Operator {
 
 	public void resetStream();
-	public Tuple readOneTuple();
+	public Datum[] readOneTuple();
 	
 }

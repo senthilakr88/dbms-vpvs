@@ -43,22 +43,20 @@ public class FileScanOperator implements Operator {
 	 * (ArrayList<String>)
 	 */
 	@Override
-	public Tuple readOneTuple() {
+	public Datum[] readOneTuple() {
 		if(reader == null) {
 			System.out.println("Buffer not initialized for table ::" + tableName);
 			return null;
 		}
-		Tuple oneTupleFromDat = null;
+		Datum[] oneTupleFromDat = null;
 		try {
 			String line = null;
 			if ((line = reader.readLine()) != null) {
 
 				String[] singleTableElement = line.split("\\|");
-//				Datum[] t = new Datum[singleTableElement.length];
-//				for(int i=0; i < singleTableElement.length;i++) {
-//					t[i] = new Datum.Long(singleTableElement[i]);
-//				}
-				oneTupleFromDat = new Tuple(convertType(singleTableElement));
+				
+				//oneTupleFromDat = new Tuple(convertType(singleTableElement));
+				oneTupleFromDat = convertType(singleTableElement);
 			} else {
 				
 				return null;
@@ -71,9 +69,10 @@ public class FileScanOperator implements Operator {
 		return oneTupleFromDat;
 	}
 
-	public Map convertType(String[] singleTableElement) {
-		Map tupleKeyValueMap = new HashMap();
+	public Datum[] convertType(String[] singleTableElement) {
+		//Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
+		Datum[] t = new Datum[singleTableElement.length];
 		int i = 0;
 		while (i < singleTableElement.length) {
 			//key = tableMap.get.get(tableName).get(i);
@@ -84,20 +83,19 @@ public class FileScanOperator implements Operator {
 			value = singleTableElement[i];
 			type = tableColTypeMap.get(tableName.toString()).get(i);
 			if (type.equalsIgnoreCase("int"))
-				tupleKeyValueMap.put(key, Integer.parseInt(value));
+//				tupleKeyValueMap.put(key, Integer.parseInt(value));
+				t[i] = new Datum.dLong(singleTableElement[i],key);
 			else if (type.equalsIgnoreCase("String")) {
-				tupleKeyValueMap.put(key, value);
+//				tupleKeyValueMap.put(key, value);
+				t[i] = new Datum.dString(singleTableElement[i],key);
 			} else if (type.equalsIgnoreCase("date"))
-				try {
-					tupleKeyValueMap.put(key, (new SimpleDateFormat(
-							"YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				//		tupleKeyValueMap.put(key, (new SimpleDateFormat(
+//							"YYYY-MM-DD", Locale.ENGLISH).parse(value)));
+					t[i] = new Datum.dDate(singleTableElement[i],key);
+				
 			else {
 				try {
-					throw new Exception("");
+					throw new Exception("Not aware of this data type :: "+ type);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -105,7 +103,7 @@ public class FileScanOperator implements Operator {
 			}
 			i++;
 		}
-		return tupleKeyValueMap;
+		return t;
 
 	}
 
