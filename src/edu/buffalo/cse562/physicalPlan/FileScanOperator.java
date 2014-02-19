@@ -88,12 +88,12 @@ public class FileScanOperator implements Operator {
 			else if (type.equalsIgnoreCase("String")) {
 //				tupleKeyValueMap.put(key, value);
 				t[i] = new Datum.dString(singleTableElement[i],key);
-			} else if (type.equalsIgnoreCase("date"))
+			} else if (type.equalsIgnoreCase("date")) {
 				//		tupleKeyValueMap.put(key, (new SimpleDateFormat(
 //							"YYYY-MM-DD", Locale.ENGLISH).parse(value)));
 					t[i] = new Datum.dDate(singleTableElement[i],key);
 				
-			else {
+			} else {
 				try {
 					throw new Exception("Not aware of this data type :: "+ type);
 				} catch (Exception e) {
