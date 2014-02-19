@@ -51,6 +51,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		for (Datum row : t) {
 //			System.out.println(row.getColumn());
 //			System.out.println(column.getColumnName());
+			System.out.println(row.toComString() + " : "+column.getTable().getName()+":"+column.getColumnName() + ":" + row.equals(column));
 			if (row.equals(column)
 					&& row instanceof Datum.dLong) {
 				accumulator = ((Datum.dLong)row).getRow();

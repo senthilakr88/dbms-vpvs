@@ -11,12 +11,15 @@ import net.sf.jsqlparser.schema.Column;
 public interface Datum {
 
 	public String toString();
+
 	public String toComString();
+
 	public Column getColumn();
+
 	public void setColumn(Column column);
+
 	public boolean equals(Column col);
-	
-	
+
 	public class dLong implements Datum {
 
 		Long row;
@@ -34,7 +37,7 @@ public interface Datum {
 			row = Long.parseLong(s);
 			this.column = col;
 		}
-		
+
 		public long getRow() {
 			return row;
 		}
@@ -42,29 +45,30 @@ public interface Datum {
 		public void setRow(long row) {
 			this.row = row;
 		}
-		
+
 		public String toString() {
 			return String.valueOf(row);
 		}
-		
+
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName() + ":" + String.valueOf(row) +"\t";
+			return column.getTable().getName() + ":" + column.getColumnName()
+					+ ":" + String.valueOf(row) + "\t";
 		}
 
 		@Override
 		public boolean equals(Column col) {
-			if(col == null)
-			return false;
-			else if(column.getTable() != col.getTable()) 
+			if (col == null)
 				return false;
-			else if(column.getColumnName() != col.getColumnName()) 
+			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
 				return false;
-			else 
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
 				return true;
 		}
 
 	}
-	
+
 	public class dString implements Datum {
 
 		String row;
@@ -74,7 +78,7 @@ public interface Datum {
 			row = s;
 			column = col;
 		}
-		
+
 		public Column getColumn() {
 			return column;
 		}
@@ -82,7 +86,7 @@ public interface Datum {
 		public void setColumn(Column column) {
 			this.column = column;
 		}
-		
+
 		public String getRow() {
 			return row;
 		}
@@ -90,29 +94,30 @@ public interface Datum {
 		public void setRow(String row) {
 			this.row = row;
 		}
-		
+
 		public String toString() {
 			return row;
 		}
-		
+
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName() + ":" + row +"\t";
+			return column.getTable().getName() + ":" + column.getColumnName()
+					+ ":" + row + "\t";
 		}
-		
+
 		@Override
 		public boolean equals(Column col) {
-			if(col == null)
-			return false;
-			else if(column.getTable() != col.getTable()) 
+			if (col == null)
 				return false;
-			else if(column.getColumnName() != col.getColumnName()) 
+			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
 				return false;
-			else 
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
 				return true;
 		}
 
 	}
-	
+
 	public class dDate implements Datum {
 
 		Date row;
@@ -123,9 +128,9 @@ public interface Datum {
 
 		public dDate(String s, Column col) {
 			try {
-				row = (new SimpleDateFormat(
-						"YYYY-MM-DD", Locale.ENGLISH).parse(s));
-				if(row!=null){
+				row = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
+						.parse(s));
+				if (row != null) {
 					year = row.getYear();
 					month = row.getMonth();
 					day = row.getDay();
@@ -144,13 +149,15 @@ public interface Datum {
 		public void setRow(Date row) {
 			this.row = row;
 		}
-		
+
 		public String toString() {
 			return String.format("%04d-%02d-%02d", year, month, day);
 		}
-		
+
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName() + ":" + String.format("%04d-%02d-%02d", year, month, day) +"\t";
+			return column.getTable().getName() + ":" + column.getColumnName()
+					+ ":" + String.format("%04d-%02d-%02d", year, month, day)
+					+ "\t";
 		}
 
 		@Override
@@ -161,22 +168,20 @@ public interface Datum {
 		@Override
 		public void setColumn(Column column) {
 			column = column;
-			
+
 		}
-		
+
 		@Override
 		public boolean equals(Column col) {
-			if(col == null)
-			return false;
-			else if(column.getTable() != col.getTable()) 
+			if (col == null)
 				return false;
-			else if(column.getColumnName() != col.getColumnName()) 
+			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
 				return false;
-			else 
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
 				return true;
 		}
-		
-		
 
 	}
 
