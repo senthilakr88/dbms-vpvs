@@ -27,14 +27,14 @@ public class Tuple {
 	}
 	
 	public String toString(){
-		String output ="";
+		StringBuffer output=new StringBuffer();
 		Iterator iterator = tableMap.entrySet().iterator();
 		
 		while(iterator.hasNext()) {
 			Map.Entry mapEntry = (Map.Entry) iterator.next();
-			output += mapEntry.getValue() +"|";
+			output.append(mapEntry.getValue() +"|");
 		}
-		return output;
+		return output.toString();
 	}
 
 	public Tuple combine(Tuple rt) {
