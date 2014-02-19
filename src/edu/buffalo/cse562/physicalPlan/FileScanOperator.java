@@ -31,9 +31,9 @@ public class FileScanOperator implements Operator {
 		this.tableMap = tableMap2;
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
-		tablefile = new File("").getAbsolutePath() + dirName
-					+ File.separator + tableName + ".dat";
-			
+		tablefile = new File("").getAbsolutePath() + dirName + File.separator
+				+ tableName + ".dat";
+
 		resetStream();
 	}
 
@@ -44,8 +44,9 @@ public class FileScanOperator implements Operator {
 	 */
 	@Override
 	public Datum[] readOneTuple() {
-		if(reader == null) {
-			System.out.println("Buffer not initialized for table ::" + tableName);
+		if (reader == null) {
+			System.out.println("Buffer not initialized for table ::"
+					+ tableName);
 			return null;
 		}
 		Datum[] oneTupleFromDat = null;
@@ -54,11 +55,11 @@ public class FileScanOperator implements Operator {
 			if ((line = reader.readLine()) != null) {
 
 				String[] singleTableElement = line.split("\\|");
-				
-				//oneTupleFromDat = new Tuple(convertType(singleTableElement));
+
+				// oneTupleFromDat = new Tuple(convertType(singleTableElement));
 				oneTupleFromDat = convertType(singleTableElement);
 			} else {
-				
+
 				return null;
 			}
 		} catch (FileNotFoundException e) {
@@ -70,41 +71,43 @@ public class FileScanOperator implements Operator {
 	}
 
 	public Datum[] convertType(String[] singleTableElement) {
-		//Map tupleKeyValueMap = new HashMap();
+		// Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
 		Column col = null;
 		Datum[] t = new Datum[singleTableElement.length];
 		int i = 0;
+		int j = 0;
+		while (!tableMap.get(j).getTable().toString()
+				.equalsIgnoreCase(tableName.toString())) {
+			j++;
+		}
 		while (i < singleTableElement.length) {
-			//key = tableMap.get.get(tableName).get(i);
-			if(tableMap.get(i).getTable().toString().equalsIgnoreCase(tableName.toString())) {
-				key = tableMap.get(i).getColumnName();
-				col = tableMap.get(i);
-			}
-			else
-				continue;
+			col = tableMap.get(j);
 			value = singleTableElement[i];
 			type = tableColTypeMap.get(tableName.toString()).get(i);
-			if (type.equalsIgnoreCase("int"))
-//				tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dLong(singleTableElement[i],col);
-			else if (type.equalsIgnoreCase("String")) {
-//				tupleKeyValueMap.put(key, value);
-				t[i] = new Datum.dString(singleTableElement[i],col);
+			if (type.equalsIgnoreCase("int")) {
+				// tupleKeyValueMap.put(key, Integer.parseInt(value));
+				t[i] = new Datum.dLong(singleTableElement[i], col);
+				//System.out.print(t[i].toComString());
+			} else if (type.equalsIgnoreCase("String")) {
+				// tupleKeyValueMap.put(key, value);
+				t[i] = new Datum.dString(singleTableElement[i], col);
+				//System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("date")) {
-				//		tupleKeyValueMap.put(key, (new SimpleDateFormat(
-//							"YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-					t[i] = new Datum.dDate(singleTableElement[i],col);
-				
+				// tupleKeyValueMap.put(key, (new SimpleDateFormat(
+				// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
+				t[i] = new Datum.dDate(singleTableElement[i], col);
+				//System.out.print(t[i].toComString());
 			} else {
 				try {
-					throw new Exception("Not aware of this data type :: "+ type);
+					throw new Exception("Not aware of this data type :: "
+							+ type);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			i++;
+			i++; j++;
 		}
 		return t;
 
@@ -115,7 +118,7 @@ public class FileScanOperator implements Operator {
 		try {
 			reader = new BufferedReader(new FileReader(tablefile));
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 			reader = null;
 		}

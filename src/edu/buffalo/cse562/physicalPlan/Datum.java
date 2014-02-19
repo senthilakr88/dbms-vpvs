@@ -11,6 +11,7 @@ import net.sf.jsqlparser.schema.Column;
 public interface Datum {
 
 	public String toString();
+	public String toComString();
 	public Column getColumn();
 	public void setColumn(Column column);
 	public boolean equals(Column col);
@@ -44,6 +45,10 @@ public interface Datum {
 		
 		public String toString() {
 			return String.valueOf(row);
+		}
+		
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getColumnName() + ":" + String.valueOf(row) +"\t";
 		}
 
 		@Override
@@ -88,6 +93,10 @@ public interface Datum {
 		
 		public String toString() {
 			return row;
+		}
+		
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getColumnName() + ":" + row +"\t";
 		}
 		
 		@Override
@@ -139,6 +148,10 @@ public interface Datum {
 		public String toString() {
 			return String.format("%04d-%02d-%02d", year, month, day);
 		}
+		
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getColumnName() + ":" + String.format("%04d-%02d-%02d", year, month, day) +"\t";
+		}
 
 		@Override
 		public Column getColumn() {
@@ -162,6 +175,8 @@ public interface Datum {
 			else 
 				return true;
 		}
+		
+		
 
 	}
 
