@@ -11,24 +11,25 @@ import net.sf.jsqlparser.schema.Column;
 public interface Datum {
 
 	public String toString();
-	public String getColumn();
-	public void setColumn(String column);
+	public Column getColumn();
+	public void setColumn(Column column);
+	public boolean equals(Column col);
 	
 	
 	public class dLong implements Datum {
 
 		Long row;
-		String column;
+		Column column;
 
-		public String getColumn() {
+		public Column getColumn() {
 			return column;
 		}
 
-		public void setColumn(String column) {
+		public void setColumn(Column column) {
 			this.column = column;
 		}
 
-		public dLong(String s, String col) {
+		public dLong(String s, Column col) {
 			row = Long.parseLong(s);
 			this.column = col;
 		}
@@ -45,23 +46,35 @@ public interface Datum {
 			return String.valueOf(row);
 		}
 
+		@Override
+		public boolean equals(Column col) {
+			if(col == null)
+			return false;
+			else if(column.getTable() != col.getTable()) 
+				return false;
+			else if(column.getColumnName() != col.getColumnName()) 
+				return false;
+			else 
+				return true;
+		}
+
 	}
 	
 	public class dString implements Datum {
 
 		String row;
-		String column;
+		Column column;
 
-		public dString(String s, String col) {
+		public dString(String s, Column col) {
 			row = s;
 			column = col;
 		}
 		
-		public String getColumn() {
+		public Column getColumn() {
 			return column;
 		}
 
-		public void setColumn(String column) {
+		public void setColumn(Column column) {
 			this.column = column;
 		}
 		
@@ -76,6 +89,18 @@ public interface Datum {
 		public String toString() {
 			return row;
 		}
+		
+		@Override
+		public boolean equals(Column col) {
+			if(col == null)
+			return false;
+			else if(column.getTable() != col.getTable()) 
+				return false;
+			else if(column.getColumnName() != col.getColumnName()) 
+				return false;
+			else 
+				return true;
+		}
 
 	}
 	
@@ -85,9 +110,9 @@ public interface Datum {
 		int year;
 		int month;
 		int day;
-		String column;
+		Column column;
 
-		public dDate(String s, String col) {
+		public dDate(String s, Column col) {
 			try {
 				row = (new SimpleDateFormat(
 						"YYYY-MM-DD", Locale.ENGLISH).parse(s));
@@ -116,14 +141,26 @@ public interface Datum {
 		}
 
 		@Override
-		public String getColumn() {
+		public Column getColumn() {
 			return column;
 		}
 
 		@Override
-		public void setColumn(String column) {
+		public void setColumn(Column column) {
 			column = column;
 			
+		}
+		
+		@Override
+		public boolean equals(Column col) {
+			if(col == null)
+			return false;
+			else if(column.getTable() != col.getTable()) 
+				return false;
+			else if(column.getColumnName() != col.getColumnName()) 
+				return false;
+			else 
+				return true;
 		}
 
 	}

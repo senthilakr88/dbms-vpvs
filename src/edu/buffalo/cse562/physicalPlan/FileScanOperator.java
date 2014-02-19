@@ -72,26 +72,29 @@ public class FileScanOperator implements Operator {
 	public Datum[] convertType(String[] singleTableElement) {
 		//Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
+		Column col = null;
 		Datum[] t = new Datum[singleTableElement.length];
 		int i = 0;
 		while (i < singleTableElement.length) {
 			//key = tableMap.get.get(tableName).get(i);
-			if(tableMap.get(i).getTable().toString().equalsIgnoreCase(tableName.toString()))
-			key = tableMap.get(i).getColumnName();
+			if(tableMap.get(i).getTable().toString().equalsIgnoreCase(tableName.toString())) {
+				key = tableMap.get(i).getColumnName();
+				col = tableMap.get(i);
+			}
 			else
 				continue;
 			value = singleTableElement[i];
 			type = tableColTypeMap.get(tableName.toString()).get(i);
 			if (type.equalsIgnoreCase("int"))
 //				tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dLong(singleTableElement[i],key);
+				t[i] = new Datum.dLong(singleTableElement[i],col);
 			else if (type.equalsIgnoreCase("String")) {
 //				tupleKeyValueMap.put(key, value);
-				t[i] = new Datum.dString(singleTableElement[i],key);
+				t[i] = new Datum.dString(singleTableElement[i],col);
 			} else if (type.equalsIgnoreCase("date")) {
 				//		tupleKeyValueMap.put(key, (new SimpleDateFormat(
 //							"YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-					t[i] = new Datum.dDate(singleTableElement[i],key);
+					t[i] = new Datum.dDate(singleTableElement[i],col);
 				
 			} else {
 				try {

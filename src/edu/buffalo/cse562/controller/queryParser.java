@@ -101,6 +101,7 @@ public class queryParser {
 					//lg.logger.log(Level.INFO,plainSelect.getHaving().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
+					comp.addJoins(plainSelect.getJoins());
 					//lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 					lg.logger.log(Level.INFO, comp.toString());
 					comp.executePhysicalPlan();

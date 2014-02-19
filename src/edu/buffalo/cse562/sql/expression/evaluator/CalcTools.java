@@ -51,17 +51,17 @@ public class CalcTools extends AbstractExpressionVisitor {
 		for (Datum row : t) {
 //			System.out.println(row.getColumn());
 //			System.out.println(column.getColumnName());
-			if (row.getColumn().equalsIgnoreCase(column.getColumnName())
+			if (row.equals(column)
 					&& row instanceof Datum.dLong) {
 				accumulator = ((Datum.dLong)row).getRow();
 				System.out.println(accumulator);
 				break;
-			} else if (row.getColumn().equalsIgnoreCase(column.getColumnName())
+			} else if (row.equals(column)
 					&& row instanceof Datum.dDate) {
 				accumulator = ((Datum.dDate)row).getRow();
 				System.out.println(accumulator);
 				break;
-			} else if (row.getColumn().equalsIgnoreCase(column.getColumnName())
+			} else if (row.equals(column)
 					&& row instanceof Datum.dString) {
 				accumulator = ((Datum.dString)row).getRow();
 				System.out.println(accumulator);
