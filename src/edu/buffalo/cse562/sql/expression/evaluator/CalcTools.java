@@ -30,7 +30,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		return accumulator;
 	}
 
-	public CalcTools(Datum[] t2, List<Column> tableMap) {
+	public CalcTools(Datum[] t2) {
 		t = t2;
 		
 	}

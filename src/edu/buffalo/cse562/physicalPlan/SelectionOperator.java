@@ -18,12 +18,12 @@ public class SelectionOperator implements Operator {
 	Operator input;
 	Expression condition;
 	String oneLineFromDat;
-	List<Column> tableMap;
+	
 	
 	public SelectionOperator(Operator input, Expression condition) {
 		this.input = input;
 		this.condition = condition;
-		this.tableMap = tableMap;
+		
 	}
 	
 	@Override
@@ -57,7 +57,7 @@ public class SelectionOperator implements Operator {
 //		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
 //		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());
 		//t.tableMap.get(key)
-		CalcTools calc = new CalcTools(t,tableMap);
+		CalcTools calc = new CalcTools(t);
 //		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
 		condition2.accept(calc);
 		return calc.getAccumulatorBoolean();
