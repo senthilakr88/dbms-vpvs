@@ -10,6 +10,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
@@ -70,8 +71,8 @@ public class components {
 		if(tableJoins != null) {
 			Iterator joinIte = tableJoins.iterator();
 			while(joinIte.hasNext()) {
-				String joinTable = (String) joinIte.next();
-				Operator rightOper = new FileScanOperator(new Table(null, joinTable), tableDir, tableMap, tableColTypeMap);
+				Join joinTable = (Join) joinIte.next();
+				Operator rightOper = new FileScanOperator((Table)joinTable.getRightItem(), tableDir, tableMap, tableColTypeMap);
 				oper = new JoinOperator(oper, rightOper);
 			}
 		}

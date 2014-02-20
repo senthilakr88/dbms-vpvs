@@ -32,7 +32,7 @@ public class FileScanOperator implements Operator {
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
 		tablefile = new File("").getAbsolutePath() + dirName + File.separator
-				+ tableName + ".dat";
+				+ tableName.getName() + ".dat";
 
 		resetStream();
 	}
@@ -77,26 +77,26 @@ public class FileScanOperator implements Operator {
 		Datum[] t = new Datum[singleTableElement.length];
 		int i = 0;
 		int j = 0;
-		while (!tableMap.get(j).getTable().toString()
-				.equalsIgnoreCase(tableName.toString())) {
+		while (tableMap.size() != j && !tableMap.get(j).getTable().toString()
+				.equalsIgnoreCase(tableName.getName().toString())) {
 			j++;
 		}
 		while (i < singleTableElement.length) {
 			col = tableMap.get(j);
 			value = singleTableElement[i];
-			type = tableColTypeMap.get(tableName.toString()).get(i);
+			type = tableColTypeMap.get(tableName.getName().toString()).get(i);
 			if (type.equalsIgnoreCase("int")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dLong(singleTableElement[i], col);
+				t[i] = new Datum.dLong(singleTableElement[i], new Column(tableName,col.getColumnName()));
 				//System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("String")) {
 				// tupleKeyValueMap.put(key, value);
-				t[i] = new Datum.dString(singleTableElement[i], col);
+				t[i] = new Datum.dString(singleTableElement[i], new Column(tableName,col.getColumnName()));
 				//System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("date")) {
 				// tupleKeyValueMap.put(key, (new SimpleDateFormat(
 				// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-				t[i] = new Datum.dDate(singleTableElement[i], col);
+				t[i] = new Datum.dDate(singleTableElement[i], new Column(tableName,col.getColumnName()));
 				//System.out.print(t[i].toComString());
 			} else {
 				try {

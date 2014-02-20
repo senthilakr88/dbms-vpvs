@@ -19,10 +19,10 @@ public interface Datum {
 	public void setColumn(Column column);
 
 	public boolean equals(Column col);
-
+	
 	public class dLong implements Datum {
 
-		Long row;
+		Long value;
 		Column column;
 
 		public Column getColumn() {
@@ -34,48 +34,50 @@ public interface Datum {
 		}
 
 		public dLong(String s, Column col) {
-			row = Long.parseLong(s);
+			value = Long.parseLong(s);
 			this.column = col;
 		}
 
-		public long getRow() {
-			return row;
+		public long getValue() {
+			return value;
 		}
 
-		public void setRow(long row) {
-			this.row = row;
+		public void setValue(long value) {
+			this.value = value;
 		}
 
 		public String toString() {
-			return String.valueOf(row);
+			return String.valueOf(value);
 		}
 
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName()
-					+ ":" + String.valueOf(row) + "\t";
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName() + ":" + column.getTable().getAlias() 
+					+ ":" + String.valueOf(value) + "\t";
 		}
 
 		@Override
 		public boolean equals(Column col) {
 			if (col == null)
 				return false;
-			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
-				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
 			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
 				return false;
 			else
 				return true;
 		}
 
+		
+
 	}
 
 	public class dString implements Datum {
 
-		String row;
+		String value;
 		Column column;
 
 		public dString(String s, Column col) {
-			row = s;
+			value = s;
 			column = col;
 		}
 
@@ -87,29 +89,29 @@ public interface Datum {
 			this.column = column;
 		}
 
-		public String getRow() {
-			return row;
+		public String getValue() {
+			return value;
 		}
 
-		public void setRow(String row) {
-			this.row = row;
+		public void setValue(String value) {
+			this.value = value;
 		}
 
 		public String toString() {
-			return row;
+			return value;
 		}
 
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName()
-					+ ":" + row + "\t";
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName()
+					+ ":" + value + "\t";
 		}
 
 		@Override
 		public boolean equals(Column col) {
 			if (col == null)
 				return false;
-			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
-				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
 			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
 				return false;
 			else
@@ -120,7 +122,7 @@ public interface Datum {
 
 	public class dDate implements Datum {
 
-		Date row;
+		Date value;
 		int year;
 		int month;
 		int day;
@@ -128,12 +130,12 @@ public interface Datum {
 
 		public dDate(String s, Column col) {
 			try {
-				row = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
+				value = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
 						.parse(s));
-				if (row != null) {
-					year = row.getYear();
-					month = row.getMonth();
-					day = row.getDay();
+				if (value != null) {
+					year = value.getYear();
+					month = value.getMonth();
+					day = value.getDay();
 				}
 				column = col;
 			} catch (ParseException e) {
@@ -142,12 +144,12 @@ public interface Datum {
 			}
 		}
 
-		public Date getRow() {
-			return row;
+		public Date getValue() {
+			return value;
 		}
 
-		public void setRow(Date row) {
-			this.row = row;
+		public void setValue(Date value) {
+			this.value = value;
 		}
 
 		public String toString() {
@@ -155,7 +157,7 @@ public interface Datum {
 		}
 
 		public String toComString() {
-			return column.getTable().getName() + ":" + column.getColumnName()
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName()
 					+ ":" + String.format("%04d-%02d-%02d", year, month, day)
 					+ "\t";
 		}
@@ -167,7 +169,7 @@ public interface Datum {
 
 		@Override
 		public void setColumn(Column column) {
-			column = column;
+			this.column = column;
 
 		}
 
@@ -175,8 +177,8 @@ public interface Datum {
 		public boolean equals(Column col) {
 			if (col == null)
 				return false;
-			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
-				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
 			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
 				return false;
 			else

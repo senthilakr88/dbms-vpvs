@@ -1,6 +1,10 @@
 package edu.buffalo.cse562.sql.expression.evaluator;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import net.sf.jsqlparser.expression.*;
@@ -8,15 +12,16 @@ import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
-import edu.buffalo.cse562.physicalPlan.Tuple;
 
 public class CalcTools extends AbstractExpressionVisitor {
 	private Object accumulator;
 	private boolean accumulatorBoolean;
 	logManager lg = new logManager();
 	Datum[] t;
+	
 
 	public Object getResult()
 
@@ -25,8 +30,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 		return accumulator;
 	}
 
-	public CalcTools(Datum[] t2) {
+	public CalcTools(Datum[] t2, List<Column> tableMap) {
 		t = t2;
+		
 	}
 
 	@Override
@@ -46,29 +52,59 @@ public class CalcTools extends AbstractExpressionVisitor {
 	}
 
 	public void visit(Column column) {
-		// lg.logger.log(Level.INFO,
-		// "Came to get column name"+column.getWholeColumnName());
-		for (Datum row : t) {
-//			System.out.println(row.getColumn());
-//			System.out.println(column.getColumnName());
-			System.out.println(row.toComString() + " : "+column.getTable().getName()+":"+column.getColumnName() + ":" + row.equals(column));
-			if (row.equals(column)
-					&& row instanceof Datum.dLong) {
-				accumulator = ((Datum.dLong)row).getRow();
-				System.out.println(accumulator);
-				break;
-			} else if (row.equals(column)
-					&& row instanceof Datum.dDate) {
-				accumulator = ((Datum.dDate)row).getRow();
-				System.out.println(accumulator);
-				break;
-			} else if (row.equals(column)
-					&& row instanceof Datum.dString) {
-				accumulator = ((Datum.dString)row).getRow();
-				System.out.println(accumulator);
-				break;
+		//System.out.println(column.getWholeColumnName());
+		int index = 0;
+
+//		Iterator<Column> ite = tableMap.iterator();
+//		while (ite.hasNext()) {
+//			Column tempCol = (Column) ite.next();
+//			if (!tempCol.getColumnName().equalsIgnoreCase(
+//					column.getColumnName())) {
+//				index++;
+//				lg.logger.log(Level.INFO, tempCol.getColumnName() + " : "
+//						+ column.getColumnName() + ": " + index);
+//			} else {
+//				break;
+//			}
+//
+//		}
+		
+		for(index = 0;index < t.length;index++) {
+			Datum row = (Datum) t[index];
+			String alias = row.getColumn().getTable().getAlias();
+			String datumColumn = row.getColumn().getColumnName();
+			if(alias!=null) {
+				datumColumn = alias +"."+datumColumn;
 			}
+			if (datumColumn.equalsIgnoreCase(
+					column.getWholeColumnName())) {
+				break;
+			} else {
+//				System.out.println(datumColumn + " : "
+//						+ column.getWholeColumnName() + ": " + index);
+			}
+
 		}
+
+		Datum row = t[index];
+//		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
+//				+ column.getTable().getName() + ":" + column.getColumnName()
+//				+ ":" + row.equals(column));
+//		System.out.println(index + ":" + row.toComString() + " : "
+//				+ column.getTable().getName() + ":" + column.getColumnName()
+//				+ ":" + row.equals(column));
+		if (row.equals(column) && row instanceof Datum.dLong) {
+			accumulator = ((Datum.dLong) row).getValue();
+
+		} else if (row.equals(column) && row instanceof Datum.dDate) {
+			accumulator = ((Datum.dDate) row).getValue();
+
+		} else if (row.equals(column) && row instanceof Datum.dString) {
+			accumulator = ((Datum.dString) row).getValue();
+
+		}
+
+		lg.logger.log(Level.INFO, accumulator.toString());
 	}
 
 	@Override
