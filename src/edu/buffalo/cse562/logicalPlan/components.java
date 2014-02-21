@@ -86,9 +86,22 @@ public class components {
 		
 		if (!whereClause.equals(null)){
 			oper = new SelectionOperator(oper, whereClause);
-			oper = new AggregateOperator(oper,selectBody,tableMap);
+			
 		}
-		oper=new ProjectionOperator(oper,projectStmt);
+		
+		
+		//Aggregate computation.
+		oper.resetStream();
+		oper = new AggregateOperator(oper,selectBody,tableMap);
+		Datum[] test = oper.readOneTuple();
+		test = oper.readOneTuple();
+		test = oper.readOneTuple();
+		test = oper.readOneTuple();
+		System.out.println("PRINTING TUPLE FROM AGGREGATE OPERATOR");
+		printTuple(test);
+		
+		//Projection computation
+		/*oper=new ProjectionOperator(oper,projectStmt);
 		Datum[] t = oper.readOneTuple();
 //		tableMap = ((ProjectionOperator)oper).getTableMap();
 				
@@ -96,7 +109,7 @@ public class components {
 ////			System.out.println(t.toString());
 			printTuple(t);
 			t = oper.readOneTuple();
-		}
+		}*/
 
 	}
 

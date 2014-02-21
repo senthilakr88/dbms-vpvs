@@ -10,8 +10,12 @@ package edu.buffalo.cse562.physicalPlan;
  */
 
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.buffalo.cse562.physicalPlan.Datum.dDate;
+import edu.buffalo.cse562.physicalPlan.Datum.dLong;
+import edu.buffalo.cse562.physicalPlan.Datum.dString;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
@@ -69,6 +73,7 @@ public class AggregateOperator implements Operator{
 	List<Column> groupByColumnReferences;
 	List<Column> tableColumnList;
 	Test t;
+	Datum aggregateSumDatum = null;
 	
 	public AggregateOperator(Operator oper,SelectBody selectBody, List<Column> tableColumnList){
 		this.selectBody = selectBody;
@@ -81,23 +86,168 @@ public class AggregateOperator implements Operator{
 	
 	@Override
 	public void resetStream() {
-		// TODO Auto-generated method stub
+		oper.resetStream();
 		
 	}
 
 	@Override
 	public Datum[] readOneTuple() {
+		Datum[] readOneTupleFromOper = null;
+		
+		System.out.println("TEST PRINT!!!!!!");
+		Datum[] test = this.oper.readOneTuple();
+		printTuple(test);
+		
 		List<SelectItem> listOfSelectItems = ((PlainSelect) selectBody).getSelectItems();
-		Datum[] datumToBeReturned;
-		//iterate over the list of select items such as A, B, SUM(C), MAX(D)
+		int count = 0;
+
 		for(SelectItem itr:listOfSelectItems){
+			System.out.println("FIRST FOR LOOP"+count);
+			count++;
 			SelectExpressionItem singleElement = (SelectExpressionItem) itr;	
 			Expression aggregateExpression = singleElement.getExpression();
 			Function aggregateFunction = (Function) aggregateExpression;
-			aggregateFunction.accept(t);
-			t.visit(aggregateFunction);
+		
+			ExpressionList funcParamExpressionList = aggregateFunction.getParameters();
+			List<Column> funcParamList = funcParamExpressionList.getExpressions();
+			String funcName = aggregateFunction.getName().toLowerCase().trim();
+			Boolean isGroupByColumnSingleFlag = false;
+			
+			if(groupByColumnReferences.size()==1){
+				isGroupByColumnSingleFlag = true;
+			}
+			
+			switch(funcName){
+			case "sum":
+				System.out.println("SUM method");
+				ArrayList<Column> sumParamArrayList = (ArrayList<Column>) funcParamList;
+				String singleParamColumnName = "";
+				int paramSize = sumParamArrayList.size();
+				if(paramSize>1){
+					for(Column itr1: sumParamArrayList){
+						if(itr1.getColumnName().contains(".")){
+							System.out.println("TABLE NAME.COLUMNNAME");
+							String[] singleParam = itr1.getColumnName().split(".");
+							if(singleParam.length>0){
+								singleParamColumnName = singleParam[1];
+							}
+						}
+						else{
+							singleParamColumnName = itr1.getColumnName();
+						}
+						
+						//call sum function
+						System.out.println("Column name: "+singleParamColumnName);
+						System.out.println("Aggregate function name:"+funcName);
+						readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
+					}
+				}
+				else{
+					System.out.println("PRINT SINGLE FUNC PARAMETER");
+					singleParamColumnName = sumParamArrayList.get(0).getColumnName();
+					readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
+				}
+				
+				break;
+			case "count":
+				System.out.println("COUNT method");
+				break;
+			case "min":
+				System.out.println("MIN method");
+				break;
+			case "max":
+				System.out.println("MAX method");
+				break;
+			case "avg":
+				System.out.println("AVG method");
+				break;
+			case "stdev":
+				System.out.println("STDEV method");
+				break;
+			default:
+				System.out.println("AGGREGATE FUNCTION NOT MATCHED");
+				break;
+			}
+		
 		}
-		return readOneTuple();
+		return readOneTupleFromOper;
+	}
+	
+	/*
+	 * to do - compute sum of the values stored (singleParamColumnName) in a column within a table (singleParamTableName)
+	 * input - table and column name
+	 * compute - read the tuple (Datum[]) after where i.e. after checking the where condition
+	 */
+	public Datum[] sum(Datum[] readOneTupleFromOper,String singleParamColumnName, Boolean isGroupByColumnSingleFlag){
+		Datum matchDatum=null;
+		if(isGroupByColumnSingleFlag==true){
+			for(int i=0;i<readOneTupleFromOper.length;i++){
+				Datum singleTupleElement = readOneTupleFromOper[i];
+				dLong datumInLong;
+				dString datumInString;
+				dDate datumInDate;
+				System.out.println("OUT LOOP COUNT: "+i);
+				if(singleTupleElement instanceof dLong){
+					datumInLong = (dLong) singleTupleElement;
+					if(datumInLong.getColumn().getColumnName().equals(singleParamColumnName)){
+						matchDatum = datumInLong;
+						System.out.println("MATCH DATUM: "+matchDatum);
+						System.out.println("LOOP COUNT"+i);
+						dLong aggregatedLongSumDatum = null;
+						if(aggregateSumDatum != null){
+							aggregatedLongSumDatum = (dLong) aggregateSumDatum;
+							aggregateSumDatum = datumInLong.sumDatum(aggregatedLongSumDatum);
+						}
+						else{
+							aggregateSumDatum = datumInLong;
+						}
+						dLong temp = (dLong) aggregateSumDatum;
+						System.out.println("REPLACE AGE: "+temp);
+						break;
+					}
+					continue;
+				}
+				else if(singleTupleElement instanceof dString){
+					datumInString = (dString) singleTupleElement;
+					if(datumInString.getColumn().equals(singleParamColumnName)){
+						//aggregateSumDatum = datumInString.sumDatum(aggregateSumDatum);
+						matchDatum = datumInString;
+						break;
+					}
+					continue;
+				}
+				else if(singleTupleElement instanceof dString){
+					datumInDate = (dDate) singleTupleElement;
+					if(datumInDate.getColumn().equals(singleParamColumnName)){
+						//aggregateSumDatum = datumInDate.sumDatum(aggregateSumDatum);
+						matchDatum = datumInDate;
+						break;
+					}
+					continue;
+				}	
+			}			
+			for (int i=0; i<readOneTupleFromOper.length;i++) {
+			    if (readOneTupleFromOper[i].equals(matchDatum)) { 
+			    	readOneTupleFromOper[i] = aggregateSumDatum;
+			        break;
+			    }
+			}	
+			printTuple(readOneTupleFromOper);
+		}
+		else{
+			//list of parameters - to do
+		}
+		return readOneTupleFromOper;
+	}
+	
+	private void printTuple(Datum[] row) {
+		if(row!=null && row.length !=0) {
+		for(Datum col : row) {
+			System.out.print(col + "|");
+		}
+		System.out.println("");
+		}
+		System.out.println("------------------------------------------------");
 	}
 
 }
