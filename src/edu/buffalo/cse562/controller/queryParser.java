@@ -90,7 +90,7 @@ public class queryParser {
 					PlainSelect plainSelect = (PlainSelect) selectStmt;
 					lg.logger.log(Level.INFO, "plainSelect :: " + plainSelect.toString());
 					comp.addProjectStmts(plainSelect.getSelectItems());
-					
+					comp.setSelectBody(selectStmt);
 					lg.logger.log(Level.INFO,"from :: " + plainSelect.getFromItem().toString());
 					comp.setFromItems(plainSelect.getFromItem());
 					//lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
