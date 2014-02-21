@@ -79,7 +79,7 @@ public class ProjectionOperator implements Operator {
 					tempDatum = new Datum.dString((String) ob, newCol);
 				} else if (ob instanceof java.util.Date) {
 					lg.logger.log(Level.INFO, "=========Date");
-					DateFormat df = new SimpleDateFormat("YYYY-MM-DD");
+					DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 					tempDatum = new Datum.dDate(df.format(ob), newCol);
 				} else {
 					lg.logger.log(Level.INFO, "Wrong Type");
