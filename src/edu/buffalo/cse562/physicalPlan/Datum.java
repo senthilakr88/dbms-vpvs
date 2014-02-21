@@ -144,8 +144,10 @@ public interface Datum {
 		Column column;
 
 		public dDate(String s, Column col) {
+			System.out.println(s);
+			
 			try {
-				value = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
+				value = (new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 						.parse(s));
 //				System.out.println(value.toString());
 				Calendar cal = Calendar.getInstance();
@@ -155,7 +157,7 @@ public interface Datum {
 					year = cal.get(Calendar.YEAR);
 
 //					month = value.getMonth();
-					month = cal.get(Calendar.MONTH);
+					month = cal.get(Calendar.MONTH)+1;
 
 //					day = value.getDay();
 					day = cal.get(Calendar.DAY_OF_MONTH);
