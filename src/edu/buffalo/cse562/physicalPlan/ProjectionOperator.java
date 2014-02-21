@@ -51,69 +51,36 @@ public class ProjectionOperator implements Operator {
 		
 		t = input.readOneTuple();
 		if (t != null) {
-			lg.logger.log(Level.INFO, "Came into the PROJECTION read one tuple");
-			lg.logger.log(Level.INFO, t.toString());
-			//		for(int index = 0;index < t.length;index++) {
-			//			Datum row = (Datum) t[index];
-			//			lg.logger.log(Level.INFO, row.toComString());
-			//			
-			//		}
-			//		lg.logger.log(Level.INFO, t[0].toComString());
-			//		lg.logger.log(Level.INFO, t[1].toComString());
-			lg.logger.log(Level.INFO, selectcolumns.toString());
-			lg.logger.log(Level.INFO, selectcolumns.getClass().getName());
 			int i=0;
-			
-			
+
 			Iterator<SelectExpressionItem> iter=selectcolumns.iterator();
 			while(iter.hasNext()){
 				SelectExpressionItem newItem = iter.next();
-				//				lg.logger.log(Level.INFO, newItem.toString());
-				//				if()
-				//				lg.logger.log(Level.INFO, newItem.getExpression().toString());
 				Expression e = newItem.getExpression();
 				CalcTools calc = new CalcTools(t); 
 				e.accept(calc);
 				lg.logger.log(Level.INFO, calc.getResult().toString());
 				Column newCol = null;
 				Table result = new Table("ResulSchema", "ResultTable");
-				//				String alias = row.getColumn().getTable().getAlias();
-				//				String datumColumn = row.getColumn().getColumnName();
-				//				if(alias!=null) {
-				//					datumColumn = alias +"."+datumColumn;
-				//				}
 				if (newItem.getAlias()!=null){
-					lg.logger.log(Level.INFO, "------------>"+newItem.getAlias().toString());
-					//					tempDatum = new Datum(calc.getResult().toString(), newItem.getAlias());
 					newCol = new Column(result, newItem.getAlias());
 				}
 				else {
-					lg.logger.log(Level.INFO, "+++++++++++++>"+newItem.toString());
-					//					tempDatum = new Datum(calc.getResult().toString(), newItem);
 					newCol = new Column(result, newItem.toString());
 				}
 
 				Object ob = calc.getResult();
 				Datum tempDatum = null;
-//				System.out.println(ob.toString());
 				if (ob instanceof Long) {
-					// tupleKeyValueMap.put(key, Integer.parseInt(value));
 					lg.logger.log(Level.INFO, "========Long");
 					tempDatum = new Datum.dLong(ob.toString(), newCol);
-					//					System.out.print(t[i].toComString());
 				} else if (ob instanceof String) {
-					// tupleKeyValueMap.put(key, value);
 					lg.logger.log(Level.INFO, "========String");
 					tempDatum = new Datum.dString((String) ob, newCol);
-					//System.out.print(t[i].toComString());
 				} else if (ob instanceof java.util.Date) {
-					// tupleKeyValueMap.put(key, (new SimpleDateFormat(
-					// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
 					lg.logger.log(Level.INFO, "=========Date");
 					DateFormat df = new SimpleDateFormat("YYYY-MM-DD");
 					tempDatum = new Datum.dDate(df.format(ob), newCol);
-//					System.out.println(tempDatum.toComString());
-					//System.out.print(t[i].toComString());
 				} else {
 					lg.logger.log(Level.INFO, "Wrong Type");
 					try {
@@ -133,22 +100,6 @@ public class ProjectionOperator implements Operator {
 		else {
 			return null;
 		}
-		//			
-		//			int i=0,j=0; 
-		//			while(i<t.length)
-		//			{
-		//				if(selectcolumns.contains(t[i].getColumn()))
-		//				{
-		//					tempDatum[j]=t[i];
-		//					j++;
-		//				}
-		//
-		//			}
-		//
-		//		} else {
-		//			return null;
-		//		}
-
 
 		return listDatum;
 
