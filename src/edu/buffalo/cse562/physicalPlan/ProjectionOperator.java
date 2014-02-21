@@ -50,7 +50,18 @@ public class ProjectionOperator implements Operator {
 
 		if (t != null) {
 			
-			
+		Iterator<SelectExpressionItem> iter=selectcolums.iterator();	
+        int i=0,j=0; 
+		while(i<t.length)
+         {
+        	 if(selectcolums.contains(t[i].getColumn()))
+        	 {
+        	    tempDatum[j]=t[i];
+        	    j++;
+        	 }
+        		 
+         }
+		
 		} else {
 			return null;
 		}
