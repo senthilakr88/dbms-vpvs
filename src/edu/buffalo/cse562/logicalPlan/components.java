@@ -11,8 +11,10 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
+import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.JoinOperator;
@@ -31,6 +33,7 @@ public class components {
 	Expression whereClause;
 	String tableDir;
 	FromItem tableName;
+	SelectBody selectBody;
 
 	public components() {
 		
@@ -51,6 +54,10 @@ public class components {
 
 	public void addWhereConditions(Expression where) {
 		whereClause = where;
+	}
+	
+	public void setSelectBody(SelectBody selectBody){
+		this.selectBody = selectBody;
 	}
 
 	public String toString() {
@@ -79,6 +86,7 @@ public class components {
 		
 		if (!whereClause.equals(null)){
 			oper = new SelectionOperator(oper, whereClause);
+			oper = new AggregateOperator(oper,selectBody,tableMap);
 		}
 //		oper=new ProjectionOperator(oper,projectStmt);
 		Datum[] t = oper.readOneTuple();

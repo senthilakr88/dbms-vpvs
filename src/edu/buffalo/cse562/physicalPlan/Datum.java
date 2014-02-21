@@ -67,7 +67,21 @@ public interface Datum {
 				return true;
 		}
 
-		
+		public Datum sumDatum(Datum input){
+			Datum sum = null;
+			if(input instanceof dLong){
+				Long value = this.getValue()+((dLong) input).getValue();
+				String valueString = value.toString();
+				sum = new dLong(valueString,input.getColumn());
+			}
+			else if (input instanceof dString){
+				
+			}
+			else if (input instanceof dDate){
+				
+			}
+		return sum;
+		}
 
 	}
 
