@@ -2,6 +2,7 @@ package edu.buffalo.cse562.logicalPlan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -9,10 +10,12 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
+import edu.buffalo.cse562.physicalPlan.JoinOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
@@ -24,6 +27,7 @@ public class components {
 	List<Column> tableMap;
 	Map<String, ArrayList<String>> tableColTypeMap;
 	ArrayList<SelectExpressionItem> projectStmt;
+	ArrayList tableJoins;
 	Expression whereClause;
 	String tableDir;
 	FromItem tableName;
@@ -63,6 +67,16 @@ public class components {
 	public void executePhysicalPlan() {
 		Table table = (Table) tableName;
 		Operator oper = new FileScanOperator(table, tableDir, tableMap, tableColTypeMap);
+		
+		if(tableJoins != null) {
+			Iterator joinIte = tableJoins.iterator();
+			while(joinIte.hasNext()) {
+				Join joinTable = (Join) joinIte.next();
+				Operator rightOper = new FileScanOperator((Table)joinTable.getRightItem(), tableDir, tableMap, tableColTypeMap);
+				oper = new JoinOperator(oper, rightOper);
+			}
+		}
+		
 		if (!whereClause.equals(null)){
 			oper = new SelectionOperator(oper, whereClause);
 		}
@@ -110,6 +124,11 @@ public class components {
 
 	public void addColsToTable(ArrayList<Column> columnNameList) {
 		tableMap.addAll(columnNameList);
+		
+	}
+
+	public void addJoins(List joins) {
+		this.tableJoins = (ArrayList) joins;
 		
 	}
 

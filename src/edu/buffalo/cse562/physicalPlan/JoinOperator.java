@@ -24,43 +24,45 @@ public class JoinOperator implements Operator {
 	public Datum[] readOneTuple() {
 		Datum[] lt = null, rt = null;
 		Datum[] t = null;
-		if(firstEntry) {
+		if (firstEntry) {
 			lt = left.readOneTuple();
 			setTuple(lt);
-			System.out.println("entry");
+			// System.out.println("entry");
 			firstEntry = false;
 		}
 		lt = getTuple();
-		if(lt !=null) {
+		if (lt != null) {
 			rt = right.readOneTuple();
-			if(rt == null){
+			if (rt == null) {
 				lt = left.readOneTuple();
-				System.out.println("reading left");
-				if(lt == null) {
+				// System.out.println("reading left");
+				if (lt == null) {
 					return null;
 				}
 				setTuple(lt);
 				right.resetStream();
 				rt = right.readOneTuple();
 			}
-			System.out.println("left :: "+lt);
-			System.out.println("right :: "+rt);
-			t = combine(lt,rt);
-			System.out.println("join:: "+t);
+			// System.out.println("left :: "+lt);
+			// System.out.println("right :: "+rt);
+			t = combine(lt, rt);
+			// System.out.println("join:: "+t);
 			return t;
 		} else
 			return null;
 	}
-	
+
 	private Datum[] combine(Datum[] lt, Datum[] rt) {
-		int i=0,j=0;
-		Datum[] temp = new Datum[lt.length+rt.length];
-		
-		for(i=0;i<lt.length;i++){
+		int i = 0, j = 0;
+		Datum[] temp = new Datum[lt.length + rt.length];
+
+		for (i = 0; i < lt.length; i++) {
 			temp[i] = lt[i];
-		} 
-		for(j=0;j<lt.length;j++,i++){
+//			System.out.println(lt[i].toComString());
+		}
+		for (j = 0; j < rt.length; j++, i++) {
 			temp[i] = rt[j];
+//			System.out.println(rt[j].toComString());
 		}
 		return temp;
 	}
@@ -68,11 +70,9 @@ public class JoinOperator implements Operator {
 	public Datum[] getTuple() {
 		return leftTuple;
 	}
-	
+
 	public void setTuple(Datum[] lt) {
 		this.leftTuple = lt;
 	}
-	
-	
 
 }

@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.schema.Column;
 
 public class SelectionOperator implements Operator {
 	
@@ -17,9 +19,11 @@ public class SelectionOperator implements Operator {
 	Expression condition;
 	String oneLineFromDat;
 	
+	
 	public SelectionOperator(Operator input, Expression condition) {
 		this.input = input;
 		this.condition = condition;
+		
 	}
 	
 	@Override

@@ -11,90 +11,131 @@ import net.sf.jsqlparser.schema.Column;
 public interface Datum {
 
 	public String toString();
-	public String getColumn();
-	public void setColumn(String column);
-	
+
+	public String toComString();
+
+	public Column getColumn();
+
+	public void setColumn(Column column);
+
+	public boolean equals(Column col);
 	
 	public class dLong implements Datum {
 
-		Long row;
-		String column;
+		Long value;
+		Column column;
 
-		public String getColumn() {
+		public Column getColumn() {
 			return column;
 		}
 
-		public void setColumn(String column) {
+		public void setColumn(Column column) {
 			this.column = column;
 		}
 
-		public dLong(String s, String col) {
-			row = Long.parseLong(s);
+		public dLong(String s, Column col) {
+			value = Long.parseLong(s);
 			this.column = col;
 		}
-		
-		public long getRow() {
-			return row;
+
+		public long getValue() {
+			return value;
 		}
 
-		public void setRow(long row) {
-			this.row = row;
+		public void setValue(long value) {
+			this.value = value;
 		}
-		
+
 		public String toString() {
-			return String.valueOf(row);
+			return String.valueOf(value);
 		}
+
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName() + ":" + column.getTable().getAlias() 
+					+ ":" + String.valueOf(value) + "\t";
+		}
+
+		@Override
+		public boolean equals(Column col) {
+			if (col == null)
+				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
+				return true;
+		}
+
+		
 
 	}
-	
+
 	public class dString implements Datum {
 
-		String row;
-		String column;
+		String value;
+		Column column;
 
-		public dString(String s, String col) {
-			row = s;
+		public dString(String s, Column col) {
+			value = s;
 			column = col;
 		}
-		
-		public String getColumn() {
+
+		public Column getColumn() {
 			return column;
 		}
 
-		public void setColumn(String column) {
+		public void setColumn(Column column) {
 			this.column = column;
 		}
-		
-		public String getRow() {
-			return row;
+
+		public String getValue() {
+			return value;
 		}
 
-		public void setRow(String row) {
-			this.row = row;
+		public void setValue(String value) {
+			this.value = value;
 		}
-		
+
 		public String toString() {
-			return row;
+			return value;
+		}
+
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName()
+					+ ":" + value + "\t";
+		}
+
+		@Override
+		public boolean equals(Column col) {
+			if (col == null)
+				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
+				return true;
 		}
 
 	}
-	
+
 	public class dDate implements Datum {
 
-		Date row;
+		Date value;
 		int year;
 		int month;
 		int day;
-		String column;
+		Column column;
 
-		public dDate(String s, String col) {
+		public dDate(String s, Column col) {
 			try {
-				row = (new SimpleDateFormat(
-						"YYYY-MM-DD", Locale.ENGLISH).parse(s));
-				if(row!=null){
-					year = row.getYear();
-					month = row.getMonth();
-					day = row.getDay();
+				value = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
+						.parse(s));
+				if (value != null) {
+					year = value.getYear();
+					month = value.getMonth();
+					day = value.getDay();
 				}
 				column = col;
 			} catch (ParseException e) {
@@ -103,27 +144,45 @@ public interface Datum {
 			}
 		}
 
-		public Date getRow() {
-			return row;
+		public Date getValue() {
+			return value;
 		}
 
-		public void setRow(Date row) {
-			this.row = row;
+		public void setValue(Date value) {
+			this.value = value;
 		}
-		
+
 		public String toString() {
 			return String.format("%04d-%02d-%02d", year, month, day);
 		}
 
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName()
+					+ ":" + String.format("%04d-%02d-%02d", year, month, day)
+					+ "\t";
+		}
+
 		@Override
-		public String getColumn() {
+		public Column getColumn() {
 			return column;
 		}
 
 		@Override
-		public void setColumn(String column) {
-			column = column;
-			
+		public void setColumn(Column column) {
+			this.column = column;
+
+		}
+
+		@Override
+		public boolean equals(Column col) {
+			if (col == null)
+				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
+				return true;
 		}
 
 	}
