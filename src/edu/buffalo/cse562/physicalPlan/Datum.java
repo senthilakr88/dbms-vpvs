@@ -144,7 +144,7 @@ public interface Datum {
 		Column column;
 
 		public dDate(String s, Column col) {
-			System.out.println(s);
+//			System.out.println(s);
 			
 			try {
 				value = (new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
