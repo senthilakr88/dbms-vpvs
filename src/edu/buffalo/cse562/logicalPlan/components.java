@@ -80,12 +80,12 @@ public class components {
 		if (!whereClause.equals(null)){
 			oper = new SelectionOperator(oper, whereClause);
 		}
-//		oper=new ProjectionOperator(oper,projectStmt);
+		oper=new ProjectionOperator(oper,projectStmt);
 		Datum[] t = oper.readOneTuple();
 //		tableMap = ((ProjectionOperator)oper).getTableMap();
 				
 		while (t != null) {
-//			System.out.println(t.toString());
+////			System.out.println(t.toString());
 			printTuple(t);
 			t = oper.readOneTuple();
 		}

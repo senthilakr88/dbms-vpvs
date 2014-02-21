@@ -8,7 +8,7 @@ public class logManager {
 	
 	public logManager() {
 		logger = Logger.getLogger("myLogger");
-		logger.setUseParentHandlers(true);
+		logger.setUseParentHandlers(false);
 	}
 	
 }

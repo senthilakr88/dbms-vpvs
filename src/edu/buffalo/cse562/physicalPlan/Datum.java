@@ -2,6 +2,7 @@ package edu.buffalo.cse562.physicalPlan;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -132,10 +133,19 @@ public interface Datum {
 			try {
 				value = (new SimpleDateFormat("YYYY-MM-DD", Locale.ENGLISH)
 						.parse(s));
+//				System.out.println(value.toString());
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(value);
 				if (value != null) {
-					year = value.getYear();
-					month = value.getMonth();
-					day = value.getDay();
+//					year = value.getYear();
+					year = cal.get(Calendar.YEAR);
+
+//					month = value.getMonth();
+					month = cal.get(Calendar.MONTH);
+
+//					day = value.getDay();
+					day = cal.get(Calendar.DAY_OF_MONTH);
+
 				}
 				column = col;
 			} catch (ParseException e) {
