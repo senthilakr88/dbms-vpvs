@@ -1,6 +1,9 @@
 package edu.buffalo.cse562.physicalPlan;
 
 //import net.sf.jsqlparser.expression.Expression;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +15,7 @@ import java.util.logging.Level;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Operator;
@@ -23,18 +27,18 @@ public class ProjectionOperator implements Operator {
 	Operator input;
 
 	String temp = null;
-	List<SelectExpressionItem> selectcolums;
+	List<SelectExpressionItem> selectcolumns;
 
-	
+
 
 	public ProjectionOperator(Operator input,
-			List<SelectExpressionItem> selectcolums) {
-		this.selectcolums = selectcolums;
+			List<SelectExpressionItem> selectcolumns) {
+		this.selectcolumns = selectcolumns;
 		this.input = input;
-		
+
 	}
 
-	
+
 	public void resetStream() {
 		input.resetStream();
 
@@ -42,32 +46,62 @@ public class ProjectionOperator implements Operator {
 
 	public Datum[] readOneTuple() {
 		logManager lg = new logManager();
-//		map = new LinkedHashMap();
 		Datum[] t = null;
-		Datum[] tempDatum = null;
-		ArrayList<Datum> listDatum;
-		t = input.readOneTuple();
-
-		if (t != null) {
-			
-		Iterator<SelectExpressionItem> iter=selectcolums.iterator();	
-        int i=0,j=0; 
-		while(i<t.length)
-         {
-        	 if(selectcolums.contains(t[i].getColumn()))
-        	 {
-        	    tempDatum[j]=t[i];
-        	    j++;
-        	 }
-        		 
-         }
+		Datum[] listDatum = new Datum[selectcolumns.size()];
 		
-		} else {
+		t = input.readOneTuple();
+		if (t != null) {
+			int i=0;
+
+			Iterator<SelectExpressionItem> iter=selectcolumns.iterator();
+			while(iter.hasNext()){
+				SelectExpressionItem newItem = iter.next();
+				Expression e = newItem.getExpression();
+				CalcTools calc = new CalcTools(t); 
+				e.accept(calc);
+				lg.logger.log(Level.INFO, calc.getResult().toString());
+				Column newCol = null;
+				Table result = new Table("ResulSchema", "ResultTable");
+				if (newItem.getAlias()!=null){
+					newCol = new Column(result, newItem.getAlias());
+				}
+				else {
+					newCol = new Column(result, newItem.toString());
+				}
+
+				Object ob = calc.getResult();
+				Datum tempDatum = null;
+				if (ob instanceof Long) {
+					lg.logger.log(Level.INFO, "========Long");
+					tempDatum = new Datum.dLong(ob.toString(), newCol);
+				} else if (ob instanceof String) {
+					lg.logger.log(Level.INFO, "========String");
+					tempDatum = new Datum.dString((String) ob, newCol);
+				} else if (ob instanceof java.util.Date) {
+					lg.logger.log(Level.INFO, "=========Date");
+					DateFormat df = new SimpleDateFormat("YYYY-MM-DD");
+					tempDatum = new Datum.dDate(df.format(ob), newCol);
+				} else {
+					lg.logger.log(Level.INFO, "Wrong Type");
+					try {
+						throw new Exception("Not aware of this data type ");
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				lg.logger.log(Level.INFO, tempDatum.toComString());
+				listDatum[i]=tempDatum;
+				i++;
+				
+
+			}
+		}
+		else {
 			return null;
 		}
 
-		
-		return tempDatum;
+		return listDatum;
 
 	}
 }
