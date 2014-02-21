@@ -114,9 +114,15 @@ public class components {
 	}
 
 	private void printTuple(Datum[] row) {
+		Boolean first = true;
 		if(row!=null && row.length !=0) {
 		for(Datum col : row) {
-			System.out.print(col + "|");
+			if(!first)
+			System.out.print("|"+col );
+			else {
+				System.out.print(col);
+				first = false;
+			}
 		}
 		System.out.println();
 		}

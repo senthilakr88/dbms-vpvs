@@ -50,7 +50,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	}
 
 	public void visit(Column column) {
-		//System.out.println(column.getWholeColumnName());
+//		System.out.println("Cametogetcolumnvalue");
 		int index = 0;
 
 //		Iterator<Column> ite = tableMap.iterator();
@@ -191,6 +191,17 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(Function function) {
+//		lg.logger.log(Level.INFO, "Function");
+		String functionName = function.getName();
+		ExpressionList parameters = function.getParameters();
+//		lg.logger.log(Level.INFO, functionName);
+//		lg.logger.log(Level.INFO, parameters.toString());
+		List expressionList = parameters.getExpressions();
+//		lg.logger.log(Level.INFO, expressionList.toString());
+		
+		
+		
+		
 
 	}
 
@@ -201,7 +212,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 		greaterThan.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		lg.logger.log(Level.INFO, "done with left");
-		
+//		accumulator=null;
+//		System.out.println(greaterThan.getRightExpression().getClass().getName());
 		greaterThan.getRightExpression().accept(this);
 		Object rightValue = accumulator;
 		lg.logger.log(Level.INFO, "done with right");
@@ -473,16 +485,18 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(DateValue dateValue) {
-		lg.logger.log(Level.INFO, "stringgggg");
+		lg.logger.log(Level.INFO, "DATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATEDATE");
 		accumulator = dateValue.getValue();
 	}
 
 	@Override
 	public void visit(TimestampValue timestampValue) {
+		lg.logger.log(Level.INFO, "TIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMPTIMESTAMP");
 	}
 
 	@Override
 	public void visit(TimeValue timeValue) {
+		lg.logger.log(Level.INFO, "TIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIMETIME");
 	}
 
 	@Override

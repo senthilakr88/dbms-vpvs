@@ -100,28 +100,35 @@ public class Test implements ExpressionVisitor{
 		case "sum":
 			System.out.println("SUM method");
 			ArrayList<Column> sumParamArrayList = (ArrayList<Column>) funcParamList;
-			
+			String singleParamColumnName = "";
 			//iterate over the parameter list and call function for each parameter 
-			for(Column itr: sumParamArrayList){
-				String singleParamColumnName = "";
-				
-				//check if the aggregate function parameters contain TABLE_NAME.COLUMN_NAME format i.e. we can get the table name in such case
-				if(itr.getColumnName().contains(".")){
-					System.out.println("TABLE NAME.COLUMNNAME");
-					String[] singleParam = itr.getColumnName().split(".");
-					if(singleParam.length>0){
-						singleParamColumnName = singleParam[1];
+			int paramSize = sumParamArrayList.size();
+			if(paramSize>1){
+				for(Column itr: sumParamArrayList){
+					//check if the aggregate function parameters contain TABLE_NAME.COLUMN_NAME format i.e. we can get the table name in such case
+					if(itr.getColumnName().contains(".")){
+						System.out.println("TABLE NAME.COLUMNNAME");
+						String[] singleParam = itr.getColumnName().split(".");
+						if(singleParam.length>0){
+							singleParamColumnName = singleParam[1];
+						}
 					}
+					else{
+						singleParamColumnName = itr.getColumnName();
+					}
+					
+					//call sum function
+					System.out.println("Column name: "+singleParamColumnName);
+					System.out.println("Aggregate function name:"+funcName);
+					sum(singleParamColumnName, isGroupByColumnSingleFlag);
 				}
-				else{
-					singleParamColumnName = itr.getColumnName();
-				}
-				
-				//call sum function
-				System.out.println("Column name: "+singleParamColumnName);
-				System.out.println("Aggregate function name:"+funcName);
+			}
+			else{
+				System.out.println("PRINT SINGLE FUNC PARAMETER");
+				singleParamColumnName = sumParamArrayList.get(0).getColumnName();
 				sum(singleParamColumnName, isGroupByColumnSingleFlag);
 			}
+			
 			break;
 		case "count":
 			System.out.println("COUNT method");
@@ -170,14 +177,8 @@ public class Test implements ExpressionVisitor{
 		}
 		else if(oper instanceof SelectionOperator){
 			selOper = (SelectionOperator) oper;
-			//Expression condition =((SelectionOperator) oper).condition;
-			//selOper = new SelectionOperator(oper.,condition);
-			System.out.println("PRINT LENGTH"+ selOper.readOneTuple().length);
-			//int size = selOper.readOneTuple().length;
-			//readOneTupleFromOper = new Datum[size];
+			System.out.println("PRINT LENGTH OF READONETUPLE"+ selOper.readOneTuple().length);
 			readOneTupleFromOper = selOper.readOneTuple();
-			System.out.println("SELECT OPERATOR");
-			System.out.println("READONETUPLE LENGTH: "+readOneTupleFromOper.length);
 		}
 		else if(oper instanceof JoinOperator){
 			joinOper = (JoinOperator) oper;
@@ -211,15 +212,17 @@ public class Test implements ExpressionVisitor{
 				dString datumInString;
 				dDate datumInDate;
 				//find the type of datum
+				System.out.println("OUT LOOP COUNT: "+i);
 				if(singleTupleElement instanceof dLong){
-					System.out.println("SINGLE READONETUPLE IS DLONG");
+					//System.out.println("SINGLE READONETUPLE IS DLONG");
 					datumInLong = (dLong) singleTupleElement;
 		
 					if(datumInLong.getColumn().getColumnName().equals(singleParamColumnName)){
-						System.out.println("PRINT COLUMN NAME FR SINGLE DATUM: "+datumInLong.getColumn().getColumnName());
-						System.out.println("PRINT AGG FUNC PARAM: "+singleParamColumnName);
+						//System.out.println("PRINT COLUMN NAME FR SINGLE DATUM: "+datumInLong.getColumn().getColumnName());
+						//System.out.println("PRINT AGG FUNC PARAM: "+singleParamColumnName);
 						matchDatum = datumInLong;
 						System.out.println("MATCH DATUM: "+matchDatum);
+						System.out.println("LOOP COUNT"+i);
 						dLong aggregatedLongSumDatum = null;
 						if(aggregateSumDatum != null){
 							aggregatedLongSumDatum = (dLong) aggregateSumDatum;
@@ -288,8 +291,9 @@ public class Test implements ExpressionVisitor{
 		for(Datum col : row) {
 			System.out.print(col + "|");
 		}
-		System.out.println();
+		System.out.println("");
 		}
+		System.out.println("------------------------------------------------");
 	}
 
 	@Override
