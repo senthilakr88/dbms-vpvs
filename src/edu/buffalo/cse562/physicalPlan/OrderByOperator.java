@@ -23,10 +23,18 @@ public class OrderByOperator {
 		this.listDatum = new ArrayList<Datum[]>();
 	}
 
+	public List<Datum[]> getListDatum() {
+		return listDatum;
+	}
+
+	public void setListDatum(List<Datum[]> listDatum) {
+		this.listDatum = listDatum;
+	}
+	
 	public void addTuple(Datum[] Tuple) {
 		listDatum.add(Tuple);
 	}
-
+	
 	public void sort() {
 		Collections.sort(listDatum, new Mysorter(elements));
 	}

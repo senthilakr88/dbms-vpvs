@@ -74,7 +74,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	}
 	public void visit(Column column) {
 
-		int index=0;
+		int index=-1;
 //		System.out.println("Is Expression---->"+isExpression);
 		if(firstEntry==null){
 			columnValue = column;
