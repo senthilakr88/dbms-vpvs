@@ -106,33 +106,23 @@ public class components {
 		}
 
 		if (((PlainSelect) selectBody).getGroupByColumnReferences() != null) {
-			// Aggregate computation.
-			oper.resetStream();
-			oper = new AggregateOperator(oper, selectBody, tableMap);
-			Datum[] test = oper.readOneTuple();
-			test = oper.readOneTuple();
-			test = oper.readOneTuple();
-			test = oper.readOneTuple();
-			System.out.println("PRINTING TUPLE FROM AGGREGATE OPERATOR");
-			printTuple(test);
-			return;
+			//Groupby computation
+			PlainSelect select = (PlainSelect) selectBody;
+			List<Column> groupbyList = select.getGroupByColumnReferences();
+			//create Test object
+			Test test = new Test(oper,selectBody,tableMap);
+			GroupbyOperator groupOper = new GroupbyOperator(oper,test,groupbyList);
+			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
+			System.out.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+			for(Datum[] singleDatum:finalGroupbyArrayList){
+				printTuple(singleDatum);
+			}
+			
 		}
 		
 		
 
-		//Groupby computation
-		//Groupby computation
-		PlainSelect select = (PlainSelect) selectBody;
-		List<Column> groupbyList = select.getGroupByColumnReferences();
-		//create Test object
-		Test test = new Test(oper,selectBody,tableMap);
-		GroupbyOperator groupOper = new GroupbyOperator(oper,test,groupbyList);
 		
-		ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
-		System.out.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
-		for(Datum[] singleDatum:finalGroupbyArrayList){
-			printTuple(singleDatum);
-		}
 		
 		//printTuple(groupByTest);
 		
