@@ -15,6 +15,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
+import edu.buffalo.cse562.physicalPlan.TupleStruct;
 
 public class CalcTools extends AbstractExpressionVisitor {
 	private Object accumulator;
@@ -50,38 +51,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 		}
 	}
 	
-	public void setTupleTableMap(Datum[] t, Column column) {
-		int index;
-		tupleTableMap = new ArrayList<String>(t.length);
-		for(index = 0;index < t.length;index++) {
-			Datum row = (Datum) t[index];
-			String alias = row.getColumn().getTable().getAlias();
-			String datumColumn = row.getColumn().getColumnName();
-			if(alias !=null) {
-				tupleTableMap.add(alias+"."+datumColumn);
-			} else if(column.getWholeColumnName().contains(".")) {
-				String tableName = row.getColumn().getTable().getName();
-				tupleTableMap.add(tableName+"."+datumColumn);
-			} else {
-				tupleTableMap.add(datumColumn);
-			}
-				
-		}
-	}
-	
-	public List<String> getTupleTableMap () {
-		return tupleTableMap;
-	}
-
 	public void visit(Column column) {
 
 		int index=0;
 		
-		if(tupleTableMap == null || tupleTableMap.size() == 0) {
-			setTupleTableMap(t,column);
-		}
-		
-
+		tupleTableMap = TupleStruct.getTupleTableMap();
 		if(tupleTableMap.contains(column.getWholeColumnName())) {
 			index = tupleTableMap.indexOf(column.getWholeColumnName());
 		}

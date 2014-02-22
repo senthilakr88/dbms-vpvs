@@ -24,6 +24,7 @@ import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
 import edu.buffalo.cse562.physicalPlan.Tuple;
+import edu.buffalo.cse562.physicalPlan.TupleStruct;
 
 public class components {
 
@@ -80,6 +81,7 @@ public class components {
 				tableColTypeMap);
 
 		if (tableJoins != null) {
+			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
 			while (joinIte.hasNext()) {
 				Join joinTable = (Join) joinIte.next();

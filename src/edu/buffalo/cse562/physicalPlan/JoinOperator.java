@@ -11,12 +11,14 @@ public class JoinOperator implements Operator {
 	Datum[] leftTuple;
 	Boolean firstEntry;
 	Expression expr;
-
+	boolean isTupleMapPresent;
+	
 	public JoinOperator(Operator left, Operator right, Expression expression) {
 		this.left = left;
 		this.right = right;
 		this.firstEntry = true;
 		this.expr = expression;
+		this.isTupleMapPresent = true;
 	}
 
 	@Override
@@ -73,7 +75,11 @@ public class JoinOperator implements Operator {
 
 	private boolean evaluate(Datum[] t, Expression expr2) {
 		if (expr2 != null) {
-			// System.out.println(expr);
+			
+			if(isTupleMapPresent) {
+				TupleStruct.setTupleTableMap(t);
+				isTupleMapPresent = false;
+			}
 			CalcTools calc = new CalcTools(t);
 			expr.accept(calc);
 			// System.out.println(calc.getAccumulatorBoolean());
