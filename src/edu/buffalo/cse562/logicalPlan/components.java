@@ -21,6 +21,7 @@ import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.JoinOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
+import edu.buffalo.cse562.physicalPlan.OrderByOperator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
 import edu.buffalo.cse562.physicalPlan.Tuple;
@@ -37,6 +38,7 @@ public class components {
 	String tableDir;
 	FromItem tableName;
 	SelectBody selectBody;
+	private List orderbyElements;
 	
 
 	public components() {
@@ -109,14 +111,27 @@ public class components {
 			test = oper.readOneTuple();
 			System.out.println("PRINTING TUPLE FROM AGGREGATE OPERATOR");
 			printTuple(test);
+			return;
 		}
 		
+		
+			
+			
 		// Projection computation
 		oper = new ProjectionOperator(oper, projectStmt);
+		OrderByOperator obp = new OrderByOperator(orderbyElements);
 		Datum[] t = oper.readOneTuple();
 		while (t != null) {
-			printTuple(t);
+			if(orderbyElements != null) {
+				obp.addTuple(t);
+			} else {
+				printTuple(t);
+			}
 			t = oper.readOneTuple();
+		}
+		if(orderbyElements != null) {
+			obp.sort();
+			obp.print();
 		}
 
 	}
@@ -167,6 +182,11 @@ public class components {
 	public void addJoins(List joins) {
 		this.tableJoins = (ArrayList) joins;
 
+	}
+
+	public void addOrderBy(List orderByElements) {
+		this.orderbyElements = orderByElements;
+		
 	}
 
 }

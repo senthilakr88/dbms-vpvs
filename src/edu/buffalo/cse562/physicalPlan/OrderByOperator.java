@@ -31,4 +31,24 @@ public class OrderByOperator {
 		Collections.sort(listDatum, new Mysorter(elements));
 	}
 
+	public void print() {
+		Iterator<Datum[]> ite = listDatum.iterator();
+		
+		while(ite.hasNext()) {
+		Boolean first = true;
+		Datum[] row = ite.next();
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			System.out.println();
+		}
+		}
+	}
+
 }

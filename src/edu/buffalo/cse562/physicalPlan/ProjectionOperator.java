@@ -66,9 +66,9 @@ public class ProjectionOperator implements Operator {
 				e.accept(calc);
 				lg.logger.log(Level.INFO, calc.getResult().toString());
 				Column newCol = null;
-				Table result = new Table("ResulSchema", "ResultTable");
+				Table result = new Table("", "ResultTable");
 				if (newItem.getAlias()!=null){
-					newCol = new Column(result, newItem.getAlias());
+					newCol = new Column(null, newItem.getAlias());
 				}
 				else {
 					newCol = new Column(result, newItem.toString());

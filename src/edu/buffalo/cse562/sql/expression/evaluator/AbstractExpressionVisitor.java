@@ -7,6 +7,8 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
@@ -18,7 +20,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
  * 
  * @author Niccolo' Meneghetti
  */
-public class AbstractExpressionVisitor implements ExpressionVisitor
+public class AbstractExpressionVisitor implements ExpressionVisitor, OrderByVisitor
 {
 
     @Override
@@ -250,6 +252,12 @@ public class AbstractExpressionVisitor implements ExpressionVisitor
 		// TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not supported yet."); 
 
+	}
+
+	@Override
+	public void visit(OrderByElement arg0) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
     
 }

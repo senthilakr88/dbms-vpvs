@@ -29,8 +29,12 @@ public class Mysorter implements Comparator<Datum[]> {
 
 			OrderByElement ele = (OrderByElement) iter.next();
 			Expression exe = ele.getExpression();
+			//System.out.println(exe.toString() + " : " + ele.isAsc());
 			CalcTools calc1 = new CalcTools(t1);
+			ele.accept(calc1);
 			CalcTools calc2 = new CalcTools(t2);
+			ele.accept(calc2);
+			System.out.println(calc1.getResult() + ":" + calc2.getResult());
 			comparison = getCompareValue(calc1.getResult(), calc2.getResult(),
 					ele.isAsc());
 			if (comparison != 0)

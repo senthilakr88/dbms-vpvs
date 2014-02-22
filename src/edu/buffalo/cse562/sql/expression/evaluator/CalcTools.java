@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
@@ -64,9 +65,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
-//		System.out.println(index + ":" + row.toComString() + " : "
-//				+ column.getTable().getName() + ":" + column.getColumnName()
-//				+ ":" + row.equals(column));
+		System.out.println(index + ":" + row.toComString() + " : "
+				+ column.getTable().getName() + ":" + column.getColumnName()
+				+ ":" + row.equals(column));
 		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
 
@@ -528,5 +529,13 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public void setAccumulatorBoolean(boolean accumulatorBoolean) {
 		this.accumulatorBoolean = accumulatorBoolean;
+	}
+	
+	public void visit(OrderByElement orderbyEle) {
+		Expression e = orderbyEle.getExpression();
+		TupleStruct.setTupleTableMap(t);
+		CalcTools ct = new CalcTools(this.t);
+		e.accept(ct);
+		this.accumulator = ct.getResult(); 
 	}
 }
