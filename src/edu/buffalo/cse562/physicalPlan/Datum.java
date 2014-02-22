@@ -55,7 +55,23 @@ public interface Datum {
 			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName() + ":" + column.getTable().getAlias() 
 					+ ":" + String.valueOf(value) + "\t";
 		}
-
+		public int hashCode() {
+			 long hash = 7;
+		        hash = (31 * hash) + value;
+		        hash = (31 * hash) + (null == value ? 0 : value.hashCode());
+		        return (int) hash;
+	    }
+		
+		public boolean equals(Object obj)
+		    {
+		        if(this == obj)
+		            return true;
+		        if((obj == null) || (obj.getClass() != this.getClass()))
+		            return false;
+		        // object must be Test at this point
+		        dLong test = (dLong) obj;
+		       return (this.value == test.value)? true: false;
+		   }
 		@Override
 		public boolean equals(Column col) {
 			if (col == null)
@@ -132,6 +148,24 @@ public interface Datum {
 			else
 				return true;
 		}
+		
+		public int hashCode() {
+			 String hash = "hash";
+			 int ret;
+		        hash = hash.concat(value);
+		        ret = hash.hashCode()+ (null == value ? 0 : value.hashCode());
+		        return ret;
+	    }
+		
+		public boolean equals(Object obj)
+		    {
+		        if(this == obj)
+		            return true;
+		        if((obj == null) || (obj.getClass() != this.getClass()))
+		            return false;
+		        dString test = (dString) obj;
+		       return (this.value.equals(test.value))? true: false;
+		   }
 
 	}
 

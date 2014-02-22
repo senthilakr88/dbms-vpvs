@@ -72,7 +72,6 @@ public class AggregateOperator implements Operator{
 	SelectBody selectBody;
 	List<Column> groupByColumnReferences;
 	List<Column> tableColumnList;
-	Test t;
 	Datum aggregateSumDatum = null;
 	
 	public AggregateOperator(Operator oper,SelectBody selectBody, List<Column> tableColumnList){
@@ -80,7 +79,6 @@ public class AggregateOperator implements Operator{
 		groupByColumnReferences = ((PlainSelect) selectBody).getGroupByColumnReferences();
 		this.tableColumnList = tableColumnList;
 		this.oper = oper;
-		t = new Test(oper, groupByColumnReferences, tableColumnList);
 	}
 	
 	

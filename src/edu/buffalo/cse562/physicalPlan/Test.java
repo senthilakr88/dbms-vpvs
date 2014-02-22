@@ -1,11 +1,17 @@
 package edu.buffalo.cse562.physicalPlan;
 
+/*
+ * to do
+ * 1. pass the column name to the sum method
+ * 2. loop readOneTuple method read all tuple as a datum[] from where (call readOneTuple method on select operator object)
+ * 3. find the duplicate in the column (group by - column name) passed and compute the expression on the 
+ * 4. Keep a map: key as the column name and value as the computed value (This has to be done as a buffer while reading the tuples. Ex: sum can be adding the values)
+ * 
+ */
+
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import edu.buffalo.cse562.physicalPlan.Datum.dDate;
 import edu.buffalo.cse562.physicalPlan.Datum.dLong;
@@ -53,176 +59,145 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
-public class Test implements ExpressionVisitor{
-	//Test object stores the groupby column names as it's field
-	List<Column> groupByColumnReferences;
+public class Test{
+	// Select body and the groupby column name as the fields in the object that is passed to the visitor object
 	Operator oper;
-	
-	//Maintain these buffer values specific for individual Test objects
+	SelectBody selectBody;
+	List<Column> groupByColumnReferences;
+	List<Column> tableColumnList;
+
 	Datum aggregateSumDatum = null;
-	Datum[] readOneTupleFromOper;
 	
-	public Test(Operator oper,List<Column> groupByColumnReferences, List<Column> tableColumnList) {
-		this.groupByColumnReferences = groupByColumnReferences;
+	public Test(Operator oper,SelectBody selectBody, List<Column> tableColumnList){
+		this.selectBody = selectBody;
+		groupByColumnReferences = ((PlainSelect) selectBody).getGroupByColumnReferences();
+		this.tableColumnList = tableColumnList;
 		this.oper = oper;
+
+	}
+	
+	public void resetAggregateDatumBuffer(){
+		this.aggregateSumDatum = null;
+	}
+	
+	
+
+	public void resetStream() {
+		oper.resetStream();
+		
 	}
 
-	@Override
-	public void visit(NullValue arg0) {
-		// TODO Auto-generated method stub
+	public Datum[] aggregateFunction(Datum[] readOneTupleFromGroupBy) {
+		Datum[] readOneTupleFromOper = null;
 		
-	}
-	
-	/*
-	 * This function is the aggregate function such as MAX(A), COUNT(B), MIN(TABLENAME.C)
-	 * To do: get the function name and list of parameters;
-	 * input - aggregate function containing the function name and function parameters
-	 * output -  method call to sum function; single group by column and single group by list
-	 */
-	@Override
-	public void visit(Function aggregateFunc) {
-		ExpressionList funcParamExpressionList = aggregateFunc.getParameters();
-		List<Column> funcParamList = funcParamExpressionList.getExpressions();
-		String funcName = aggregateFunc.getName().toLowerCase().trim();
-		Boolean isGroupByColumnSingleFlag = false;
+		System.out.println("AGGREGATE FUNC");
+		Datum[] test = readOneTupleFromGroupBy;
+		//printTuple(test);
 		
-		//check whether the group by column is a single column and set the flag
-		if(groupByColumnReferences.size()==1){
-			isGroupByColumnSingleFlag = true;
-		}
-		
-		//Check the aggregate function name and call the function appropriately
-		switch(funcName){
-		case "sum":
-			System.out.println("SUM method");
-			ArrayList<Column> sumParamArrayList = (ArrayList<Column>) funcParamList;
-			String singleParamColumnName = "";
-			//iterate over the parameter list and call function for each parameter 
-			int paramSize = sumParamArrayList.size();
-			if(paramSize>1){
-				for(Column itr: sumParamArrayList){
-					//check if the aggregate function parameters contain TABLE_NAME.COLUMN_NAME format i.e. we can get the table name in such case
-					if(itr.getColumnName().contains(".")){
-						System.out.println("TABLE NAME.COLUMNNAME");
-						String[] singleParam = itr.getColumnName().split(".");
-						if(singleParam.length>0){
-							singleParamColumnName = singleParam[1];
-						}
-					}
-					else{
-						singleParamColumnName = itr.getColumnName();
-					}
-					
-					//call sum function
-					System.out.println("Column name: "+singleParamColumnName);
-					System.out.println("Aggregate function name:"+funcName);
-					sum(singleParamColumnName, isGroupByColumnSingleFlag);
-				}
-			}
-			else{
-				System.out.println("PRINT SINGLE FUNC PARAMETER");
-				singleParamColumnName = sumParamArrayList.get(0).getColumnName();
-				sum(singleParamColumnName, isGroupByColumnSingleFlag);
-			}
+		List<SelectItem> listOfSelectItems = ((PlainSelect) selectBody).getSelectItems();
+		if(test != null){
+			for(SelectItem itr:listOfSelectItems){
+				SelectExpressionItem singleElement = (SelectExpressionItem) itr;	
+				Expression aggregateExpression = singleElement.getExpression();
+				Function aggregateFunction = (Function) aggregateExpression;
 			
-			break;
-		case "count":
-			System.out.println("COUNT method");
-			break;
-		case "min":
-			System.out.println("MIN method");
-			break;
-		case "max":
-			System.out.println("MAX method");
-			break;
-		case "avg":
-			System.out.println("AVG method");
-			break;
-		case "stdev":
-			System.out.println("STDEV method");
-			break;
-		default:
-			System.out.println("AGGREGATE FUNCTION NOT MATCHED");
-			break;
+				ExpressionList funcParamExpressionList = aggregateFunction.getParameters();
+				List<Column> funcParamList = funcParamExpressionList.getExpressions();
+				String funcName = aggregateFunction.getName().toLowerCase().trim();
+				Boolean isGroupByColumnSingleFlag = false;
+				ArrayList<Column> sumParamArrayList = (ArrayList<Column>) funcParamList;
+				String singleParamColumnName = "";
+				if(groupByColumnReferences.size()==1){
+					isGroupByColumnSingleFlag = true;
+				}
+				int paramSize = sumParamArrayList.size();
+				if(paramSize>1){
+					for(Column itr1: sumParamArrayList){
+						if(itr1.getColumnName().contains(".")){
+							System.out.println("TABLE NAME.COLUMNNAME");
+							String[] singleParam = itr1.getColumnName().split(".");
+							if(singleParam.length>0){
+								singleParamColumnName = singleParam[1];
+							}
+						}
+						else{
+							singleParamColumnName = itr1.getColumnName();
+						}
+						
+						//call sum function
+						System.out.println("Column name: "+singleParamColumnName);
+						System.out.println("Aggregate function name:"+funcName);
+						//readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
+					}
+				}
+				else{
+					System.out.println("AGGREGATE FUNC HAS SINGLE PARAMETER");
+					singleParamColumnName = sumParamArrayList.get(0).getColumnName();
+					//readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
+				}
+				switch(funcName){
+				case "sum":
+					System.out.println("AGGREGATE FUNC - SUM");
+					readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
+					break;
+				case "count":
+					System.out.println("AGGREGATE FUNC - COUNT method");
+					readOneTupleFromOper = count(test, singleParamColumnName, isGroupByColumnSingleFlag);
+					break;
+				case "min":
+					System.out.println("MIN method");
+					break;
+				case "max":
+					System.out.println("MAX method");
+					break;
+				case "avg":
+					System.out.println("AVG method");
+					break;
+				case "stdev":
+					System.out.println("STDEV method");
+					break;
+				default:
+					System.out.println("AGGREGATE FUNCTION NOT MATCHED");
+					break;
+				}
+			
+			}
 		}
 		
+		return readOneTupleFromOper;
 	}
 	
+	private Datum[] count(Datum[] test, String singleParamColumnName,
+			Boolean isGroupByColumnSingleFlag) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/*
 	 * to do - compute sum of the values stored (singleParamColumnName) in a column within a table (singleParamTableName)
 	 * input - table and column name
 	 * compute - read the tuple (Datum[]) after where i.e. after checking the where condition
 	 */
-	public void sum(String singleParamColumnName, Boolean isGroupByColumnSingleFlag){
-		
-		String groupByColumnName = "";
-		Boolean DatumMatch = false;
-		FileScanOperator fileScanOper;
-		SelectionOperator selOper;
-		JoinOperator joinOper;
-		ProjectionOperator projOper;
+	public Datum[] sum(Datum[] readOneTupleFromOper,String singleParamColumnName, Boolean isGroupByColumnSingleFlag){
 		Datum matchDatum=null;
-		Boolean isGroupByTupleMatch = false;
-		Boolean isGroupByColumnFlag = false;
-
-		//Logic for populating the datum[] for a single tuple from the Operator object
-		if(oper instanceof FileScanOperator){
-			fileScanOper = (FileScanOperator) oper;
-			readOneTupleFromOper = new Datum[fileScanOper.readOneTuple().length];
-			readOneTupleFromOper = fileScanOper.readOneTuple();
-		}
-		else if(oper instanceof SelectionOperator){
-			selOper = (SelectionOperator) oper;
-			System.out.println("PRINT LENGTH OF READONETUPLE"+ selOper.readOneTuple().length);
-			readOneTupleFromOper = selOper.readOneTuple();
-		}
-		else if(oper instanceof JoinOperator){
-			joinOper = (JoinOperator) oper;
-			readOneTupleFromOper = new Datum[joinOper.readOneTuple().length];
-			readOneTupleFromOper = joinOper.readOneTuple();
-		}
-		else if(oper instanceof ProjectionOperator){
-			projOper = (ProjectionOperator) oper;
-			readOneTupleFromOper = new Datum[projOper.readOneTuple().length];
-			readOneTupleFromOper = projOper.readOneTuple();
-		}
-		
-		//Check if the datum[] contains groupby column name
-		/*for(Datum itr:readOneTupleFromOper){
-			if(groupByColumnReferences.contains(itr.getColumn().getColumnName())){
-			isGroupByColumnFlag = true;
-			}
-		}*/
-		
-		
-		/* logic - for single parameter in groupby column
-		 * flag true - only one parameter in agg func;
-		 * flag false - list of parameters in agg func 
-		 */
 		if(isGroupByColumnSingleFlag==true){
-			
-			//read the single tuple element from the entire tuple and match the group by column name and when it is matched, set "isGroupByTupleMatch = true" 
 			for(int i=0;i<readOneTupleFromOper.length;i++){
 				Datum singleTupleElement = readOneTupleFromOper[i];
 				dLong datumInLong;
 				dString datumInString;
 				dDate datumInDate;
-				//find the type of datum
-				System.out.println("OUT LOOP COUNT: "+i);
 				if(singleTupleElement instanceof dLong){
-					//System.out.println("SINGLE READONETUPLE IS DLONG");
 					datumInLong = (dLong) singleTupleElement;
-		
 					if(datumInLong.getColumn().getColumnName().equals(singleParamColumnName)){
-						//System.out.println("PRINT COLUMN NAME FR SINGLE DATUM: "+datumInLong.getColumn().getColumnName());
-						//System.out.println("PRINT AGG FUNC PARAM: "+singleParamColumnName);
 						matchDatum = datumInLong;
 						System.out.println("MATCH DATUM: "+matchDatum);
-						System.out.println("LOOP COUNT"+i);
 						dLong aggregatedLongSumDatum = null;
 						if(aggregateSumDatum != null){
 							aggregatedLongSumDatum = (dLong) aggregateSumDatum;
@@ -231,10 +206,8 @@ public class Test implements ExpressionVisitor{
 						else{
 							aggregateSumDatum = datumInLong;
 						}
-						
 						dLong temp = (dLong) aggregateSumDatum;
 						System.out.println("REPLACE AGE: "+temp);
-						
 						break;
 					}
 					continue;
@@ -257,33 +230,19 @@ public class Test implements ExpressionVisitor{
 					}
 					continue;
 				}	
-			}
-				
-			//need to replace the computed datum in the final datum array to be passed over to readOneTuple
-			//List<Datum> datumList = Arrays.asList(readOneTupleFromOper);
-			//if(datumList.contains(matchDatum)){
-				//int matchedDatumIndex = datumList.indexOf(matchDatum);
-			//	datumList.set(matchedDatumIndex, aggregateSumDatum);
-			//}
-			//readOneTupleFromOper = datumList.toArray(readOneTupleFromOper);
-			
-			
-			
+			}			
 			for (int i=0; i<readOneTupleFromOper.length;i++) {
 			    if (readOneTupleFromOper[i].equals(matchDatum)) { 
 			    	readOneTupleFromOper[i] = aggregateSumDatum;
 			        break;
 			    }
 			}	
-			
-			
 			printTuple(readOneTupleFromOper);
 		}
 		else{
 			//list of parameters - to do
 		}
-		
-		
+		return readOneTupleFromOper;
 	}
 	
 	private void printTuple(Datum[] row) {
@@ -296,227 +255,6 @@ public class Test implements ExpressionVisitor{
 		System.out.println("------------------------------------------------");
 	}
 
-	@Override
-	public void visit(InverseExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(JdbcParameter arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(DoubleValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(LongValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(DateValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(TimeValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(TimestampValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Parenthesis arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(StringValue arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Addition arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Division arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Multiplication arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Subtraction arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(AndExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(OrExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Between arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(EqualsTo arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(GreaterThan arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(GreaterThanEquals arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(InExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(IsNullExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(LikeExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(MinorThan arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(MinorThanEquals arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(NotEqualsTo arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Column arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(SubSelect arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(CaseExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(WhenClause arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(ExistsExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(AllComparisonExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(AnyComparisonExpression arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Concat arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(Matches arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(BitwiseAnd arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(BitwiseOr arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visit(BitwiseXor arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-//implement the logic for SelectExpressionItem which is being visited by this object
-	
 }
+
+	

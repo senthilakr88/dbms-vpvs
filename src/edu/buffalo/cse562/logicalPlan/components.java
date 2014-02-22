@@ -11,16 +11,19 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
+import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
 import edu.buffalo.cse562.physicalPlan.JoinOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
+import edu.buffalo.cse562.physicalPlan.Test;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 
 public class components {
@@ -90,6 +93,22 @@ public class components {
 		}
 		
 		
+		//Groupby computation
+		PlainSelect select = (PlainSelect) selectBody;
+		List<Column> groupbyList = select.getGroupByColumnReferences();
+		//create Test object
+		Test test = new Test(oper,selectBody,tableMap);
+		GroupbyOperator groupOper = new GroupbyOperator(oper,test,groupbyList);
+		
+		ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
+		System.out.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+		for(Datum[] singleDatum:finalGroupbyArrayList){
+			printTuple(singleDatum);
+		}
+		
+		//printTuple(groupByTest);
+		
+		/*
 		//Aggregate computation.
 		oper.resetStream();
 		oper = new AggregateOperator(oper,selectBody,tableMap);
@@ -99,7 +118,7 @@ public class components {
 		test = oper.readOneTuple();
 		System.out.println("PRINTING TUPLE FROM AGGREGATE OPERATOR");
 		printTuple(test);
-		
+		*/
 		//Projection computation
 		/*oper=new ProjectionOperator(oper,projectStmt);
 		Datum[] t = oper.readOneTuple();
