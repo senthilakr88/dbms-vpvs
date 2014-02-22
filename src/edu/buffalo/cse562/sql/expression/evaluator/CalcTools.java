@@ -13,14 +13,17 @@ import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Datum;
+import edu.buffalo.cse562.physicalPlan.TupleStruct;
 
 public class CalcTools extends AbstractExpressionVisitor {
 	private Object accumulator;
 	private boolean accumulatorBoolean;
 	logManager lg = new logManager();
 	Datum[] t;
+	List<String> tupleTableMap;
 	
 
 	public Object getResult() {
@@ -48,60 +51,35 @@ public class CalcTools extends AbstractExpressionVisitor {
 					+ Long.parseLong(rightValue.toString());
 		}
 	}
-
+	
 	public void visit(Column column) {
-//		System.out.println("Cametogetcolumnvalue");
-		int index = 0;
 
-//		Iterator<Column> ite = tableMap.iterator();
-//		while (ite.hasNext()) {
-//			Column tempCol = (Column) ite.next();
-//			if (!tempCol.getColumnName().equalsIgnoreCase(
-//					column.getColumnName())) {
-//				index++;
-//				lg.logger.log(Level.INFO, tempCol.getColumnName() + " : "
-//						+ column.getColumnName() + ": " + index);
-//			} else {
-//				break;
-//			}
-//
-//		}
+		int index=0;
 		
-		for(index = 0;index < t.length;index++) {
-			Datum row = (Datum) t[index];
-			String alias = row.getColumn().getTable().getAlias();
-			String datumColumn = row.getColumn().getColumnName();
-			if(alias!=null) {
-				datumColumn = alias +"."+datumColumn;
-			}
-			if (datumColumn.equalsIgnoreCase(
-					column.getWholeColumnName())) {
-				break;
-			} else {
-//				System.out.println(datumColumn + " : "
-//						+ column.getWholeColumnName() + ": " + index);
-			}
-
+		tupleTableMap = TupleStruct.getTupleTableMap();
+		if(tupleTableMap.contains(column.getWholeColumnName())) {
+			index = tupleTableMap.indexOf(column.getWholeColumnName());
 		}
 
 		Datum row = t[index];
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
-//		System.out.println(index + ":" + row.toComString() + " : "
-//				+ column.getTable().getName() + ":" + column.getColumnName()
-//				+ ":" + row.equals(column));
-		if (row.equals(column) && row instanceof Datum.dLong) {
+		System.out.println(index + ":" + row.toComString() + " : "
+				+ column.getTable().getName() + ":" + column.getColumnName()
+				+ ":" + row.equals(column));
+		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
 
-		} else if (row.equals(column) && row instanceof Datum.dDate) {
+		} else if (row instanceof Datum.dDate) {
 			accumulator = ((Datum.dDate) row).getValue();
 
-		} else if (row.equals(column) && row instanceof Datum.dString) {
+		} else if (row instanceof Datum.dString) {
 			accumulator = ((Datum.dString) row).getValue();
 
+		} else if (row instanceof Datum.dDecimal) {
+			accumulator = ((Datum.dDecimal) row).getValue();
 		}
-
 		lg.logger.log(Level.INFO, accumulator.toString());
 	}
 
@@ -551,5 +529,13 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public void setAccumulatorBoolean(boolean accumulatorBoolean) {
 		this.accumulatorBoolean = accumulatorBoolean;
+	}
+	
+	public void visit(OrderByElement orderbyEle) {
+		Expression e = orderbyEle.getExpression();
+		TupleStruct.setTupleTableMap(t);
+		CalcTools ct = new CalcTools(this.t);
+		e.accept(ct);
+		this.accumulator = ct.getResult(); 
 	}
 }

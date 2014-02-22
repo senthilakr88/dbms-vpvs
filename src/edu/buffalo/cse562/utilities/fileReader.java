@@ -20,7 +20,7 @@ public class fileReader {
 	public fileReader(String fileName) {
 		lg = new logManager();
 		String basePath = new File("").getAbsolutePath();
-		this.file = new File(basePath+fileName);
+		this.file = new File(basePath + fileName);
 		lg.logger.log(Level.INFO, basePath);
 		lg.logger.log(Level.INFO, fileName);
 	}
@@ -33,10 +33,37 @@ public class fileReader {
 		contents = new ArrayList<String>();
 		try {
 			String line = null;
+			Boolean normalQuery = false;
+			Boolean tchpQuery = false;
+			String lineAppend = "";
 			BufferedReader buf = new BufferedReader(new FileReader(file));
 			while ((line = buf.readLine()) != null) {
-				contents.add(line);
+				
+				if (line.length() == 0 && line.isEmpty())
+					continue;
+				else if (line.startsWith("--"))
+					continue;
+				else {
+					if (line.contains("--"))
+						line = line.substring(0, line.indexOf("--"));
+					if((line.endsWith(")") || line.endsWith(";") || normalQuery) && !tchpQuery) {
+						contents.add(line);
+						normalQuery = true;
+						continue;
+					}
+					if(!line.trim().endsWith(";")) {
+						tchpQuery = true;
+						lineAppend += line + " ";
+					} else {
+						lineAppend += line + " ";
+						contents.add(lineAppend);
+						lineAppend = "";
+					}
+					
+				}
+				
 			}
+			
 			buf.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -28,13 +28,14 @@ public class ProjectionOperator implements Operator {
 
 	String temp = null;
 	List<SelectExpressionItem> selectcolumns;
-
+	boolean isTupleMapPresent;
 
 
 	public ProjectionOperator(Operator input,
 			List<SelectExpressionItem> selectcolumns) {
 		this.selectcolumns = selectcolumns;
 		this.input = input;
+		this.isTupleMapPresent = true;
 
 	}
 
@@ -57,13 +58,17 @@ public class ProjectionOperator implements Operator {
 			while(iter.hasNext()){
 				SelectExpressionItem newItem = iter.next();
 				Expression e = newItem.getExpression();
+				if(isTupleMapPresent) {
+					TupleStruct.setTupleTableMap(t);
+					isTupleMapPresent = false;
+				}
 				CalcTools calc = new CalcTools(t); 
 				e.accept(calc);
 				lg.logger.log(Level.INFO, calc.getResult().toString());
 				Column newCol = null;
-				Table result = new Table("ResulSchema", "ResultTable");
+				Table result = new Table("", "ResultTable");
 				if (newItem.getAlias()!=null){
-					newCol = new Column(result, newItem.getAlias());
+					newCol = new Column(null, newItem.getAlias());
 				}
 				else {
 					newCol = new Column(result, newItem.toString());

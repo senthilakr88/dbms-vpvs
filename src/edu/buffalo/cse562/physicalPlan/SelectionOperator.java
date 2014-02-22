@@ -18,12 +18,12 @@ public class SelectionOperator implements Operator {
 	Operator input;
 	Expression condition;
 	String oneLineFromDat;
-	
+	Boolean isTupleMapPresent;
 	
 	public SelectionOperator(Operator input, Expression condition) {
 		this.input = input;
 		this.condition = condition;
-		
+		this.isTupleMapPresent = true;
 	}
 	
 	@Override
@@ -60,9 +60,10 @@ public class SelectionOperator implements Operator {
 	
 	private boolean evaluate(Datum[] t, Expression condition2) {
 		logManager lg = new logManager();
-//		lg.logger.log(Level.INFO, "Tototo"+ t.toString());
-//		lg.logger.log(Level.INFO, "Tototo"+ t.tableMap.toString());
-		//t.tableMap.get(key)
+		if(isTupleMapPresent) {
+			TupleStruct.setTupleTableMap(t);
+			isTupleMapPresent = false;
+		}
 		CalcTools calc = new CalcTools(t);
 //		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
 		condition2.accept(calc);
