@@ -1,62 +1,94 @@
 package edu.buffalo.cse562.physicalPlan;
 
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import edu.buffalo.cse562.physicalPlan.Datum.dLong;
 import edu.buffalo.cse562.physicalPlan.Datum.dString;
-import edu.buffalo.cse562.physicalPlan.Datum.dString.dDate;
+import edu.buffalo.cse562.physicalPlan.Datum.dDate;
+import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 
 public class Mysorter implements Comparator<Datum[]> {
 
+	List<OrderByElement> ordEle;
+
+	public Mysorter(List<OrderByElement> elements) {
+		this.ordEle = elements;
+	}
+
 	@Override
 	public int compare(Datum[] t1, Datum[] t2) {
-		int length1 = t1.length;
-		int length2 = t2.length;
-		int i = 0;
-	
-		
-		if (t1[i] instanceof dLong) {
-				dLong d1 = (dLong) t1[i];
-				dLong d2 = (dLong) t2[i];
-				if (d1.getValue() > d2.getValue())
-					return -1;
-				else if (d1.getValue() < d2.getValue())
-					return 1;
-				else 
-				    return 0;		
-		
-		     
-			}
-			else if (t1[i] instanceof dString) {
-				dString d1 = (dString) t1[i];
-				dString d2 = (dString) t2[i];
-				 if((d1.getValue().compareToIgnoreCase(d2.getValue()))==-1)
-					return -1;
-				else if((d1.getValue().compareToIgnoreCase(d2.getValue()))==1)
-					return 1;
-				else 
-				
-				  return 0;
-				
-		
-		      }
-			else if(t1[i] instanceof dDate) {
-					dDate d1 = (dDate) t1[i];
-					dDate d2 = (dDate) t2[i];
-					 if((d1.getValue().compareTo(d2.getValue()))==-1)
-						return -1;
-					else if((d1.getValue().compareTo(d2.getValue()))==1)
-						return 1;
-					else 
-					{	
-						return 0;
-			        }
-			}
-			
-         	else
-		        return 0;
 
-	     }
+		Iterator iter = ordEle.iterator();
+		int comparison = -2;
+		while (iter.hasNext()) {
 
+			OrderByElement ele = (OrderByElement) iter.next();
+			Expression exe = ele.getExpression();
+			CalcTools calc1 = new CalcTools(t1);
+			CalcTools calc2 = new CalcTools(t2);
+			comparison = getCompareValue(calc1.getResult(), calc2.getResult(),
+					ele.isAsc());
+			if (comparison != 0)
+				return comparison;
+		}
+		return comparison;
 	}
+
+	public int getCompareValue(Object t1, Object t2, boolean asc) {
+		if (t1 instanceof dLong) {
+			Long value1 = (Long)t1;
+			Long value2 = (Long)t1;
+			int comp = value1.compareTo(value2);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+
+		} else if (t1 instanceof dString) {
+			String value1 = (String)t1;
+			String value2 = (String)t1;
+			int comp = value1.compareTo(value2);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+
+		}  else if (t1 instanceof dDate) {
+			Date value1 = (Date)t1;
+			Date value2 = (Date)t1;
+			int comp = value1.compareTo(value2);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+		} else {
+			return -2;
+		}
+		
+		
+	}
+}
 
