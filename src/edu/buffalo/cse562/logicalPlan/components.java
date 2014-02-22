@@ -43,7 +43,7 @@ public class components {
 	FromItem tableName;
 	SelectBody selectBody;
 	private List orderbyElements;
-	
+
 
 	public components() {
 
@@ -96,7 +96,7 @@ public class components {
 						tableColTypeMap);
 				oper = new JoinOperator(oper, rightOper,
 						joinTable.getOnExpression());
-				
+
 			}
 		}
 
@@ -117,31 +117,12 @@ public class components {
 			for(Datum[] singleDatum:finalGroupbyArrayList){
 				printTuple(singleDatum);
 			}
-			
+
 		}
-		
-		
 
-		
-		
-		//printTuple(groupByTest);
-		
-		/*
-		//Aggregate computation.
-		oper.resetStream();
-		oper = new AggregateOperator(oper,selectBody,tableMap);
-		Datum[] test = oper.readOneTuple();
-		test = oper.readOneTuple();
-		test = oper.readOneTuple();
-		test = oper.readOneTuple();
-		System.out.println("PRINTING TUPLE FROM AGGREGATE OPERATOR");
-		printTuple(test);
-		*/
 
-			
 		// Projection computation
 		oper=new ProjectionOperator(oper,projectStmt);
-		oper = new ProjectionOperator(oper, projectStmt);
 		OrderByOperator obp = new OrderByOperator(orderbyElements);
 
 		Datum[] t = oper.readOneTuple();
@@ -159,8 +140,6 @@ public class components {
 		}
 
 	}
-	
-
 
 	private void printTuple(Datum[] row) {
 		Boolean first = true;
@@ -181,7 +160,7 @@ public class components {
 		this.tableDir = tableDir;
 
 	}
-	
+
 	public void setFromItems(FromItem fromItem) {
 		tableName = fromItem;
 
@@ -210,7 +189,7 @@ public class components {
 
 	public void addOrderBy(List orderByElements) {
 		this.orderbyElements = orderByElements;
-		
+
 	}
 
 }

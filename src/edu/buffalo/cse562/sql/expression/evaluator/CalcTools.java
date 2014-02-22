@@ -1,5 +1,8 @@
 package edu.buffalo.cse562.sql.expression.evaluator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +24,9 @@ import edu.buffalo.cse562.physicalPlan.TupleStruct;
 public class CalcTools extends AbstractExpressionVisitor {
 	private Object accumulator;
 	private boolean accumulatorBoolean;
+//	private Boolean isExpression;
+	private Column columnValue;
+	private Boolean firstEntry;
 	logManager lg = new logManager();
 	Datum[] t;
 	List<String> tupleTableMap;
@@ -33,12 +39,19 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public CalcTools(Datum[] t2) {
 		t = t2;
-		
+//		isExpression = null;
+		firstEntry=null;
 	}
 
 	@Override
 	public void visit(Addition addition) {
 		// lg.logger.log(Level.INFO, "Came to addition");
+		if(firstEntry==null){
+			firstEntry=true;
+			System.out.println("Full Expression->"+addition.toString());
+			columnValue = new Column(null, addition.toString());
+		}
+//		isExpression = true;
 		addition.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		addition.getRightExpression().accept(this);
@@ -52,10 +65,20 @@ public class CalcTools extends AbstractExpressionVisitor {
 		}
 	}
 	
+	public Column getColumn(){
+//		if(columnValue!=null){
+			return columnValue;
+//		} else {
+//			return new Column(null,"random");
+//		}
+	}
 	public void visit(Column column) {
 
 		int index=0;
-		
+//		System.out.println("Is Expression---->"+isExpression);
+		if(firstEntry==null){
+			columnValue = column;
+		}
 		tupleTableMap = TupleStruct.getTupleTableMap();
 		if(tupleTableMap.contains(column.getWholeColumnName())) {
 			index = tupleTableMap.indexOf(column.getWholeColumnName());
@@ -65,9 +88,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
-		System.out.println(index + ":" + row.toComString() + " : "
-				+ column.getTable().getName() + ":" + column.getColumnName()
-				+ ":" + row.equals(column));
+//		System.out.println(index + ":" + row.toComString() + " : "
+//				+ column.getTable().getName() + ":" + column.getColumnName()
+//				+ ":" + row.equals(column));
 		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
 
@@ -86,6 +109,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(AndExpression andExpression) {
 		// lg.logger.log(Level.INFO, "Came to and expression");
+//		isExpression = true;
 		andExpression.getLeftExpression().accept(this);
 		boolean leftValue = accumulatorBoolean;
 		andExpression.getRightExpression().accept(this);
@@ -109,6 +133,12 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(Division division) {
 		// lg.logger.log(Level.INFO, "Came to addition");
+		if(firstEntry==null){
+			firstEntry=true;
+			System.out.println("Full Expression->"+division.toString());
+			columnValue = new Column(null, division.toString());
+		}
+//		isExpression = true;
 		division.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		division.getRightExpression().accept(this);
@@ -132,6 +162,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(EqualsTo equalsTo) {
 		// lg.logger.log(Level.INFO, "Came to greater than");
+//		isExpression = true;
 		accumulatorBoolean = false;
 		equalsTo.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -167,25 +198,62 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	}
 
-	@Override
-	public void visit(Function function) {
-//		lg.logger.log(Level.INFO, "Function");
-		String functionName = function.getName();
-		ExpressionList parameters = function.getParameters();
-//		lg.logger.log(Level.INFO, functionName);
-//		lg.logger.log(Level.INFO, parameters.toString());
-		List expressionList = parameters.getExpressions();
-//		lg.logger.log(Level.INFO, expressionList.toString());
-		
-		
-		
-		
+    @Override                                                                                                                                                             
+    public void visit(Function function) {
+//    	isExpression = true;
+        lg.logger.log(Level.INFO, "Function");
+        String functionName = function.getName().toLowerCase();
+        ExpressionList parameters = function.getParameters();
+        lg.logger.log(Level.INFO, functionName);
+        lg.logger.log(Level.INFO, parameters.toString());
+        List expressionList = parameters.getExpressions();
+        lg.logger.log(Level.INFO, expressionList.toString());
+        java.lang.reflect.Method method=null;
+        try {
+          method = this.getClass().getMethod(functionName, List.class);
+        } catch (SecurityException e) {
+          // ...
+        } catch (NoSuchMethodException e) {
+          // ...
+        }
+        try {
+              method.invoke(this, expressionList);
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+            } catch (InvocationTargetException e) {
+            }
+    }
+    
+    public void date(List eList) {
+        lg.logger.log(Level.INFO, "DATE Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        Date date = null;
 
-	}
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+			date = dateFormat.parse((String) this.accumulator);
+		} catch (ParseException e1) {
+			
+			e1.printStackTrace();
+		}
+		this.accumulator = date;
+        lg.logger.log(Level.INFO, "DATE->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
 
 	@Override
 	public void visit(GreaterThan greaterThan) {
 		lg.logger.log(Level.INFO, "Came to greater than");
+		
+//		isExpression = true;
 		accumulatorBoolean = false;
 		greaterThan.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -214,9 +282,10 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
+			lg.logger.log(Level.INFO, "BOTH DATES");
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
-			if (date1.after(date2)) {
+			if (date1.before(date2)) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -226,6 +295,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(GreaterThanEquals greaterThanEquals) {
 		accumulatorBoolean = false;
+//		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to greater than equals");
 		greaterThanEquals.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -258,7 +328,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 			// lg.logger.log(Level.INFO, "Date Value");
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
-			if (date1.after(date2)||date1.equals(date2)) {
+			if (date1.before(date2)||date1.equals(date2)) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -311,6 +381,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(MinorThan minorThan) {
 		accumulatorBoolean = false;
+//		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to greater than equals");
 		minorThan.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -335,7 +406,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
-			if (date1.before(date2)) {
+			if (date1.after(date2)) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -345,6 +416,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(MinorThanEquals minorThanEquals) {
 		accumulatorBoolean = false;
+//		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to minor than equals");
 		minorThanEquals.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -369,7 +441,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
-			if (date1.before(date2)||date1.equals(date2)) {
+			if (date1.after(date2)||date1.equals(date2)) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -379,6 +451,12 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(Multiplication multiplication) {
 		// lg.logger.log(Level.INFO, "Came to multiplication");
+//		isExpression = true;
+		if(firstEntry==null){
+			firstEntry=true;
+			System.out.println("Full Expression->"+multiplication.toString());
+			columnValue = new Column(null, multiplication.toString());
+		}
 		multiplication.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		multiplication.getRightExpression().accept(this);
@@ -394,7 +472,40 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(NotEqualsTo notEqualsTo) {
-		visitBinaryExpression(notEqualsTo);
+		// lg.logger.log(Level.INFO, "Came to greater than");
+//		isExpression = true;
+		accumulatorBoolean = false;
+		notEqualsTo.getLeftExpression().accept(this);
+		Object leftValue = accumulator;
+		lg.logger.log(Level.INFO, leftValue.getClass().getName());
+		notEqualsTo.getRightExpression().accept(this);
+		Object rightValue = accumulator;
+		lg.logger.log(Level.INFO, rightValue.getClass().getName());
+		if (leftValue instanceof String && rightValue instanceof String) {
+			if (!leftValue.toString().equals(rightValue.toString())) {
+				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Double) {
+			if (Double.parseDouble(leftValue.toString()) != Double
+					.parseDouble(rightValue.toString())) {
+				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Long) {
+			if (Long.parseLong(leftValue.toString()) != Long
+					.parseLong(rightValue.toString())) {
+				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Date && rightValue instanceof Date) {
+			Date date1 = (Date) leftValue;
+			Date date2 = (Date) rightValue;
+			if (!date1.equals(date2)) {
+				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		}
 	}
 
 	@Override
@@ -405,6 +516,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(OrExpression orExpression) {
 		// lg.logger.log(Level.INFO, "Came to OR expression");
+//		isExpression = true;
 		orExpression.getLeftExpression().accept(this);
 		boolean leftValue = accumulatorBoolean;
 		orExpression.getRightExpression().accept(this);
@@ -432,6 +544,12 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(Subtraction subtraction) {
 		// lg.logger.log(Level.INFO, "Came to subtraction");
+//		isExpression = true;
+		if(firstEntry==null){
+			firstEntry=true;
+			System.out.println("Full Expression->"+subtraction.toString());
+			columnValue = new Column(null, subtraction.toString());
+		}
 		subtraction.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		subtraction.getRightExpression().accept(this);
@@ -532,6 +650,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	}
 	
 	public void visit(OrderByElement orderbyEle) {
+//		isExpression = true;
 		Expression e = orderbyEle.getExpression();
 		TupleStruct.setTupleTableMap(t);
 		CalcTools ct = new CalcTools(this.t);
