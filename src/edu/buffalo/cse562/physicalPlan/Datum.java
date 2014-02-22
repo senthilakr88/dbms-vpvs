@@ -85,6 +85,71 @@ public interface Datum {
 		}
 
 	}
+	
+	public class dDecimal implements Datum {
+
+		Double value;
+		Column column;
+
+		public Column getColumn() {
+			return column;
+		}
+
+		public void setColumn(Column column) {
+			this.column = column;
+		}
+
+		public dDecimal(String s, Column col) {
+			value = Double.parseDouble(s);
+			this.column = col;
+		}
+
+		public Double getValue() {
+			return value;
+		}
+
+		public void setValue(Double value) {
+			this.value = value;
+		}
+
+		public String toString() {
+			return String.valueOf(value);
+		}
+
+		public String toComString() {
+			return column.getTable().getName() + ":" + column.getTable().getAlias() + ":" + column.getWholeColumnName() + ":" + column.getTable().getAlias() 
+					+ ":" + String.valueOf(value) + "\t";
+		}
+
+		@Override
+		public boolean equals(Column col) {
+			if (col == null)
+				return false;
+//			else if (!column.getTable().getName().equalsIgnoreCase(col.getTable().getName()))
+//				return false;
+			else if (!column.getColumnName().equalsIgnoreCase(col.getColumnName()))
+				return false;
+			else
+				return true;
+		}
+
+		public Datum sumDatum(Datum input){
+			Datum sum = null;
+			if(input instanceof dDecimal){
+				Double value = this.getValue()+((dDecimal) input).getValue();
+				String valueString = value.toString();
+				sum = new dLong(valueString,input.getColumn());
+			}
+			else if (input instanceof dString){
+				
+			}
+			else if (input instanceof dDate){
+				
+			}
+		return sum;
+		}
+
+	}
 
 	public class dString implements Datum {
 

@@ -84,12 +84,16 @@ public class FileScanOperator implements Operator {
 		while (i < singleTableElement.length) {
 			col = tableMap.get(j);
 			value = singleTableElement[i];
-			type = tableColTypeMap.get(tableName.getName().toString()).get(i);
+			type = tableColTypeMap.get(tableName.getName().toString().toLowerCase()).get(i).toLowerCase();
 			if (type.equalsIgnoreCase("int")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
 				t[i] = new Datum.dLong(singleTableElement[i], new Column(tableName,col.getColumnName()));
 				//System.out.print(t[i].toComString());
-			} else if (type.equalsIgnoreCase("String")) {
+			} else if (type.equalsIgnoreCase("decimal")) {
+				// tupleKeyValueMap.put(key, Integer.parseInt(value));
+				t[i] = new Datum.dDecimal(singleTableElement[i], new Column(tableName,col.getColumnName()));
+				//System.out.print(t[i].toComString());
+			} else if (type.equalsIgnoreCase("String") || type.startsWith("char") || type.startsWith("varchar")) {
 				// tupleKeyValueMap.put(key, value);
 				t[i] = new Datum.dString(singleTableElement[i], new Column(tableName,col.getColumnName()));
 				//System.out.print(t[i].toComString());

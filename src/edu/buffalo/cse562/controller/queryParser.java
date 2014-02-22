@@ -78,7 +78,7 @@ public class queryParser {
 					// Adding table name and column names to the map
 					comp.addColsToTable(columnNameList);
 					comp.addColsTypeToTable(createTableStatement.getTable()
-							.getName(), columnTypeList);
+							.getName().toLowerCase(), columnTypeList);
 					comp.setTableDirectory(tableDir);
 					// Printing the contents of the HashMap
 					lg.logger.log(Level.INFO, comp.toString());
@@ -95,7 +95,7 @@ public class queryParser {
 					comp.setFromItems(plainSelect.getFromItem());
 					//lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
 					comp.addWhereConditions(plainSelect.getWhere());
-					lg.logger.log(Level.INFO,"where :: "+plainSelect.getWhere().toString());
+					//lg.logger.log(Level.INFO,"where :: "+plainSelect.getWhere().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getGroupByColumnReferences().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getInto().toString());
 					//lg.logger.log(Level.INFO,plainSelect.getHaving().toString());

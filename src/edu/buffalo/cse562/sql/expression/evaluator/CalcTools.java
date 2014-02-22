@@ -21,6 +21,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	private boolean accumulatorBoolean;
 	logManager lg = new logManager();
 	Datum[] t;
+	List<String> tupleTableMap;
 	
 
 	public Object getResult() {
@@ -48,40 +49,41 @@ public class CalcTools extends AbstractExpressionVisitor {
 					+ Long.parseLong(rightValue.toString());
 		}
 	}
-
-	public void visit(Column column) {
-//		System.out.println("Cametogetcolumnvalue");
-		int index = 0;
-
-//		Iterator<Column> ite = tableMap.iterator();
-//		while (ite.hasNext()) {
-//			Column tempCol = (Column) ite.next();
-//			if (!tempCol.getColumnName().equalsIgnoreCase(
-//					column.getColumnName())) {
-//				index++;
-//				lg.logger.log(Level.INFO, tempCol.getColumnName() + " : "
-//						+ column.getColumnName() + ": " + index);
-//			} else {
-//				break;
-//			}
-//
-//		}
-		
+	
+	public void setTupleTableMap(Datum[] t, Column column) {
+		int index;
+		tupleTableMap = new ArrayList<String>(t.length);
 		for(index = 0;index < t.length;index++) {
 			Datum row = (Datum) t[index];
 			String alias = row.getColumn().getTable().getAlias();
 			String datumColumn = row.getColumn().getColumnName();
-			if(alias!=null) {
-				datumColumn = alias +"."+datumColumn;
-			}
-			if (datumColumn.equalsIgnoreCase(
-					column.getWholeColumnName())) {
-				break;
+			if(alias !=null) {
+				tupleTableMap.add(alias+"."+datumColumn);
+			} else if(column.getWholeColumnName().contains(".")) {
+				String tableName = row.getColumn().getTable().getName();
+				tupleTableMap.add(tableName+"."+datumColumn);
 			} else {
-//				System.out.println(datumColumn + " : "
-//						+ column.getWholeColumnName() + ": " + index);
+				tupleTableMap.add(datumColumn);
 			}
+				
+		}
+	}
+	
+	public List<String> getTupleTableMap () {
+		return tupleTableMap;
+	}
 
+	public void visit(Column column) {
+
+		int index=0;
+		
+		if(tupleTableMap == null || tupleTableMap.size() == 0) {
+			setTupleTableMap(t,column);
+		}
+		
+
+		if(tupleTableMap.contains(column.getWholeColumnName())) {
+			index = tupleTableMap.indexOf(column.getWholeColumnName());
 		}
 
 		Datum row = t[index];
@@ -91,17 +93,18 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		System.out.println(index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
-		if (row.equals(column) && row instanceof Datum.dLong) {
+		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
 
-		} else if (row.equals(column) && row instanceof Datum.dDate) {
+		} else if (row instanceof Datum.dDate) {
 			accumulator = ((Datum.dDate) row).getValue();
 
-		} else if (row.equals(column) && row instanceof Datum.dString) {
+		} else if (row instanceof Datum.dString) {
 			accumulator = ((Datum.dString) row).getValue();
 
+		} else if (row instanceof Datum.dDecimal) {
+			accumulator = ((Datum.dDecimal) row).getValue();
 		}
-
 		lg.logger.log(Level.INFO, accumulator.toString());
 	}
 

@@ -83,51 +83,6 @@ public class JoinOperator implements Operator {
 		}
 	}
 
-	// @Override
-	// public Datum[] readOneTuple() {
-	// Datum[] lt = null, rt = null;
-	// Datum[] t = null;
-	// if (firstEntry) {
-	// lt = left.readOneTuple();
-	// setTuple(lt);
-	// // System.out.println("entry");
-	// firstEntry = false;
-	// }
-	// lt = getTuple();
-	// if (lt != null) {
-	// rt = right.readOneTuple();
-	// if (rt == null) {
-	// lt = left.readOneTuple();
-	// // System.out.println("reading left");
-	// if (lt == null) {
-	// return null;
-	// }
-	// setTuple(lt);
-	// right.resetStream();
-	// rt = right.readOneTuple();
-	// }
-	// // System.out.println("left :: "+lt);
-	// // System.out.println("right :: "+rt);
-	// // On expression evaluation
-	// t = combine(lt, rt);
-	// if (expr != null) {
-	// //System.out.println(expr);
-	// CalcTools calc = new CalcTools(t);
-	// expr.accept(calc);
-	// //System.out.println(calc.getAccumulatorBoolean());
-	// if (calc.getAccumulatorBoolean()) {
-	// return t;
-	// } else {
-	// readOneTuple();
-	// }
-	// }
-	//
-	// return t;
-	// } else
-	// return null;
-	//
-	// }
-
 	private Datum[] combine(Datum[] lt, Datum[] rt) {
 		int i = 0, j = 0;
 		Datum[] temp = new Datum[lt.length + rt.length];

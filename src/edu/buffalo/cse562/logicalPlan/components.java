@@ -36,11 +36,11 @@ public class components {
 	String tableDir;
 	FromItem tableName;
 	SelectBody selectBody;
+	
 
 	public components() {
 
 		tableMap = new ArrayList<Column>();
-
 		tableColTypeMap = new HashMap<String, ArrayList<String>>();
 		lg = new logManager();
 	}
@@ -88,7 +88,7 @@ public class components {
 						tableColTypeMap);
 				oper = new JoinOperator(oper, rightOper,
 						joinTable.getOnExpression());
-
+				
 			}
 		}
 
@@ -118,6 +118,8 @@ public class components {
 		}
 
 	}
+	
+
 
 	private void printTuple(Datum[] row) {
 		Boolean first = true;
@@ -138,7 +140,7 @@ public class components {
 		this.tableDir = tableDir;
 
 	}
-
+	
 	public void setFromItems(FromItem fromItem) {
 		tableName = fromItem;
 
