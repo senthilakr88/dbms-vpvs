@@ -114,12 +114,12 @@ public class components {
 			// create Test object
 			Test test = new Test(oper, selectBody, tableMap);
 			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,test,groupbyList);
-//			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
+			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
 			System.out
 					.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
-//			for (Datum[] singleDatum : finalGroupbyArrayList) {
-//				printTuple(singleDatum);
-//			}
+			for (Datum[] singleDatum : finalGroupbyArrayList) {
+				printTuple(singleDatum);
+			}
 
 		}
 
