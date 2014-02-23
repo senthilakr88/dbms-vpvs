@@ -91,10 +91,11 @@ public class components {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
 			while (joinIte.hasNext()) {
+				
 				Join joinTable = (Join) joinIte.next();
-				Operator rightOper = new FileScanOperator(
-						(Table) joinTable.getRightItem(), tableDir, tableMap,
-						tableColTypeMap);
+				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
+				joinTable.getRightItem().accept(fip);
+				Operator rightOper = fip.getOperator();
 				oper = new JoinOperator(oper, rightOper,
 						joinTable.getOnExpression());
 
