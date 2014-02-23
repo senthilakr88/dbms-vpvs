@@ -113,8 +113,7 @@ public class components {
 			List<Column> groupbyList = select.getGroupByColumnReferences();
 			// create Test object
 			Test test = new Test(oper, selectBody, tableMap);
-//			GroupbyOperator groupOper = new GroupbyOperator(oper, test,
-//					groupbyList);
+			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,test,groupbyList);
 //			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
 			System.out
 					.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
