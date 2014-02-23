@@ -139,7 +139,7 @@ public interface Datum {
 		}
 
 		public String toString() {
-			return String.valueOf(value);
+			return String.format("%.2f", value);
 		}
 
 		public String toComString() {

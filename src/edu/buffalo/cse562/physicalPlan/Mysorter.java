@@ -7,9 +7,6 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import edu.buffalo.cse562.physicalPlan.Datum.dLong;
-import edu.buffalo.cse562.physicalPlan.Datum.dString;
-import edu.buffalo.cse562.physicalPlan.Datum.dDate;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 
 public class Mysorter implements Comparator<Datum[]> {

@@ -114,6 +114,9 @@ public class ProjectionOperator implements Operator {
 					if (ob instanceof Long) {
 						lg.logger.log(Level.INFO, "========Long");
 						tempDatum = new Datum.dLong(ob.toString(), newCol);
+					} else if (ob instanceof Double) {
+						lg.logger.log(Level.INFO, "========Double");
+						tempDatum = new Datum.dDecimal(ob.toString(), newCol);
 					} else if (ob instanceof String) {
 						lg.logger.log(Level.INFO, "========String");
 						tempDatum = new Datum.dString((String) ob, newCol);

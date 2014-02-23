@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.buffalo.cse562.physicalPlan.Datum.dString;
-import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class OrderByOperator {
