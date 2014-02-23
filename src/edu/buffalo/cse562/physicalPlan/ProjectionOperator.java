@@ -59,8 +59,8 @@ public class ProjectionOperator implements Operator {
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t);
 				if(!TupleStruct.isNestedCondition())
-				isTupleMapPresent = false;
-				//System.out.println(TupleStruct.getTupleTableMap());
+					isTupleMapPresent = false;
+//				System.out.println("_____"+TupleStruct.getTupleTableMap());
 			}
 			Iterator<SelectExpressionItem> iter=selectcolumns.iterator();
 			while(iter.hasNext()){
@@ -150,6 +150,7 @@ public class ProjectionOperator implements Operator {
 			return null;
 		}
 		listDatum = arrayListDatum.toArray(listDatum);
+//		System.out.println(arrayListDatum.toString());
 		return listDatum;
 
 	}

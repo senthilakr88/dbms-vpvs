@@ -61,32 +61,36 @@ public class GroupbyOperator {
 			return null;
 		}
 
-		if (isTupleMapPresent) {
-			TupleStruct.setTupleTableMap(readOneTupleFromOper);
-			isTupleMapPresent = false;
-		}
+		
 
 		int count = 0;
-		ArrayList<String> datumColumnName = (ArrayList<String>) TupleStruct
-				.getTupleTableMap();
+		ArrayList<String> datumColumnName=null;
 		while (readOneTupleFromOper != null) {
-			//System.out.println("NEW TUPLE READ");
-			count++;
+//			System.out.println("NEW TUPLE READ");
+			if (isTupleMapPresent) {
+				TupleStruct.setTupleTableMap(readOneTupleFromOper);
+//				System.out.println(TupleStruct.getTupleTableMap());
+				datumColumnName = (ArrayList<String>) TupleStruct
+						.getTupleTableMap();
+				if(!TupleStruct.isNestedCondition())
+					isTupleMapPresent = false;
+			}
 			StringBuilder mapKey = new StringBuilder();
 			for (Column groupbyColumnName : groupbyList) {
 				String grpColName = groupbyColumnName.getWholeColumnName()
 						.toLowerCase();
+//				System.out.println(grpColName);
 				if (datumColumnName.contains(grpColName)) {
 					// System.out.println("TESTTTTTT");
 					int index = datumColumnName.indexOf(grpColName);
-					// printTuple(readOneTupleFromOper);
+//					 printTuple(readOneTupleFromOper);
 					// System.out.println(index);
 					singleDatum = readOneTupleFromOper[index];
 					// System.out.println("GROUP BY COLUMN NAME/VALUE: "+singleDatum.getColumn().getColumnName().toLowerCase()+"/"+singleDatum.getStringValue());
 					mapKey.append(singleDatum.getStringValue());
 					// System.out.println(mapKey);
 				} else {
-					//System.out.println("Not able to find a match"+ datumColumnName + " : " + grpColName);
+					System.out.println("Not able to find a match"+ datumColumnName + " : " + grpColName);
 					return null;
 				}
 			}
@@ -170,7 +174,7 @@ public class GroupbyOperator {
 		}
 		
 		//System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
-		printMap(groupByMap);
+//		printMap(groupByMap);
 		//printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;

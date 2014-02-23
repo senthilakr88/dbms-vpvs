@@ -66,10 +66,10 @@ public class AggregateOperator {
 			return null;
 		}
 		
-		if (isTupleMapPresent) {
-			TupleStruct.setTupleTableMap(readOneTupleFromOper);
-			isTupleMapPresent = false;
-		}
+//		if (isTupleMapPresent) {
+//			TupleStruct.setTupleTableMap(readOneTupleFromOper);
+//			isTupleMapPresent = false;
+//		}
 
 		int count = 0;
 		ArrayList<String> datumColumnName = (ArrayList<String>) TupleStruct
@@ -77,7 +77,11 @@ public class AggregateOperator {
 		this.masterDatum = new Datum[selectExpressionList.size()];
 		while (readOneTupleFromOper != null) {
 			// System.out.println("NEW TUPLE READ");
-			count++;
+			if (isTupleMapPresent) {
+				TupleStruct.setTupleTableMap(readOneTupleFromOper);
+				if(!TupleStruct.isNestedCondition())
+					isTupleMapPresent = false;
+			}
 
 			// Building the datum[] from select item expressions
 			Datum[] newSelectItemsArray = new Datum[selectExpressionList.size()];
@@ -106,6 +110,7 @@ public class AggregateOperator {
 			
 			if (isMasterFirst) {
 				masterDatum = newSelectItemsArray;
+				++masterCount;
 				isMasterFirst = false;
 			} else {
 
@@ -217,7 +222,7 @@ public class AggregateOperator {
 			}
 			System.out.println("");
 		}
-		System.out.println("------------------------------------------------");
+//		System.out.println("------------------------------------------------");
 	}
 
 	public Datum sum(Datum t1, Datum t2) {
