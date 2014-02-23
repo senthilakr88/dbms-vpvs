@@ -268,7 +268,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         lg.logger.log(Level.INFO, "COUNT Function");
         
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
-        this.accumulator = 1;
+        this.accumulator = Long.parseLong(String.valueOf(1));;
         
         lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
