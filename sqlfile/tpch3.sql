@@ -38,15 +38,18 @@ CREATE TABLE CUSTOMER (
         comment      VARCHAR(117)
     );
 SELECT
-  customer.name,
-  lineitem.orderkey
+  lineitem.orderkey,
+  sum(lineitem.extendedprice*(1-lineitem.discount)) as revenue, 
+  orders.orderdate,
+  orders.shippriority
 FROM
   customer,
   orders,
   lineitem 
 WHERE
-  customer.mktsegment = 'BUILDING'  and customer.custkey = orders.custkey
-  and lineitem.orderkey = orders.orderkey
+  customer.mktsegment = 'BUILDING' and customer.custkey = orders.custkey
+  and lineitem.orderkey = orders.orderkey 
   and orders.orderdate < DATE('1995-03-15')
   and lineitem.shipdate > DATE('1995-03-15')
-  order by lineitem.orderkey;
+GROUP BY lineitem.orderkey, orders.orderdate, orders.shippriority 
+ORDER BY revenue desc, orders.orderdate;
