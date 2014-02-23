@@ -84,7 +84,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if(tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);
 		}
-
+//		System.out.println(tupleTableMap);
+//		System.out.println(columnName);
 		Datum row = t[index];
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
