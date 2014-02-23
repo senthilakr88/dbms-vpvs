@@ -17,7 +17,14 @@ CREATE TABLE LINEITEM (
         comment        VARCHAR(44)
     );
 select
-extendedprice*discount as revenue
+shipdate,
+discount,
+extendedprice,
+extendedprice*discount,
+sum(extendedprice*discount),
+count(shipdate),
+avg(extendedprice*discount) as revenue,
+avg(extendedprice) as revenue
 from
 lineitem
 where
