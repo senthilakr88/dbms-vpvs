@@ -263,6 +263,61 @@ public class CalcTools extends AbstractExpressionVisitor {
         
         lg.logger.log(Level.INFO, "AVG->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
+    
+    public void count(List eList) {
+        lg.logger.log(Level.INFO, "COUNT Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        columnValue = new Column(null, e.toString());
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        
+        lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
+    
+    public void min(List eList) {
+        lg.logger.log(Level.INFO, "MIN Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        columnValue = new Column(null, e.toString());
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        
+        lg.logger.log(Level.INFO, "MIN->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
+    
+    public void max(List eList) {
+        lg.logger.log(Level.INFO, "MAX Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        columnValue = new Column(null, e.toString());
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        
+        lg.logger.log(Level.INFO, "MAX->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
+    
     public void date(List eList) {
         lg.logger.log(Level.INFO, "DATE Function");
         TupleStruct.setTupleTableMap(this.t);
