@@ -57,7 +57,9 @@ public class GroupbyOperator {
 		ArrayList<Datum[]> finalGroupByDatumArrayList = new ArrayList<Datum[]>();
 		Datum[] readOneTupleFromOper = oper.readOneTuple();
 		Datum singleDatum;
-		
+		if(readOneTupleFromOper == null){
+			return null;
+		}
 
 		if (isTupleMapPresent) {
 			TupleStruct.setTupleTableMap(readOneTupleFromOper);
@@ -168,7 +170,7 @@ public class GroupbyOperator {
 		}
 		
 		//System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
-		//printMap(groupByMap);
+		printMap(groupByMap);
 		//printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;
@@ -295,6 +297,8 @@ public class GroupbyOperator {
 
 		} else if (calcOut instanceof Double) {
 			Double value = (Double) calcOut;
+			tempDatum = new Datum.dDecimal((Double)(calcOut), newCol);
+			
 		}
 		return tempDatum;
 	}
@@ -326,7 +330,7 @@ public class GroupbyOperator {
 		} else if (t1 instanceof dDecimal) {
 			Double value1 = ((dDecimal) t1).getValue();
 			Double value2 = ((dDecimal) t2).getValue();
-			return new Datum.dString(String.valueOf(value1 + value2),
+			return new Datum.dDecimal(String.valueOf(value1 + value2),
 					t1.getColumn());
 		} else {
 			//System.out.println("Unknown datatype not handled !!! in sum");
