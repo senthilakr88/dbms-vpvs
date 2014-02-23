@@ -39,6 +39,11 @@ public interface Datum {
 			value = Long.parseLong(s);
 			this.column = col;
 		}
+		
+		public dLong(Long s, Column col) {
+			value = s;
+			this.column = col;
+		}
 
 		public long getValue() {
 			return value;
@@ -129,6 +134,16 @@ public interface Datum {
 			value = Double.parseDouble(s);
 			this.column = col;
 		}
+		
+		public dDecimal(Double s, Column col) {
+			value = s;
+			this.column = col;
+		}
+		
+		public dDecimal(Integer s, Column col) {
+			value = Double.parseDouble(s.toString());
+			this.column = col;
+		}
 
 		public Double getValue() {
 			return value;
@@ -191,7 +206,7 @@ public interface Datum {
 			value = s;
 			column = col;
 		}
-
+		
 		public Column getColumn() {
 			return column;
 		}
@@ -287,6 +302,11 @@ public interface Datum {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		
+		public dDate(Date s, Column col) {
+			value = s;
+			this.column = col;
 		}
 
 		public Date getValue() {

@@ -142,6 +142,8 @@ public class components {
 
 	
 	public void OrderBy(ArrayList<Datum[]> list) {
+		if(list == null)
+			return;
 		OrderByOperator obp = new OrderByOperator(orderbyElements);
 		obp.setListDatum(list);
 		if (orderbyElements != null) {
