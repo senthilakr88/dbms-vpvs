@@ -213,9 +213,12 @@ public class CalcTools extends AbstractExpressionVisitor {
         String functionName = function.getName().toLowerCase();
         ExpressionList parameters = function.getParameters();
         lg.logger.log(Level.INFO, functionName);
-        lg.logger.log(Level.INFO, parameters.toString());
-        List expressionList = parameters.getExpressions();
-        lg.logger.log(Level.INFO, expressionList.toString());
+//        lg.logger.log(Level.INFO, parameters.toString());
+    	List expressionList = null;
+        if(parameters!=null){
+        	expressionList = parameters.getExpressions();
+            lg.logger.log(Level.INFO, expressionList.toString());
+        }
         java.lang.reflect.Method method=null;
         try {
           method = this.getClass().getMethod(functionName, List.class);
