@@ -20,6 +20,7 @@ public interface Datum {
 	public void setColumn(Column column);
 
 	public boolean equals(Column col);
+	public String getStringValue();
 	
 	public class dLong implements Datum {
 
@@ -87,7 +88,9 @@ public interface Datum {
 		public Datum sumDatum(Datum input){
 			Datum sum = null;
 			if(input instanceof dLong){
-				Long value = this.getValue()+((dLong) input).getValue();
+				long arg1 =(long) this.getValue();
+				long arg2 =(long)  ((dLong) input).getValue();
+				Long value = arg1+arg2;
 				String valueString = value.toString();
 				sum = new dLong(valueString,input.getColumn());
 			}
@@ -98,6 +101,13 @@ public interface Datum {
 				
 			}
 		return sum;
+		}
+
+		@Override
+		public String getStringValue() {
+			
+			return value.toString();
+			
 		}
 
 	}
@@ -163,6 +173,11 @@ public interface Datum {
 				
 			}
 		return sum;
+		}
+
+		@Override
+		public String getStringValue() {
+			return value.toString();
 		}
 
 	}
@@ -231,6 +246,11 @@ public interface Datum {
 		        dString test = (dString) obj;
 		       return (this.value.equals(test.value))? true: false;
 		   }
+
+		@Override
+		public String getStringValue() {
+			return value.toString();
+		}
 
 	}
 
@@ -308,6 +328,12 @@ public interface Datum {
 				return false;
 			else
 				return true;
+		}
+
+		@Override
+		public String getStringValue() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 
 	}

@@ -24,7 +24,7 @@ public class TupleStruct {
 		for(index = 0;index < t.length;index++) {
 			Datum row = (Datum) t[index];
 			String alias = row.getColumn().getTable().getAlias();
-			String datumColumn = row.getColumn().getColumnName();
+			String datumColumn = row.getColumn().getColumnName().toLowerCase();
 			if(alias !=null) {
 				tupleTableMap.add(alias+"."+datumColumn);
 			} else if(joinCondition) {
