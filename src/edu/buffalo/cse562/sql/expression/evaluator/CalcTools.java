@@ -355,8 +355,10 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
-			if (Double.parseDouble(leftValue.toString()) > Double
-					.parseDouble(rightValue.toString())) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>0) {
 				 lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -396,10 +398,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
-			// lg.logger.log(Level.INFO, "Double Value");
-			if (Double.parseDouble(leftValue.toString()) >= Double
-					.parseDouble(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>=0) {
+				 lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
@@ -477,9 +480,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
-			if (Double.parseDouble(leftValue.toString()) < Double
-					.parseDouble(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<0) {
+				 lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
@@ -512,9 +517,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
-			if (Double.parseDouble(leftValue.toString()) <= Double
-					.parseDouble(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<=0) {
+				 lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
