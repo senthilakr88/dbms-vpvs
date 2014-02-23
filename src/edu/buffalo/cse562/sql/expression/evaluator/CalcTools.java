@@ -266,18 +266,9 @@ public class CalcTools extends AbstractExpressionVisitor {
     
     public void count(List eList) {
         lg.logger.log(Level.INFO, "COUNT Function");
-        TupleStruct.setTupleTableMap(this.t);
-        CalcTools ct = new CalcTools(this.t);
-        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         
-        //Assuming only one date is passed
-        //Hence index is 0
-        Expression e = (Expression) eList.get(0);
-        columnValue = new Column(null, e.toString());
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
-        e.accept(ct);
-        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
-        this.accumulator = ct.getResult();
+        this.accumulator = Long.parseLong(String.valueOf(1));;
         
         lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
