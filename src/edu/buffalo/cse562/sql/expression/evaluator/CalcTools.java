@@ -365,13 +365,29 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Double d2 = Double.parseDouble(rightValue.toString());
 			int comparison = Double.compare(d1, d2);
 			if (comparison>0) {
-				 lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "GREATER than");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			if (Long.parseLong(leftValue.toString()) > Long
 					.parseLong(rightValue.toString())) {
-				 lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "GREATER than");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>0) {
+				 lg.logger.log(Level.INFO, "GREATER than");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>0) {
+				 lg.logger.log(Level.INFO, "GREATER than");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
@@ -379,9 +395,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
 			if (date1.after(date2)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
+				lg.logger.log(Level.INFO, "GREATER than");
 				accumulatorBoolean = true;
 			}
+		} else {
+			lg.logger.log(Level.INFO, "Greater than - NONE");
 		}
 	}
 
@@ -408,14 +426,30 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Double d2 = Double.parseDouble(rightValue.toString());
 			int comparison = Double.compare(d1, d2);
 			if (comparison>=0) {
-				 lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "GREATER than equals");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			// lg.logger.log(Level.INFO, "Long Value");
 			if (Long.parseLong(leftValue.toString()) >= Long
 					.parseLong(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "GREATER than equals");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>=0) {
+				 lg.logger.log(Level.INFO, "GREATER than equals");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison>=0) {
+				 lg.logger.log(Level.INFO, "GREATER than equals");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
@@ -423,9 +457,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
 			if (date1.after(date2)||date1.equals(date2)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
+				lg.logger.log(Level.INFO, "GREATER than equals");
 				accumulatorBoolean = true;
 			}
+		} else {
+			lg.logger.log(Level.INFO, "Greater than equals - NONE");
 		}
 	}
 
@@ -490,22 +526,40 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Double d2 = Double.parseDouble(rightValue.toString());
 			int comparison = Double.compare(d1, d2);
 			if (comparison<0) {
-				 lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "Less than");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			if (Long.parseLong(leftValue.toString()) < Long
 					.parseLong(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "Less than");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<0) {
+				 lg.logger.log(Level.INFO, "Less than");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<0) {
+				 lg.logger.log(Level.INFO, "Less than");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
 			if (date1.before(date2)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
+				lg.logger.log(Level.INFO, "Less than");
 				accumulatorBoolean = true;
 			}
+		} else {
+			lg.logger.log(Level.INFO, "Less than - NONE");
 		}
 	}
 
@@ -527,23 +581,42 @@ public class CalcTools extends AbstractExpressionVisitor {
 			Double d2 = Double.parseDouble(rightValue.toString());
 			int comparison = Double.compare(d1, d2);
 			if (comparison<=0) {
-				 lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "Less than equals");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			if (Long.parseLong(leftValue.toString()) <= Long
 					.parseLong(rightValue.toString())) {
-				// lg.logger.log(Level.INFO, "GREATER GREATER");
+				 lg.logger.log(Level.INFO, "Less than equals");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<=0) {
+				 lg.logger.log(Level.INFO, "Less than equals");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			Double d1 = Double.parseDouble(leftValue.toString());
+			Double d2 = Double.parseDouble(rightValue.toString());
+			int comparison = Double.compare(d1, d2);
+			if (comparison<=0) {
+				 lg.logger.log(Level.INFO, "Less than equals");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
 			Date date1 = (Date) leftValue;
 			Date date2 = (Date) rightValue;
 			if (date1.before(date2)||date1.equals(date2)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
+				lg.logger.log(Level.INFO, "Less than equals");
 				accumulatorBoolean = true;
 			}
+		} else {
+			lg.logger.log(Level.INFO, "Less than equals - NONE");
 		}
+		
 	}
 
 	@Override
