@@ -30,7 +30,8 @@ public class GroupbyOperator {
 	List<Column> groupbyList;
 	Map<String, Datum[]> groupByMap = new HashMap<String, Datum[]>();
 	boolean isTupleMapPresent;
-	
+	static long tempCount = 1;
+	HashMap<String,Long> mapGroupCountMap = new HashMap<String,Long>();
 	
 
 	public GroupbyOperator(Operator oper,
@@ -118,11 +119,12 @@ public class GroupbyOperator {
 			
 			
 			if (!groupByMap.containsKey(mapKey.toString())) {
-				
+				mapGroupCountMap.put(mapKey.toString(), tempCount);
 				groupByMap.put(mapKey.toString(), newSelectItemsArray);
 				
 			} else {
 				//System.out.println("KEY/VALUE PAIR ALREADY EXISTING IN MAP");
+				tempCount = mapGroupCountMap.get(mapKey.toString());
 				Datum[] datumArray = groupByMap.get(mapKey.toString());
 				Datum[] tempDatum = new Datum[datumArray.length];
 				for (int i=0;i<datumArray.length;i++) {
@@ -131,14 +133,24 @@ public class GroupbyOperator {
 					System.out.println(newSelectItemsArray[i] + " :: " + datumArray[i]+ " :: " + funcName + "::"+tempDatum[i]);
 				}
 				groupByMap.put(mapKey.toString(), tempDatum);
-
+				mapGroupCountMap.put(mapKey.toString(), tempCount);
 			}
 
 			readOneTupleFromOper = this.oper.readOneTuple();
 			
 		}
+		printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;
+	}
+
+	private void printCountMap(HashMap<String, Long> mapGroupCountMap2) {
+		System.out.println("SIZE OF THE MAP" + mapGroupCountMap2.size());
+		for (Entry<String, Long> entry : mapGroupCountMap2.entrySet()) {
+			System.out.println("Key = " + entry.getKey() + ", Value = "
+					+ entry.getValue());
+		}
+		
 	}
 
 	private Datum getDatumFun(String funcName, Datum t1,
@@ -151,7 +163,7 @@ public class GroupbyOperator {
 			return sum(t1,t2);
 		case "count":
 //			System.out.println("AGGREGATE FUNC - COUNT method");
-			return sum(t1,t2);
+			return count();
 		case "min":
 //			System.out.println("MIN method");
 			return min(t1,t2);
@@ -171,6 +183,12 @@ public class GroupbyOperator {
 	}
 
 
+
+	private Datum count() {
+		String value = Long.toString(tempCount++);
+		Column newCol = new Column();
+		return new dLong(value,newCol);
+	}
 
 	public void printTestMap(Map groupMap) {
 		System.out.println("SIZE OF THE MAP" + groupByMap.size());
