@@ -39,6 +39,7 @@ public class GroupbyOperator {
 	Column avgColumnName = null;
 	int avgIndex = 0;
 	Boolean firstTimeFlag = false;
+	Set<Integer> avgIndexList = new HashSet<Integer> ();
 	Set<String> keyThatIsSumSet = new HashSet<String>();
 
 	public GroupbyOperator(Operator oper,ArrayList<SelectExpressionItem> selectExpressionList, List<Column> groupbyList) {
@@ -144,48 +145,65 @@ public class GroupbyOperator {
 				int i;
 				for (i=0;i<datumArray.length;i++) {
 					String funcName = fnMap.get(i);
-					avgIndex = i;
-					//System.out.println("PASSING FUNCTION NAME: "+funcName);
+//					avgIndex = i;
+					if (funcName.equalsIgnoreCase("avg")){
+						avgIndexList.add(i);
+					}
+//					System.out.println("INDEX for average is: "+avgIndexList.toString());
 					tempDatum[i] = getDatumFun(funcName, newSelectItemsArray[i], datumArray[i]);
 					//System.out.println(newSelectItemsArray[i] + " :: " + datumArray[i]+ " :: " + funcName + "::"+tempDatum[i]);
 				}
 
 				groupByMap.put(mapKey.toString(), tempDatum);
 				mapGroupCountMap.put(mapKey.toString(), tempCount);
+//				System.out.println("PRINT COUNT GROUP MAP");
+//				printCountMap(mapGroupCountMap);
+				
 			}
 			readOneTupleFromOper = this.oper.readOneTuple();
 		}
-		//System.out.println("PRINT MAP");
-		//printMap(groupByMap);
-		
+//		System.out.println("PRINT MAP");
+//		printMap(groupByMap);
+//		System.out.println(keyThatIsSumSet);
 		//avg code
 		if(avgFlag == true){
+//			System.out.println("avg flag true");
+
 			for (Entry<String, Datum[]> entry : groupByMap.entrySet()) {
+//				System.out.println("entered loop");
+
 				Datum[] tempDatum = entry.getValue();
-				for(String iter: keyThatIsSumSet){
+//				System.out.println(tempDatum.toString());
+//				for(String iter: keyThatIsSumSet){
 					//System.out.println(iter);
-					if(iter.equalsIgnoreCase(entry.getKey())){
-						Datum avgDatum = tempDatum[avgIndex];
-						tempDatum[avgIndex]=avg(avgDatum);
-					}
+					
+				for(int avgIndex:avgIndexList){		
+					Datum avgDatum = tempDatum[avgIndex];
+					tempDatum[avgIndex]=avg(avgDatum,entry.getKey());
 				}
+//					}
+//				}
 				groupByMap.put(entry.getKey(), tempDatum);
 			}
 		}
 		
-		//System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
+//		System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
 //		printMap(groupByMap);
 		//printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;
 	}
 
-	private Datum avg(Datum avgDatum) {
+	private Datum avg(Datum avgDatum, String groupName) {
+		Long groupCount = mapGroupCountMap.get(groupName);
+//		System.out.println("GroupCount"+groupCount);
 		if(firstTimeFlag!=true){
 			if (avgDatum instanceof dLong) {
 				long value1 = ((dLong) avgDatum).getValue();
+				
 				double val1 = (double)value1;
-				double tempCountDouble = (double)tempCount;
+				double tempCountDouble = (double)groupCount;
+//				System.out.println("GroupVal"+val1);
 				Double avg = val1/tempCountDouble;
 				avgColumnName = avgDatum.getColumn();
 				return new Datum.dDecimal(String.valueOf(avg),avgDatum.getColumn());
@@ -196,8 +214,14 @@ public class GroupbyOperator {
 				//System.out.println("Date not handled !!! in sum");
 				return null;
 			} else if (avgDatum instanceof dDecimal) {
+//				System.out.println("Decimal type");
 				Double value1 = ((dDecimal) avgDatum).getValue();
-				return new Datum.dString(String.valueOf(value1/tempCount),
+//				System.out.println(value1);
+				value1 = value1*100/100;
+//				System.out.println(value1);
+				Double result = value1/groupCount;
+				result=result*100/100;
+				return new Datum.dDecimal(String.valueOf(result),
 						avgDatum.getColumn());
 			} else {
 				//System.out.println("Unknown datatype not handled !!! in sum");
@@ -250,6 +274,7 @@ public class GroupbyOperator {
 	}
 	
 	private Datum count() {
+//		System.out.println("COUNT of Count method"+ tempCount);
 		String value = Long.toString(tempCount);
 		Column newCol = new Column();
 		return new dLong(value,newCol);
