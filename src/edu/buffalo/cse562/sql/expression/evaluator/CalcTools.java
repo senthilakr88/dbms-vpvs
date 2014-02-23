@@ -237,6 +237,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         //Assuming only one date is passed
         //Hence index is 0
         Expression e = (Expression) eList.get(0);
+        columnValue = new Column(null, e.toString());
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         e.accept(ct);
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
@@ -250,10 +251,11 @@ public class CalcTools extends AbstractExpressionVisitor {
         TupleStruct.setTupleTableMap(this.t);
         CalcTools ct = new CalcTools(this.t);
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
-
+        
         //Assuming only one date is passed
         //Hence index is 0
         Expression e = (Expression) eList.get(0);
+        columnValue = new Column(null, e.toString());
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         e.accept(ct);
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
