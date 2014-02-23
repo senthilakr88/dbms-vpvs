@@ -5,10 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import edu.buffalo.cse562.physicalPlan.Datum.dDate;
 import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
@@ -36,22 +38,15 @@ public class GroupbyOperator {
 	String avgKeyString = "";
 	Column avgColumnName = null;
 	int avgIndex = 0;
-	
+	Boolean firstTimeFlag = false;
+	Set<String> keyThatIsSumSet = new HashSet<String>();
 
-	public GroupbyOperator(Operator oper,
-			ArrayList<SelectExpressionItem> selectExpressionList, 
-			List<Column> groupbyList) {
+	public GroupbyOperator(Operator oper,ArrayList<SelectExpressionItem> selectExpressionList, List<Column> groupbyList) {
 		this.oper = oper;
 		this.groupbyList = groupbyList;
-		
 		this.isTupleMapPresent = true;
 		this.selectExpressionList = selectExpressionList;
 		
-	}
-
-	public void resetStream() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/*
@@ -61,7 +56,6 @@ public class GroupbyOperator {
 
 		ArrayList<Datum[]> finalGroupByDatumArrayList = new ArrayList<Datum[]>();
 		Datum[] readOneTupleFromOper = oper.readOneTuple();
-//		printTuple(readOneTupleFromOper);
 		Datum singleDatum;
 		
 
@@ -90,8 +84,7 @@ public class GroupbyOperator {
 					mapKey.append(singleDatum.getStringValue());
 					// System.out.println(mapKey);
 				} else {
-					System.out.println("Not able to find a match"
-							+ datumColumnName + " : " + grpColName);
+					//System.out.println("Not able to find a match"+ datumColumnName + " : " + grpColName);
 					return null;
 				}
 			}
@@ -111,6 +104,7 @@ public class GroupbyOperator {
 					Function aggregateFunction = (Function) e;
 					// aggregareFunctionList.add(aggregateFunction);
 					String funcName = aggregateFunction.getName();
+					//System.out.println("FUNC NAME IN CHECK:"+funcName);
 					fnMap.put(itr,funcName);
 				} else {
 					fnMap.put(itr, "col");
@@ -118,79 +112,100 @@ public class GroupbyOperator {
 				e.accept(calc);
 				Datum tempDatum = getDatum(calc, newItem);
 				newSelectItemsArray[itr] = tempDatum;
+				//printTuple(newSelectItemsArray);
 			}
 
 			
 			
 			if (!groupByMap.containsKey(mapKey.toString())) {
+				firstTimeFlag = true;
+				//System.out.println("IF CONDITION");
 				tempCount = 1;
 				mapGroupCountMap.put(mapKey.toString(), tempCount);
 				groupByMap.put(mapKey.toString(), newSelectItemsArray);
+				//System.out.println("FIRST TIME KEY: "+mapKey.toString());
 				
 			} else {
+				firstTimeFlag=false;
 				//System.out.println("KEY/VALUE PAIR ALREADY EXISTING IN MAP");
 				tempCount = mapGroupCountMap.get(mapKey.toString());
+				//System.out.println("DATUM THAT S SUMMED------------: "+ mapKey.toString());
+				//keyThatIsSum.add(mapKey.toString());
+				keyThatIsSumSet.add(mapKey.toString());
 				tempCount++;
 				Datum[] datumArray = groupByMap.get(mapKey.toString());
 				Datum[] tempDatum = new Datum[datumArray.length];
 				int i;
 				for (i=0;i<datumArray.length;i++) {
 					String funcName = fnMap.get(i);
-					tempDatum[i] = getDatumFun(funcName, newSelectItemsArray[i], datumArray[i]);
-					System.out.println(newSelectItemsArray[i] + " :: " + datumArray[i]+ " :: " + funcName + "::"+tempDatum[i]);
-				}
-				if(avgFlag==true){
-					avgKeyString = mapKey.toString();
 					avgIndex = i;
-					System.out.println("AVG KEY STRING: "+avgKeyString);
-					System.out.println("AVG INDEX: "+avgIndex);
+					//System.out.println("PASSING FUNCTION NAME: "+funcName);
+					tempDatum[i] = getDatumFun(funcName, newSelectItemsArray[i], datumArray[i]);
+					//System.out.println(newSelectItemsArray[i] + " :: " + datumArray[i]+ " :: " + funcName + "::"+tempDatum[i]);
 				}
+
 				groupByMap.put(mapKey.toString(), tempDatum);
 				mapGroupCountMap.put(mapKey.toString(), tempCount);
 			}
-			avgFlag = false;
 			readOneTupleFromOper = this.oper.readOneTuple();
 		}
-		if(avgKeyString.length()>0){
-			Datum[] finalMapKeyForGroupHavingAvg = groupByMap.get(avgKeyString);
-			Datum avgDatum = finalMapKeyForGroupHavingAvg[avgIndex];
-			avg(avgDatum);
+		//System.out.println("PRINT MAP");
+		//printMap(groupByMap);
+		
+		//avg code
+		if(avgFlag == true){
+			for (Entry<String, Datum[]> entry : groupByMap.entrySet()) {
+				Datum[] tempDatum = entry.getValue();
+				for(String iter: keyThatIsSumSet){
+					//System.out.println(iter);
+					if(iter.equalsIgnoreCase(entry.getKey())){
+						Datum avgDatum = tempDatum[avgIndex];
+						tempDatum[avgIndex]=avg(avgDatum);
+					}
+				}
+				groupByMap.put(entry.getKey(), tempDatum);
+			}
 		}
 		
-		
-		
-		
+		//System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
+		//printMap(groupByMap);
 		//printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;
 	}
 
 	private Datum avg(Datum avgDatum) {
-		if (avgDatum instanceof dLong) {
-			System.out.println("AVG LONG FORMAT: "+"tempcount: "+ tempCount);
-			long value1 = ((dLong) avgDatum).getValue();
-			System.out.println("Value1: "+value1);
-			avgColumnName = avgDatum.getColumn();
-			return new Datum.dLong(String.valueOf(value1/tempCount),avgDatum.getColumn());
-		} else if (avgDatum instanceof dString) {
-			System.out.println("Date not handled !!! in sum");
-			return null;
-		} else if (avgDatum instanceof dDate) {
-			System.out.println("Date not handled !!! in sum");
-			return null;
-		} else if (avgDatum instanceof dDecimal) {
-			Double value1 = ((dDecimal) avgDatum).getValue();
-			return new Datum.dString(String.valueOf(value1/tempCount),
-					avgDatum.getColumn());
-		} else {
-			System.out.println("Unknown datatype not handled !!! in sum");
-			return null;
+		if(firstTimeFlag!=true){
+			if (avgDatum instanceof dLong) {
+				long value1 = ((dLong) avgDatum).getValue();
+				double val1 = (double)value1;
+				double tempCountDouble = (double)tempCount;
+				Double avg = val1/tempCountDouble;
+				avgColumnName = avgDatum.getColumn();
+				return new Datum.dDecimal(String.valueOf(avg),avgDatum.getColumn());
+			} else if (avgDatum instanceof dString) {
+				//System.out.println("Date not handled !!! in sum");
+				return null;
+			} else if (avgDatum instanceof dDate) {
+				//System.out.println("Date not handled !!! in sum");
+				return null;
+			} else if (avgDatum instanceof dDecimal) {
+				Double value1 = ((dDecimal) avgDatum).getValue();
+				return new Datum.dString(String.valueOf(value1/tempCount),
+						avgDatum.getColumn());
+			} else {
+				//System.out.println("Unknown datatype not handled !!! in sum");
+				return null;
+			}
+		}
+		else{
+			return avgDatum;
 		}
 		
 	}
 
 	private void printCountMap(HashMap<String, Long> mapGroupCountMap2) {
-		System.out.println("SIZE OF THE MAP" + mapGroupCountMap2.size());
+		//System.out.println("SIZE OF THE MAP" + mapGroupCountMap2.size());
 		for (Entry<String, Long> entry : mapGroupCountMap2.entrySet()) {
 			System.out.println("Key = " + entry.getKey() + ", Value = "
 					+ entry.getValue());
@@ -216,20 +231,18 @@ public class GroupbyOperator {
 //			System.out.println("MAX method");
 			return max(t1,t2);
 		case "avg":
-//			System.out.println("AVG method");
+			//System.out.println("AVG method");
 			avgFlag = true;
-			return avg(t1,t2);
+			return sum(t1,t2);
 		case "stdev":
-			System.out.println("STDEV method... Not handled");
+			//System.out.println("STDEV method... Not handled");
 			return null;
 		default:
-			System.out.println("AGGREGATE FUNCTION NOT MATCHED" + funcName);
+			//System.out.println("AGGREGATE FUNCTION NOT MATCHED" + funcName);
 			return null;
 		}
 	}
-
-
-
+	
 	private Datum count() {
 		String value = Long.toString(tempCount);
 		Column newCol = new Column();
@@ -239,35 +252,17 @@ public class GroupbyOperator {
 	public void printTestMap(Map groupMap) {
 		System.out.println("SIZE OF THE MAP" + groupByMap.size());
 		for (Entry<String, Datum[]> entry : groupByMap.entrySet()) {
-			System.out.println("Key = " + entry.getKey() + ", Value = "
-					+ entry.getValue() + "value size: "
-					+ entry.getValue().length);
+			System.out.println("Key = " + entry.getKey() + ", Value = "+ entry.getValue() + "value size: "+ entry.getValue().length);
 		}
 	}
 
-	// public void printTestMap() {
-	// // Iterate over the map to get the key; for each key, iterate over the
-	// // value i.e. ArrayList<Datum[]>, get the datum[] and pass it to
-	// // aggregate operator
-	// // create Aggregate operator
-	// for (Entry<String, ArrayList<Datum[]>> entry : groupByMap.entrySet()) {
-	// ArrayList<Datum[]> MapValueList = entry.getValue();
-	// for (Datum[] singleDatumArray : MapValueList) {
-	// System.out
-	// .println("PRINTING DATUM[] before passing to TEST FUCNTION");
-	// printTuple(singleDatumArray);
-	//
-	// // Datum[] aggregateDatumArray =
-	// // test.aggregateFunction(singleDatumArray);
-	// System.out
-	// .println("-------------------------------------------------");
-	// // printTuple(aggregateDatumArray);
-	// }
-	// test.resetAggregateDatumBuffer();
-	// // System.out.println("Key = " + entry.getKey() + ", Value = " +
-	// // entry.getValue()+"value size: "+entry.getValue().size());
-	// }
-	// }
+	 public void printMap(Map<String, Datum[]> groupByMap) {
+		 for (Entry<String, Datum[]> entry : groupByMap.entrySet()) {
+			 Datum[] MapValue = entry.getValue();
+			 System.out.println("KEY: "+ entry.getKey());
+			 printTuple(MapValue);
+		 }
+	 }
 
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
@@ -326,7 +321,7 @@ public class GroupbyOperator {
 			return new Datum.dString(String.valueOf(value1 + value2),
 					t1.getColumn());
 		} else if (t1 instanceof dDate) {
-			System.out.println("Date not handled !!! in sum");
+			//System.out.println("Date not handled !!! in sum");
 			return null;
 		} else if (t1 instanceof dDecimal) {
 			Double value1 = ((dDecimal) t1).getValue();
@@ -334,39 +329,10 @@ public class GroupbyOperator {
 			return new Datum.dString(String.valueOf(value1 + value2),
 					t1.getColumn());
 		} else {
-			System.out.println("Unknown datatype not handled !!! in sum");
+			//System.out.println("Unknown datatype not handled !!! in sum");
 			return null;
 		}
 
-	}
-	
-	private Datum avg(Datum t1, Datum t2) {
-		//System.out.println("AVG");
-		if (t1 instanceof dLong) {
-			System.out.println("AVG LONG FORMAT: "+"tempcount: "+ tempCount);
-			long value1 = ((dLong) t1).getValue();
-			long value2 = ((dLong) t2).getValue();
-			System.out.println("Value1: "+value1+"Value2: "+value2);
-			avgColumnName = t1.getColumn();
-			return new Datum.dLong(String.valueOf((value1 + value2)),
-					t1.getColumn());
-		} else if (t1 instanceof dString) {
-			String value1 = ((dString) t1).getValue();
-			String value2 = ((dString) t2).getValue();
-			return new Datum.dString(String.valueOf(value1 + value2),
-					t1.getColumn());
-		} else if (t1 instanceof dDate) {
-			System.out.println("Date not handled !!! in sum");
-			return null;
-		} else if (t1 instanceof dDecimal) {
-			Double value1 = ((dDecimal) t1).getValue();
-			Double value2 = ((dDecimal) t2).getValue();
-			return new Datum.dString(String.valueOf(value1 + value2),
-					t1.getColumn());
-		} else {
-			System.out.println("Unknown datatype not handled !!! in sum");
-			return null;
-		}
 	}
 
 	public Datum min(Datum t1, Datum t2) {
@@ -404,7 +370,7 @@ public class GroupbyOperator {
 			else
 				return t2;
 		} else {
-			System.out.println("Unknown datatype not handled !!! in min");
+			//System.out.println("Unknown datatype not handled !!! in min");
 			return null;
 		}
 	}
@@ -444,7 +410,7 @@ public class GroupbyOperator {
 			else
 				return t2;
 		} else {
-			System.out.println("Unknown datatype not handled !!! in min");
+			//System.out.println("Unknown datatype not handled !!! in min");
 			return null;
 		}
 	}
