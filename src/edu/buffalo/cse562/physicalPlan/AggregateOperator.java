@@ -27,18 +27,16 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 public class AggregateOperator {
 	Operator oper;
 	ArrayList<SelectExpressionItem> selectExpressionList;
-	List<Column> groupbyList;
+
 	Map<String, Datum[]> groupByMap = new HashMap<String, Datum[]>();
 	boolean isTupleMapPresent;
-	Test test;
+	boolean isMasterFirst;
 	Datum[] MasterDatum;
 
 	public AggregateOperator(Operator oper,
-			ArrayList<SelectExpressionItem> selectExpressionList, Test test,
-			List<Column> groupbyList) {
+			ArrayList<SelectExpressionItem> selectExpressionList) {
 		this.oper = oper;
-		this.groupbyList = groupbyList;
-		this.test = test;
+		this.isMasterFirst = true;
 		this.isTupleMapPresent = true;
 		this.selectExpressionList = selectExpressionList;
 
@@ -96,14 +94,20 @@ public class AggregateOperator {
 				newSelectItemsArray[itr] = tempDatum;
 			}
 
-			for (int i = 0; i < MasterDatum.length; i++) {
-				String funcName = fnMap.get(i);
-				MasterDatum[i] = getDatumFun(funcName, newSelectItemsArray[i],
-						MasterDatum[i]);
-				System.out.println(newSelectItemsArray[i] + " :: "
-						+ MasterDatum[i] + " :: " + funcName);
-			}
+			if (isMasterFirst) {
+				MasterDatum = newSelectItemsArray;
+				isMasterFirst = false;
+			} else {
 
+				for (int i = 0; i < MasterDatum.length; i++) {
+					String funcName = fnMap.get(i);
+
+					MasterDatum[i] = getDatumFun(funcName,
+							newSelectItemsArray[i], MasterDatum[i]);
+					System.out.println(newSelectItemsArray[i] + " :: "
+							+ MasterDatum[i] + " :: " + funcName);
+				}
+			}
 			readOneTupleFromOper = this.oper.readOneTuple();
 
 		}
@@ -120,7 +124,7 @@ public class AggregateOperator {
 			return sum(t1, t2);
 		case "count":
 			// System.out.println("AGGREGATE FUNC - COUNT method");
-			return sum(t1, t2);
+			return count(t1, t2);
 		case "min":
 			// System.out.println("MIN method");
 			return min(t1, t2);
@@ -128,8 +132,7 @@ public class AggregateOperator {
 			// System.out.println("MAX method");
 			return max(t1, t2);
 		case "avg":
-			// System.out.println("AVG method");
-			return avg(t1, t2);
+			return sum(t1, t2);
 		case "stdev":
 			System.out.println("STDEV method... Not handled");
 			return null;
@@ -137,6 +140,11 @@ public class AggregateOperator {
 			System.out.println("AGGREGATE FUNCTION NOT MATCHED" + funcName);
 			return null;
 		}
+	}
+
+	private Datum count(Datum t1, Datum t2) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public void printTestMap(Map groupMap) {
@@ -223,23 +231,21 @@ public class AggregateOperator {
 		if (t1 instanceof dLong) {
 			long value1 = ((dLong) t1).getValue();
 			long value2 = ((dLong) t2).getValue();
-			return new Datum.dLong(String.valueOf(value1 + value2),
+			return new Datum.dDecimal(String.valueOf(value1 / value2),
 					t1.getColumn());
 		} else if (t1 instanceof dString) {
-			String value1 = ((dString) t1).getValue();
-			String value2 = ((dString) t2).getValue();
-			return new Datum.dString(String.valueOf(value1 + value2),
-					t1.getColumn());
+			System.out.println("String not handled !!! in avg");
+			return null;
 		} else if (t1 instanceof dDate) {
-			System.out.println("Date not handled !!! in sum");
+			System.out.println("Date not handled !!! in avg");
 			return null;
 		} else if (t1 instanceof dDecimal) {
 			Double value1 = ((dDecimal) t1).getValue();
 			Double value2 = ((dDecimal) t2).getValue();
-			return new Datum.dString(String.valueOf(value1 + value2),
+			return new Datum.dString(String.valueOf(value1 / value2),
 					t1.getColumn());
 		} else {
-			System.out.println("Unknown datatype not handled !!! in sum");
+			System.out.println("Unknown datatype not handled !!! in avg");
 			return null;
 		}
 	}

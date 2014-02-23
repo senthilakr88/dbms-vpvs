@@ -30,15 +30,15 @@ public class GroupbyOperator {
 	List<Column> groupbyList;
 	Map<String, Datum[]> groupByMap = new HashMap<String, Datum[]>();
 	boolean isTupleMapPresent;
-	Test test;
+	
 	
 
 	public GroupbyOperator(Operator oper,
-			ArrayList<SelectExpressionItem> selectExpressionList, Test test,
+			ArrayList<SelectExpressionItem> selectExpressionList, 
 			List<Column> groupbyList) {
 		this.oper = oper;
 		this.groupbyList = groupbyList;
-		this.test = test;
+		
 		this.isTupleMapPresent = true;
 		this.selectExpressionList = selectExpressionList;
 		

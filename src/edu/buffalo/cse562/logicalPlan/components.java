@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -83,15 +84,16 @@ public class components {
 
 	public Operator executePhysicalPlan() {
 		Operator oper = null;
-		
-		FromItemParser fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
+
+		FromItemParser fip = new FromItemParser(tableDir, tableMap,
+				tableColTypeMap);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
 			while (joinIte.hasNext()) {
-				
+
 				Join joinTable = (Join) joinIte.next();
 				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
 				joinTable.getRightItem().accept(fip);
@@ -106,29 +108,46 @@ public class components {
 			oper = new SelectionOperator(oper, whereClause);
 
 		}
-
+		
+		boolean isFunction=false;
+		for(SelectExpressionItem sei : projectStmt) {
+			Expression e = sei.getExpression();
+			if(e instanceof Function) 
+				isFunction = true;
+		}
+		
 		if (((PlainSelect) selectBody).getGroupByColumnReferences() != null) {
 			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
 			List<Column> groupbyList = select.getGroupByColumnReferences();
-			// create Test object
-			Test test = new Test(oper, selectBody, tableMap);
-			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,test,groupbyList);
+			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,
+					groupbyList);
 			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
-			System.out
-					.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
-			for (Datum[] singleDatum : finalGroupbyArrayList) {
-				printTuple(singleDatum);
-			}
-
+			OrderBy(finalGroupbyArrayList);
+			return null;
+		} else if (isFunction) {
+			PlainSelect select = (PlainSelect) selectBody;
+			AggregateOperator aggrOper = new AggregateOperator(oper, projectStmt);
+			ArrayList<Datum[]> finalGroupbyArrayList = aggrOper.readOneTuple();
+			OrderBy(finalGroupbyArrayList);
+			return null;
+		} else {
+			oper = new ProjectionOperator(oper, projectStmt);
+			
 		}
 
-		// Projection computation
-		oper = new ProjectionOperator(oper, projectStmt);
-		
 		return oper;
-		
 
+	}
+
+	
+	public void OrderBy(ArrayList<Datum[]> list) {
+		OrderByOperator obp = new OrderByOperator(orderbyElements);
+		obp.setListDatum(list);
+		if (orderbyElements != null) {
+			obp.sort();
+		}
+		obp.print();
 	}
 	
 	public void processTuples(Operator oper) {
@@ -148,6 +167,14 @@ public class components {
 		}
 	}
 
+	private void printGroupTuples(ArrayList<Datum[]> finalGroupbyArrayList) {
+		System.out
+				.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+		for (Datum[] singleDatum : finalGroupbyArrayList) {
+			printTuple(singleDatum);
+		}
+	}
+
 	private void printTuple(Datum[] row) {
 		Boolean first = true;
 		if (row != null && row.length != 0) {
@@ -164,8 +191,7 @@ public class components {
 	}
 
 	public void setTableDirectory(String tableDir) {
-		
-		
+
 		this.tableDir = tableDir;
 
 	}
@@ -185,8 +211,9 @@ public class components {
 		}
 
 	}
-	
-	public void addColsTypeToTable(Map<String, ArrayList<String>> tableColTypeMap) {
+
+	public void addColsTypeToTable(
+			Map<String, ArrayList<String>> tableColTypeMap) {
 		this.tableColTypeMap = tableColTypeMap;
 
 	}

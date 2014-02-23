@@ -112,6 +112,7 @@ public class queryParser {
 						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 						lg.logger.log(Level.INFO, comp.toString());
 						Operator oper = comp.executePhysicalPlan();
+						if(oper!=null)
 						comp.processTuples(oper);
 					} else {
 						System.out
