@@ -80,8 +80,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 			columnValue = column;
 		}
 		tupleTableMap = TupleStruct.getTupleTableMap();
-		if(tupleTableMap.contains(column.getWholeColumnName())) {
-			index = tupleTableMap.indexOf(column.getWholeColumnName());
+		String columnName = column.getWholeColumnName().toLowerCase();
+		if(tupleTableMap.contains(columnName)) {
+			index = tupleTableMap.indexOf(columnName);
 		}
 
 		Datum row = t[index];
