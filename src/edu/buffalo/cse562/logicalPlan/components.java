@@ -12,15 +12,16 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
 import net.sf.jsqlparser.statement.select.Select;
-
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SubJoin;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
+import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
 import edu.buffalo.cse562.physicalPlan.JoinOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
@@ -40,10 +41,9 @@ public class components {
 	ArrayList tableJoins;
 	Expression whereClause;
 	String tableDir;
-	FromItem tableName;
+	FromItem fromItem;
 	SelectBody selectBody;
 	private List orderbyElements;
-
 
 	public components() {
 
@@ -81,11 +81,12 @@ public class components {
 		return toPrint.toString();
 	}
 
-	public void executePhysicalPlan() {
-		Table table = (Table) tableName;
-		Operator oper = new FileScanOperator(table, tableDir, tableMap,
-				tableColTypeMap);
-
+	public Operator executePhysicalPlan() {
+		Operator oper = null;
+		
+		FromItemParser fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
+		fromItem.accept(fip);
+		oper = fip.getOperator();
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
@@ -100,45 +101,51 @@ public class components {
 			}
 		}
 
-		if (!whereClause.equals(null)) {
+		if (whereClause != null) {
 			oper = new SelectionOperator(oper, whereClause);
 
 		}
 
 		if (((PlainSelect) selectBody).getGroupByColumnReferences() != null) {
-			//Groupby computation
+			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
 			List<Column> groupbyList = select.getGroupByColumnReferences();
-			//create Test object
-			Test test = new Test(oper,selectBody,tableMap);
-			GroupbyOperator groupOper = new GroupbyOperator(oper,test,groupbyList);
-			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
-			System.out.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
-			for(Datum[] singleDatum:finalGroupbyArrayList){
-				printTuple(singleDatum);
-			}
+			// create Test object
+			Test test = new Test(oper, selectBody, tableMap);
+//			GroupbyOperator groupOper = new GroupbyOperator(oper, test,
+//					groupbyList);
+//			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
+			System.out
+					.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+//			for (Datum[] singleDatum : finalGroupbyArrayList) {
+//				printTuple(singleDatum);
+//			}
 
 		}
 
-
 		// Projection computation
-		oper=new ProjectionOperator(oper,projectStmt);
-		OrderByOperator obp = new OrderByOperator(orderbyElements);
+		oper = new ProjectionOperator(oper, projectStmt);
+		
+		return oper;
+		
 
+	}
+	
+	public void processTuples(Operator oper) {
+		OrderByOperator obp = new OrderByOperator(orderbyElements);
 		Datum[] t = oper.readOneTuple();
 		while (t != null) {
-			if(orderbyElements != null) {
+			if (orderbyElements != null) {
 				obp.addTuple(t);
 			} else {
 				printTuple(t);
 			}
 			t = oper.readOneTuple();
 		}
-		if(orderbyElements != null) {
+		if (orderbyElements != null) {
 			obp.sort();
 			obp.print();
 		}
-
 	}
 
 	private void printTuple(Datum[] row) {
@@ -157,12 +164,14 @@ public class components {
 	}
 
 	public void setTableDirectory(String tableDir) {
+		
+		
 		this.tableDir = tableDir;
 
 	}
 
 	public void setFromItems(FromItem fromItem) {
-		tableName = fromItem;
+		this.fromItem = fromItem;
 
 	}
 
@@ -174,6 +183,11 @@ public class components {
 		} else {
 			tableColTypeMap.put(table, columnTypeList);
 		}
+
+	}
+	
+	public void addColsTypeToTable(Map<String, ArrayList<String>> tableColTypeMap) {
+		this.tableColTypeMap = tableColTypeMap;
 
 	}
 

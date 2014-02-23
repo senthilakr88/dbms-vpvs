@@ -19,6 +19,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.logicalPlan.components;
+import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.utilities.fileReader;
 
 public class queryParser {
@@ -29,9 +30,9 @@ public class queryParser {
 	components comp;
 	String tableDir;
 
-	public queryParser(String tableDir,List<String> sqlFiles) {
+	public queryParser(String tableDir, List<String> sqlFiles) {
 		this.sqlFiles = sqlFiles;
-		this.tableDir=tableDir;
+		this.tableDir = tableDir;
 		lg = new logManager();
 
 	}
@@ -58,7 +59,7 @@ public class queryParser {
 				Statement statement = parser.parse(new StringReader(queryIte
 						.next()));
 				lg.logger.log(Level.INFO, statement.toString());
-				
+
 				/*
 				 * @author - vino logic - create a hashMap with table name as
 				 * the key and array list of column names as value
@@ -72,7 +73,8 @@ public class queryParser {
 							.getColumnDefinitions();
 					Table table = createTableStatement.getTable();
 					for (ColumnDefinition s : columnDefinitionList) {
-						columnNameList.add(new Column(table, s.getColumnName()));
+						columnNameList
+								.add(new Column(table, s.getColumnName()));
 						columnTypeList.add(s.getColDataType().toString());
 					}
 					// Adding table name and column names to the map
@@ -85,33 +87,40 @@ public class queryParser {
 
 				} else if (statement instanceof Select) {
 					comp.initializeNewStatement();
-					SelectBody selectStmt = ((Select)statement).getSelectBody();
-					if(selectStmt instanceof PlainSelect) {
-					PlainSelect plainSelect = (PlainSelect) selectStmt;
-					lg.logger.log(Level.INFO, "plainSelect :: " + plainSelect.toString());
-					comp.addProjectStmts(plainSelect.getSelectItems());
-					comp.setSelectBody(selectStmt);
-					lg.logger.log(Level.INFO,"from :: " + plainSelect.getFromItem().toString());
-					comp.setFromItems(plainSelect.getFromItem());
-					//lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
-					comp.addWhereConditions(plainSelect.getWhere());
-					//lg.logger.log(Level.INFO,"where :: "+plainSelect.getWhere().toString());
-					//lg.logger.log(Level.INFO,plainSelect.getGroupByColumnReferences().toString());
-					//lg.logger.log(Level.INFO,plainSelect.getInto().toString());
-					//lg.logger.log(Level.INFO,plainSelect.getHaving().toString());
-					//lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
-					//lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
-					comp.addOrderBy(plainSelect.getOrderByElements());
-					comp.addJoins(plainSelect.getJoins());
-					//lg.logger.log(Level.INFO,plainSelect.getTop().toString());
-					lg.logger.log(Level.INFO, comp.toString());
-					comp.executePhysicalPlan();
+					SelectBody selectStmt = ((Select) statement)
+							.getSelectBody();
+					if (selectStmt instanceof PlainSelect) {
+						
+						PlainSelect plainSelect = (PlainSelect) selectStmt;
+						lg.logger.log(Level.INFO, "plainSelect :: "
+								+ plainSelect.toString());
+						comp.addProjectStmts(plainSelect.getSelectItems());
+						comp.setSelectBody(selectStmt);
+						// lg.logger.log(Level.INFO,"from :: " +
+						// plainSelect.getFromItem().toString());
+						comp.setFromItems(plainSelect.getFromItem());
+						// lg.logger.log(Level.INFO,plainSelect.getOrderByElements());
+						comp.addWhereConditions(plainSelect.getWhere());
+						// lg.logger.log(Level.INFO,"where :: "+plainSelect.getWhere().toString());
+						// lg.logger.log(Level.INFO,plainSelect.getGroupByColumnReferences().toString());
+						// lg.logger.log(Level.INFO,plainSelect.getInto().toString());
+						// lg.logger.log(Level.INFO,plainSelect.getHaving().toString());
+						// lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
+						// lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
+						comp.addOrderBy(plainSelect.getOrderByElements());
+						comp.addJoins(plainSelect.getJoins());
+						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
+						lg.logger.log(Level.INFO, comp.toString());
+						Operator oper = comp.executePhysicalPlan();
+						comp.processTuples(oper);
 					} else {
-						System.out.println("Select type of statement !!! still not handled");
+						System.out
+								.println("Select type of statement !!! still not handled");
 					}
-			
+
 				} else {
-					System.out.println("Not a create or select statement !!! Skipped from validation");
+					System.out
+							.println("Not a create or select statement !!! Skipped from validation");
 				}
 			} catch (JSQLParserException e) {
 				// TODO Auto-generated catch block

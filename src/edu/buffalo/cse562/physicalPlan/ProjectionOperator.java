@@ -52,16 +52,18 @@ public class ProjectionOperator implements Operator {
 		Datum[] t = null;
 		Datum[] listDatum = new Datum [] {};
 		ArrayList<Datum> arrayListDatum = new ArrayList<Datum> ();
-
+		
 		t = input.readOneTuple();
 		if (t != null) {
 			int i=0;
+			if(isTupleMapPresent) {
+				TupleStruct.setTupleTableMap(t);
+				if(!TupleStruct.isNestedCondition())
+				isTupleMapPresent = false;
+				//System.out.println(TupleStruct.getTupleTableMap());
+			}
 			Iterator<SelectExpressionItem> iter=selectcolumns.iterator();
 			while(iter.hasNext()){
-				//            	if(isTupleMapPresent) {
-				//                    TupleStruct.setTupleTableMap(t);
-				//                    isTupleMapPresent = false;
-				//                }
 				SelectItem newItem = iter.next();
 				SelectItemTools st = new SelectItemTools();
 				newItem.accept(st);

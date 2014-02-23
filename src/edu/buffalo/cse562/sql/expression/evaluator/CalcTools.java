@@ -48,7 +48,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		// lg.logger.log(Level.INFO, "Came to addition");
 		if(firstEntry==null){
 			firstEntry=true;
-			System.out.println("Full Expression->"+addition.toString());
+//			System.out.println("Full Expression->"+addition.toString());
 			columnValue = new Column(null, addition.toString());
 		}
 //		isExpression = true;
@@ -84,8 +84,10 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if(tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);
 		}
+		
 //		System.out.println(tupleTableMap);
 //		System.out.println(columnName);
+		
 		Datum row = t[index];
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
@@ -137,7 +139,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		// lg.logger.log(Level.INFO, "Came to addition");
 		if(firstEntry==null){
 			firstEntry=true;
-			System.out.println("Full Expression->"+division.toString());
+//			System.out.println("Full Expression->"+division.toString());
 			columnValue = new Column(null, division.toString());
 		}
 //		isExpression = true;
@@ -489,7 +491,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		isExpression = true;
 		if(firstEntry==null){
 			firstEntry=true;
-			System.out.println("Full Expression->"+multiplication.toString());
+//			System.out.println("Full Expression->"+multiplication.toString());
 			columnValue = new Column(null, multiplication.toString());
 		}
 		multiplication.getLeftExpression().accept(this);
@@ -582,7 +584,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		isExpression = true;
 		if(firstEntry==null){
 			firstEntry=true;
-			System.out.println("Full Expression->"+subtraction.toString());
+//			System.out.println("Full Expression->"+subtraction.toString());
 			columnValue = new Column(null, subtraction.toString());
 		}
 		subtraction.getLeftExpression().accept(this);
@@ -684,12 +686,4 @@ public class CalcTools extends AbstractExpressionVisitor {
 		this.accumulatorBoolean = accumulatorBoolean;
 	}
 	
-	public void visit(OrderByElement orderbyEle) {
-//		isExpression = true;
-		Expression e = orderbyEle.getExpression();
-		TupleStruct.setTupleTableMap(t);
-		CalcTools ct = new CalcTools(this.t);
-		e.accept(ct);
-		this.accumulator = ct.getResult(); 
-	}
 }
