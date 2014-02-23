@@ -224,6 +224,39 @@ public class CalcTools extends AbstractExpressionVisitor {
             }
     }
     
+    public void sum(List eList) {
+        lg.logger.log(Level.INFO, "DATE Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        
+        lg.logger.log(Level.INFO, "SUM->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
+    
+    public void avg(List eList) {
+        lg.logger.log(Level.INFO, "DATE Function");
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+
+        //Assuming only one date is passed
+        //Hence index is 0
+        Expression e = (Expression) eList.get(0);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        e.accept(ct);
+        lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
+        this.accumulator = ct.getResult();
+        
+        lg.logger.log(Level.INFO, "AVG->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+    }
     public void date(List eList) {
         lg.logger.log(Level.INFO, "DATE Function");
         TupleStruct.setTupleTableMap(this.t);
