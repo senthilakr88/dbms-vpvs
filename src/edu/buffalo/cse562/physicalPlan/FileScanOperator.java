@@ -56,7 +56,9 @@ public class FileScanOperator implements Operator {
 		try {
 			String line = null;
 			if ((line = reader.readLine()) != null) {
-
+				if(line.equalsIgnoreCase("") || line.isEmpty()) {
+					return null;
+				}
 				String[] singleTableElement = line.split("\\|");
 
 				// oneTupleFromDat = new Tuple(convertType(singleTableElement));
