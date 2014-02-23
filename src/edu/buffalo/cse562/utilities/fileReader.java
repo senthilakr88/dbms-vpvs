@@ -19,9 +19,14 @@ public class fileReader {
 
 	public fileReader(String fileName) {
 		lg = new logManager();
-		String basePath = new File("").getAbsolutePath();
-		this.file = new File(basePath + fileName);
-		lg.logger.log(Level.INFO, basePath);
+
+		if (new File(fileName).exists()) {
+			this.file = new File(fileName);
+		} else {
+			String basePath = new File("").getAbsolutePath();
+			this.file = new File(basePath + File.separator + fileName);
+		}
+		// lg.logger.log(Level.INFO, basePath);
 		lg.logger.log(Level.INFO, fileName);
 	}
 
@@ -38,7 +43,7 @@ public class fileReader {
 			String lineAppend = "";
 			BufferedReader buf = new BufferedReader(new FileReader(file));
 			while ((line = buf.readLine()) != null) {
-				
+
 				if (line.length() == 0 && line.isEmpty())
 					continue;
 				else if (line.startsWith("--"))
@@ -46,12 +51,13 @@ public class fileReader {
 				else {
 					if (line.contains("--"))
 						line = line.substring(0, line.indexOf("--"));
-					if((line.endsWith(")") || line.endsWith(";") || normalQuery) && !tchpQuery) {
+					if ((line.endsWith(")") || line.endsWith(";") || normalQuery)
+							&& !tchpQuery) {
 						contents.add(line);
 						normalQuery = true;
 						continue;
 					}
-					if(!line.trim().endsWith(";")) {
+					if (!line.trim().endsWith(";")) {
 						tchpQuery = true;
 						lineAppend += line + " ";
 					} else {
@@ -59,11 +65,11 @@ public class fileReader {
 						contents.add(lineAppend);
 						lineAppend = "";
 					}
-					
+
 				}
-				
+
 			}
-			
+
 			buf.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

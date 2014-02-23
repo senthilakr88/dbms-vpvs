@@ -31,9 +31,12 @@ public class FileScanOperator implements Operator {
 		this.tableMap = tableMap2;
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
-		tablefile = new File("").getAbsolutePath() + dirName + File.separator
-				+ tableName.getName() + ".dat";
-
+		String basePath = dirName + File.separator + tableName.getName() + ".dat";
+		if(!(new File(basePath).exists())) {
+			tablefile = new File("").getAbsolutePath() + File.separator + basePath;
+		} else {
+			tablefile = basePath;
+		}
 		resetStream();
 	}
 
