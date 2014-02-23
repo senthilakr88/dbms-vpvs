@@ -59,6 +59,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = Double.parseDouble(leftValue.toString())
 					+ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					+ Long.parseLong(rightValue.toString());
@@ -150,6 +152,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = Double.parseDouble(leftValue.toString())
 					/ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					/ Long.parseLong(rightValue.toString());
@@ -160,7 +164,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(DoubleValue doubleValue) {
-		accumulator = doubleValue.getValue();
+		accumulator = doubleValue.getValue()*100/100;
 	}
 
 	@Override
@@ -337,19 +341,21 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(GreaterThan greaterThan) {
 		lg.logger.log(Level.INFO, "Came to greater than");
-		
+//		System.out.println("Came into greater than");
 //		isExpression = true;
 		accumulatorBoolean = false;
 		greaterThan.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		lg.logger.log(Level.INFO, "done with left");
+//		System.out.println("Done with left"+leftValue.toString());
 //		accumulator=null;
 //		System.out.println(greaterThan.getRightExpression().getClass().getName());
 		greaterThan.getRightExpression().accept(this);
 		Object rightValue = accumulator;
 		lg.logger.log(Level.INFO, "done with right");
-		lg.logger.log(Level.INFO, "Leftie "+leftValue.getClass().getName()+leftValue.toString());
-		lg.logger.log(Level.INFO, "Rightie "+rightValue.getClass().getName()+rightValue.toString());
+//		System.out.println("Done with right"+rightValue.toString());
+//		System.out.println("Leftie "+leftValue.getClass().getName()+leftValue.toString());
+//		System.out.println("Rightie "+rightValue.getClass().getName()+rightValue.toString());
 		if (leftValue instanceof String && rightValue instanceof String) {
 			if (leftValue.toString().compareTo(rightValue.toString()) > 0) {
 				accumulatorBoolean = true;
@@ -556,6 +562,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = Double.parseDouble(leftValue.toString())
 					* Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					* Long.parseLong(rightValue.toString());
@@ -644,11 +652,20 @@ public class CalcTools extends AbstractExpressionVisitor {
 		}
 		subtraction.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
+//		System.out.println("subtract Done with left"+leftValue.toString());
+
 		subtraction.getRightExpression().accept(this);
 		Object rightValue = accumulator;
+//		System.out.println("subtract Done with right"+rightValue.toString());
+//		System.out.println("subtract Leftie "+leftValue.getClass().getName()+leftValue.toString());
+//		System.out.println("subtract Rightie "+rightValue.getClass().getName()+rightValue.toString());
+		
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = Double.parseDouble(leftValue.toString())
 					- Double.parseDouble(rightValue.toString());
+//			System.out.println("subtract result 1"+accumulator.getClass().getName());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+//			System.out.println("subtract result 2"+accumulator.getClass().getName());
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					- Long.parseLong(rightValue.toString());
