@@ -19,11 +19,13 @@ public class SelectionOperator implements Operator {
 	Expression condition;
 	String oneLineFromDat;
 	Boolean isTupleMapPresent;
+	logManager lg;
 	
 	public SelectionOperator(Operator input, Expression condition) {
 		this.input = input;
 		this.condition = condition;
 		this.isTupleMapPresent = true;
+		lg = new logManager();
 	}
 	
 	@Override
@@ -59,7 +61,7 @@ public class SelectionOperator implements Operator {
 	}
 	
 	private boolean evaluate(Datum[] t, Expression condition2) {
-		logManager lg = new logManager();
+
 		if(isTupleMapPresent) {
 			TupleStruct.setTupleTableMap(t);
 			isTupleMapPresent = false;

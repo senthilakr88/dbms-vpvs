@@ -1,253 +1,327 @@
 package edu.buffalo.cse562.physicalPlan;
 
-/*
- * to do
- * 1. pass the column name to the sum method
- * 2. loop readOneTuple method read all tuple as a datum[] from where (call readOneTuple method on select operator object)
- * 3. find the duplicate in the column (group by - column name) passed and compute the expression on the 
- * 4. Keep a map: key as the column name and value as the computed value (This has to be done as a buffer while reading the tuples. Ex: sum can be adding the values)
- * 
- */
-
-
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import edu.buffalo.cse562.physicalPlan.Datum.dDate;
+import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
 import edu.buffalo.cse562.physicalPlan.Datum.dLong;
 import edu.buffalo.cse562.physicalPlan.Datum.dString;
-import net.sf.jsqlparser.expression.AllComparisonExpression;
-import net.sf.jsqlparser.expression.AnyComparisonExpression;
-import net.sf.jsqlparser.expression.CaseExpression;
-import net.sf.jsqlparser.expression.DateValue;
-import net.sf.jsqlparser.expression.DoubleValue;
+import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.InverseExpression;
-import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.NullValue;
-import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.expression.TimeValue;
-import net.sf.jsqlparser.expression.TimestampValue;
-import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
-import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
-import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
-import net.sf.jsqlparser.expression.operators.arithmetic.Division;
-import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
-import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.Between;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.operators.relational.Matches;
-import net.sf.jsqlparser.expression.operators.relational.MinorThan;
-import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SubSelect;
 
-public class AggregateOperator implements Operator{
-	// Select body and the groupby column name as the fields in the object that is passed to the visitor object
+public class AggregateOperator {
 	Operator oper;
-	SelectBody selectBody;
-	List<Column> groupByColumnReferences;
-	List<Column> tableColumnList;
-	Datum aggregateSumDatum = null;
-	
-	public AggregateOperator(Operator oper,SelectBody selectBody, List<Column> tableColumnList){
-		this.selectBody = selectBody;
-		groupByColumnReferences = ((PlainSelect) selectBody).getGroupByColumnReferences();
-		this.tableColumnList = tableColumnList;
+	ArrayList<SelectExpressionItem> selectExpressionList;
+	List<Column> groupbyList;
+	Map<String, Datum[]> groupByMap = new HashMap<String, Datum[]>();
+	boolean isTupleMapPresent;
+	Test test;
+	Datum[] MasterDatum;
+
+	public AggregateOperator(Operator oper,
+			ArrayList<SelectExpressionItem> selectExpressionList, Test test,
+			List<Column> groupbyList) {
 		this.oper = oper;
+		this.groupbyList = groupbyList;
+		this.test = test;
+		this.isTupleMapPresent = true;
+		this.selectExpressionList = selectExpressionList;
+
 	}
-	
-	
-	@Override
+
 	public void resetStream() {
-		oper.resetStream();
-		
+		// TODO Auto-generated method stub
+
 	}
 
-	@Override
-	public Datum[] readOneTuple() {
-		Datum[] readOneTupleFromOper = null;
-		
-		System.out.println("TEST PRINT!!!!!!");
-		Datum[] test = this.oper.readOneTuple();
-		printTuple(test);
-		
-		List<SelectItem> listOfSelectItems = ((PlainSelect) selectBody).getSelectItems();
-		int count = 0;
-
-		for(SelectItem itr:listOfSelectItems){
-			System.out.println("FIRST FOR LOOP"+count);
-			count++;
-			SelectExpressionItem singleElement = (SelectExpressionItem) itr;	
-			Expression aggregateExpression = singleElement.getExpression();
-			Function aggregateFunction = (Function) aggregateExpression;
-		
-			ExpressionList funcParamExpressionList = aggregateFunction.getParameters();
-			List<Column> funcParamList = funcParamExpressionList.getExpressions();
-			String funcName = aggregateFunction.getName().toLowerCase().trim();
-			Boolean isGroupByColumnSingleFlag = false;
-			
-			if(groupByColumnReferences.size()==1){
-				isGroupByColumnSingleFlag = true;
-			}
-			
-			switch(funcName){
-			case "sum":
-				System.out.println("SUM method");
-				ArrayList<Column> sumParamArrayList = (ArrayList<Column>) funcParamList;
-				String singleParamColumnName = "";
-				int paramSize = sumParamArrayList.size();
-				if(paramSize>1){
-					for(Column itr1: sumParamArrayList){
-						if(itr1.getColumnName().contains(".")){
-							System.out.println("TABLE NAME.COLUMNNAME");
-							String[] singleParam = itr1.getColumnName().split(".");
-							if(singleParam.length>0){
-								singleParamColumnName = singleParam[1];
-							}
-						}
-						else{
-							singleParamColumnName = itr1.getColumnName();
-						}
-						
-						//call sum function
-						System.out.println("Column name: "+singleParamColumnName);
-						System.out.println("Aggregate function name:"+funcName);
-						readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
-					}
-				}
-				else{
-					System.out.println("PRINT SINGLE FUNC PARAMETER");
-					singleParamColumnName = sumParamArrayList.get(0).getColumnName();
-					readOneTupleFromOper = sum(test, singleParamColumnName, isGroupByColumnSingleFlag);
-				}
-				
-				break;
-			case "count":
-				System.out.println("COUNT method");
-				break;
-			case "min":
-				System.out.println("MIN method");
-				break;
-			case "max":
-				System.out.println("MAX method");
-				break;
-			case "avg":
-				System.out.println("AVG method");
-				break;
-			case "stdev":
-				System.out.println("STDEV method");
-				break;
-			default:
-				System.out.println("AGGREGATE FUNCTION NOT MATCHED");
-				break;
-			}
-		
-		}
-		return readOneTupleFromOper;
-	}
-	
 	/*
-	 * to do - compute sum of the values stored (singleParamColumnName) in a column within a table (singleParamTableName)
-	 * input - table and column name
-	 * compute - read the tuple (Datum[]) after where i.e. after checking the where condition
+	 * read one tuple from the operator, iterate over the column
 	 */
-	public Datum[] sum(Datum[] readOneTupleFromOper,String singleParamColumnName, Boolean isGroupByColumnSingleFlag){
-		Datum matchDatum=null;
-		if(isGroupByColumnSingleFlag==true){
-			for(int i=0;i<readOneTupleFromOper.length;i++){
-				Datum singleTupleElement = readOneTupleFromOper[i];
-				dLong datumInLong;
-				dString datumInString;
-				dDate datumInDate;
-				System.out.println("OUT LOOP COUNT: "+i);
-				if(singleTupleElement instanceof dLong){
-					datumInLong = (dLong) singleTupleElement;
-					if(datumInLong.getColumn().getColumnName().equals(singleParamColumnName)){
-						matchDatum = datumInLong;
-						System.out.println("MATCH DATUM: "+matchDatum);
-						System.out.println("LOOP COUNT"+i);
-						dLong aggregatedLongSumDatum = null;
-						if(aggregateSumDatum != null){
-							aggregatedLongSumDatum = (dLong) aggregateSumDatum;
-							aggregateSumDatum = datumInLong.sumDatum(aggregatedLongSumDatum);
-						}
-						else{
-							aggregateSumDatum = datumInLong;
-						}
-						dLong temp = (dLong) aggregateSumDatum;
-						System.out.println("REPLACE AGE: "+temp);
-						break;
-					}
-					continue;
-				}
-				else if(singleTupleElement instanceof dString){
-					datumInString = (dString) singleTupleElement;
-					if(datumInString.getColumn().equals(singleParamColumnName)){
-						//aggregateSumDatum = datumInString.sumDatum(aggregateSumDatum);
-						matchDatum = datumInString;
-						break;
-					}
-					continue;
-				}
-				else if(singleTupleElement instanceof dString){
-					datumInDate = (dDate) singleTupleElement;
-					if(datumInDate.getColumn().equals(singleParamColumnName)){
-						//aggregateSumDatum = datumInDate.sumDatum(aggregateSumDatum);
-						matchDatum = datumInDate;
-						break;
-					}
-					continue;
-				}	
-			}			
-			for (int i=0; i<readOneTupleFromOper.length;i++) {
-			    if (readOneTupleFromOper[i].equals(matchDatum)) { 
-			    	readOneTupleFromOper[i] = aggregateSumDatum;
-			        break;
-			    }
-			}	
-			printTuple(readOneTupleFromOper);
+	public ArrayList<Datum[]> readOneTuple() {
+
+		ArrayList<Datum[]> finalGroupByDatumArrayList = new ArrayList<Datum[]>();
+		Datum[] readOneTupleFromOper = oper.readOneTuple();
+		// printTuple(readOneTupleFromOper);
+		Datum singleDatum;
+
+		if (isTupleMapPresent) {
+			TupleStruct.setTupleTableMap(readOneTupleFromOper);
+			isTupleMapPresent = false;
 		}
-		else{
-			//list of parameters - to do
+
+		int count = 0;
+		ArrayList<String> datumColumnName = (ArrayList<String>) TupleStruct
+				.getTupleTableMap();
+		this.MasterDatum = new Datum[selectExpressionList.size()];
+		while (readOneTupleFromOper != null) {
+			// System.out.println("NEW TUPLE READ");
+			count++;
+
+			// Building the datum[] from select item expressions
+			Datum[] newSelectItemsArray = new Datum[selectExpressionList.size()];
+			Map<Integer, String> fnMap = new HashMap<Integer, String>();
+			for (int itr = 0; itr < selectExpressionList.size(); itr++) {
+				// System.out.println("EXPRESSION"+countExpression);
+				SelectExpressionItem newItem = selectExpressionList.get(itr);
+				Expression e = newItem.getExpression();
+
+				CalcTools calc = new CalcTools(readOneTupleFromOper);
+
+				if (e instanceof Function) {
+					// System.out.println("PRINT THERE IS A FUNCTION IN THE SELECT BODY");
+					Function aggregateFunction = (Function) e;
+					// aggregareFunctionList.add(aggregateFunction);
+					String funcName = aggregateFunction.getName();
+					fnMap.put(itr, funcName);
+				} else {
+					fnMap.put(itr, "col");
+				}
+				e.accept(calc);
+				Datum tempDatum = getDatum(calc, newItem);
+				newSelectItemsArray[itr] = tempDatum;
+			}
+
+			for (int i = 0; i < MasterDatum.length; i++) {
+				String funcName = fnMap.get(i);
+				MasterDatum[i] = getDatumFun(funcName, newSelectItemsArray[i],
+						MasterDatum[i]);
+				System.out.println(newSelectItemsArray[i] + " :: "
+						+ MasterDatum[i] + " :: " + funcName);
+			}
+
+			readOneTupleFromOper = this.oper.readOneTuple();
+
 		}
-		return readOneTupleFromOper;
+		finalGroupByDatumArrayList.add(MasterDatum);
+		return finalGroupByDatumArrayList;
 	}
-	
-	private void printTuple(Datum[] row) {
-		if(row!=null && row.length !=0) {
-		for(Datum col : row) {
-			System.out.print(col + "|");
+
+	private Datum getDatumFun(String funcName, Datum t1, Datum t2) {
+		switch (funcName.toLowerCase()) {
+		case "col":
+			return t1;
+		case "sum":
+			// System.out.println("AGGREGATE FUNC - SUM");
+			return sum(t1, t2);
+		case "count":
+			// System.out.println("AGGREGATE FUNC - COUNT method");
+			return sum(t1, t2);
+		case "min":
+			// System.out.println("MIN method");
+			return min(t1, t2);
+		case "max":
+			// System.out.println("MAX method");
+			return max(t1, t2);
+		case "avg":
+			// System.out.println("AVG method");
+			return avg(t1, t2);
+		case "stdev":
+			System.out.println("STDEV method... Not handled");
+			return null;
+		default:
+			System.out.println("AGGREGATE FUNCTION NOT MATCHED" + funcName);
+			return null;
 		}
-		System.out.println("");
+	}
+
+	public void printTestMap(Map groupMap) {
+		System.out.println("SIZE OF THE MAP" + groupByMap.size());
+		for (Entry<String, Datum[]> entry : groupByMap.entrySet()) {
+			System.out.println("Key = " + entry.getKey() + ", Value = "
+					+ entry.getValue() + "value size: "
+					+ entry.getValue().length);
+		}
+	}
+
+	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
+		Column newCol = null;
+		Object calcOut = calc.getResult();
+		if (newItem.getAlias() != null) {
+			// System.out.println("Alias");
+			newCol = new Column(null, newItem.getAlias());
+		} else {
+			// System.out.println("Exp");
+			newCol = calc.getColumn();
+			// System.out.println(newCol.getColumnName());
+		}
+		Datum tempDatum = null;
+		if (calcOut instanceof Long) {
+			String value = calcOut.toString();
+			// String valueWithFuncName = funcName.concat("("+value+")");
+			tempDatum = new Datum.dLong(calcOut.toString(), newCol);
+			// System.out.println("CALC OUTPUT FOR dLONG: "+calcOut.toString());
+			// System.out.println("CALC OUTPUT FOR dLONG: "+newCol);
+			// System.out.println("NEW FUNC VALUE: "+valueWithFuncName);
+			// System.out.println("tempDatum: "+tempDatum.getStringValue());
+		} else if (calcOut instanceof String) {
+			tempDatum = new Datum.dString((String) calcOut, newCol);
+			// System.out.println("CALC OUTPUT FOR DSTRING: "+(String) calcOut);
+			// System.out.println("tempDatum"+tempDatum.getStringValue());
+		} else if (calcOut instanceof Date) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			tempDatum = new Datum.dDate(df.format(calcOut), newCol);
+			// System.out.println("tempDatum"+tempDatum.getStringValue());
+
+		} else if (calcOut instanceof Double) {
+			Double value = (Double) calcOut;
+		}
+		return tempDatum;
+	}
+
+	private void printTuple(Datum[] row) {
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				System.out.print(col + "|");
+			}
+			System.out.println("");
 		}
 		System.out.println("------------------------------------------------");
 	}
 
-}
+	public Datum sum(Datum t1, Datum t2) {
+		if (t1 instanceof dLong) {
+			long value1 = ((dLong) t1).getValue();
+			long value2 = ((dLong) t2).getValue();
+			return new Datum.dLong(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else if (t1 instanceof dString) {
+			String value1 = ((dString) t1).getValue();
+			String value2 = ((dString) t2).getValue();
+			return new Datum.dString(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else if (t1 instanceof dDate) {
+			System.out.println("Date not handled !!! in sum");
+			return null;
+		} else if (t1 instanceof dDecimal) {
+			Double value1 = ((dDecimal) t1).getValue();
+			Double value2 = ((dDecimal) t2).getValue();
+			return new Datum.dString(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else {
+			System.out.println("Unknown datatype not handled !!! in sum");
+			return null;
+		}
 
-	
+	}
+
+	private Datum avg(Datum t1, Datum t2) {
+		if (t1 instanceof dLong) {
+			long value1 = ((dLong) t1).getValue();
+			long value2 = ((dLong) t2).getValue();
+			return new Datum.dLong(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else if (t1 instanceof dString) {
+			String value1 = ((dString) t1).getValue();
+			String value2 = ((dString) t2).getValue();
+			return new Datum.dString(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else if (t1 instanceof dDate) {
+			System.out.println("Date not handled !!! in sum");
+			return null;
+		} else if (t1 instanceof dDecimal) {
+			Double value1 = ((dDecimal) t1).getValue();
+			Double value2 = ((dDecimal) t2).getValue();
+			return new Datum.dString(String.valueOf(value1 + value2),
+					t1.getColumn());
+		} else {
+			System.out.println("Unknown datatype not handled !!! in sum");
+			return null;
+		}
+	}
+
+	public Datum min(Datum t1, Datum t2) {
+		if (t1 instanceof dLong) {
+			Long value1 = ((dLong) t1).getValue();
+			Long value2 = ((dLong) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare <= 0)
+				return t1;
+			else
+				return t2;
+
+		} else if (t1 instanceof dString) {
+			String value1 = ((dString) t1).getValue();
+			String value2 = ((dString) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare <= 0)
+				return t1;
+			else
+				return t2;
+		} else if (t1 instanceof dDate) {
+			Date value1 = ((dDate) t1).getValue();
+			Date value2 = ((dDate) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare <= 0)
+				return t1;
+			else
+				return t2;
+		} else if (t1 instanceof dDecimal) {
+			Double value1 = ((dDecimal) t1).getValue();
+			Double value2 = ((dDecimal) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare <= 0)
+				return t1;
+			else
+				return t2;
+		} else {
+			System.out.println("Unknown datatype not handled !!! in min");
+			return null;
+		}
+	}
+
+	public Datum max(Datum t1, Datum t2) {
+		if (t1 instanceof dLong) {
+			Long value1 = ((dLong) t1).getValue();
+			Long value2 = ((dLong) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare >= 0)
+				return t1;
+			else
+				return t2;
+
+		} else if (t1 instanceof dString) {
+			String value1 = ((dString) t1).getValue();
+			String value2 = ((dString) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare >= 0)
+				return t1;
+			else
+				return t2;
+		} else if (t1 instanceof dDate) {
+			Date value1 = ((dDate) t1).getValue();
+			Date value2 = ((dDate) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare >= 0)
+				return t1;
+			else
+				return t2;
+		} else if (t1 instanceof dDecimal) {
+			Double value1 = ((dDecimal) t1).getValue();
+			Double value2 = ((dDecimal) t2).getValue();
+			int compare = value1.compareTo(value2);
+			if (compare >= 0)
+				return t1;
+			else
+				return t2;
+		} else {
+			System.out.println("Unknown datatype not handled !!! in min");
+			return null;
+		}
+	}
+
+}
