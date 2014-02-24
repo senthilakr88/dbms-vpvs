@@ -64,6 +64,14 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					+ Long.parseLong(rightValue.toString());
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					+ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					+ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
 		}
 	}
 	
@@ -157,6 +165,14 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					/ Long.parseLong(rightValue.toString());
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					/ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					/ Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
 		}
 		// lg.logger.log(Level.INFO,
 		// "Division result is"+accumulator.toString());
@@ -643,6 +659,14 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					* Long.parseLong(rightValue.toString());
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					* Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					* Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
 		}
 	}
 
@@ -745,6 +769,14 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = Long.parseLong(leftValue.toString())
 					- Long.parseLong(rightValue.toString());
+		} else if (leftValue instanceof Double && rightValue instanceof Long) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					- Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+		} else if (leftValue instanceof Long && rightValue instanceof Double) {
+			accumulator = Double.parseDouble(leftValue.toString())
+					- Double.parseDouble(rightValue.toString());
+			accumulator = Double.parseDouble(accumulator.toString())*100/100;
 		}
 	}
 
