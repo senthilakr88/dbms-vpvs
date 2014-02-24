@@ -26,7 +26,7 @@ public class JoinOperator implements Operator {
 		this.firstEntry = true;
 		this.expr = expression;
 		this.isTupleMapPresent = true;
-		this.bufferMaxSize = 1000;
+		this.bufferMaxSize = 10000;
 		this.bufferPointer = -1;
 		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
 		this.isEnd = false;
@@ -45,12 +45,13 @@ public class JoinOperator implements Operator {
 		if (bufferPointer.compareTo(buffer.size()-1) != 0 && buffer.size() <= bufferMaxSize) {
 //			System.out.println(bufferPointer);
 			++bufferPointer;
+//			printTuple(buffer.get(bufferPointer));
 			return buffer.get(bufferPointer);
 		} else {
 			
 			bufferPointer = -1;
 			buffer = new ArrayList<Datum[]>(bufferMaxSize);
-			while (buffer.size() < bufferMaxSize) {
+			while (buffer.size() < bufferMaxSize && !isEnd) {
 				// long startTime = System.currentTimeMillis();
 //				System.out.println("Filling buffer :: " + buffer.size());
 				if (firstEntry) {
@@ -75,15 +76,16 @@ public class JoinOperator implements Operator {
 					}
 					// On expression evaluation
 					t = combine(lt, rt);
-
+					//printTuple(t);
 					if (t == null) {
 						return null;
 					}
 					if (!evaluate(t, expr)) {
 						t = null;
 					}
-
+					
 					if (t != null) {
+						//printTuple(t);
 						buffer.add(t);
 					}
 
@@ -93,11 +95,34 @@ public class JoinOperator implements Operator {
 			}
 		}
 //		System.out.println("Outside :: " +bufferPointer + " :: " + buffer.size() + " :: " + bufferPointer.compareTo(buffer.size()));
-		if(!isEnd) {
+			if(!isEnd){
 			++bufferPointer;
+//			printTuple(buffer.get(bufferPointer));
 			return buffer.get(bufferPointer);
-		} else {
-			return null;
+			} else {
+				if (bufferPointer.compareTo(buffer.size()-1) != 0 && buffer.size() <= bufferMaxSize) {
+//					System.out.println(bufferPointer);
+					++bufferPointer;
+//					printTuple(buffer.get(bufferPointer));
+					return buffer.get(bufferPointer);
+				} else {
+					return null;
+				}
+			}
+	}
+	
+	private void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			System.out.println();
 		}
 	}
 
