@@ -26,7 +26,7 @@ public class JoinOperator implements Operator {
 		this.firstEntry = true;
 		this.expr = expression;
 		this.isTupleMapPresent = true;
-		this.bufferMaxSize = 1000;
+		this.bufferMaxSize = 10000;
 		this.bufferPointer = -1;
 		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
 		this.isEnd = false;
