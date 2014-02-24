@@ -23,6 +23,10 @@ public class FileScanOperator implements Operator {
 	BufferedReader reader;
 	Table tableName;
 	String tablefile;
+	List<Datum[]> buffer;
+	Integer bufferMaxSize;
+	Integer bufferPointer;
+	Boolean isEnd;
 
 	public FileScanOperator(Table tableName, String dirName,
 			List<Column> tableMap2,
@@ -31,13 +35,19 @@ public class FileScanOperator implements Operator {
 		this.tableMap = tableMap2;
 		this.tableName = tableName;
 		this.tableColTypeMap = tableColTypeMap;
-		String basePath = dirName + File.separator + tableName.getName() + ".dat";
-		if(!(new File(basePath).exists())) {
-			tablefile = new File("").getAbsolutePath() + File.separator + basePath;
+		String basePath = dirName + File.separator + tableName.getName()
+				+ ".dat";
+		if (!(new File(basePath).exists())) {
+			tablefile = new File("").getAbsolutePath() + File.separator
+					+ basePath;
 		} else {
 			tablefile = basePath;
 		}
 		resetStream();
+		this.bufferMaxSize = 1000;
+		this.bufferPointer = -1;
+		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
+		this.isEnd = false;
 	}
 
 	/*
@@ -53,26 +63,73 @@ public class FileScanOperator implements Operator {
 			return null;
 		}
 		Datum[] oneTupleFromDat = null;
-		try {
-			String line = null;
-			if ((line = reader.readLine()) != null) {
-				if(line.equalsIgnoreCase("") || line.isEmpty()) {
+		if (bufferPointer.compareTo(buffer.size() - 1) != 0
+				&& buffer.size() <= bufferMaxSize) {
+			// System.out.println(bufferPointer);
+			++bufferPointer;
+//			 printTuple(buffer.get(bufferPointer));
+			return buffer.get(bufferPointer);
+		} else {
+			bufferPointer = -1;
+			buffer = new ArrayList<Datum[]>(bufferMaxSize);
+			while (buffer.size() < bufferMaxSize && !isEnd) {
+				try {
+
+					String line = null;
+
+					if ((line = reader.readLine()) != null) {
+						if (line.equalsIgnoreCase("") || line.isEmpty()) {
+							isEnd = true;
+						}
+						String[] singleTableElement = line.split("\\|");
+
+						// oneTupleFromDat = new
+						// Tuple(convertType(singleTableElement));
+						oneTupleFromDat = convertType(singleTableElement);
+						buffer.add(oneTupleFromDat);
+					} else {
+
+						isEnd = true;
+					}
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!isEnd) {
+				++bufferPointer;
+//				 printTuple(buffer.get(bufferPointer));
+				return buffer.get(bufferPointer);
+			} else {
+				if (bufferPointer.compareTo(buffer.size() - 1) != 0) {
+					// System.out.println(bufferPointer);
+					++bufferPointer;
+//					printTuple(buffer.get(bufferPointer));
+					return buffer.get(bufferPointer);
+				} else {
+//					System.out.println("entered empty");
+					isEnd = false;
 					return null;
 				}
-				String[] singleTableElement = line.split("\\|");
-
-				// oneTupleFromDat = new Tuple(convertType(singleTableElement));
-				oneTupleFromDat = convertType(singleTableElement);
-			} else {
-
-				return null;
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		return oneTupleFromDat;
+	}
+	
+	private void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			System.out.println();
+		}
 	}
 
 	public Datum[] convertType(String[] singleTableElement) {
@@ -82,31 +139,39 @@ public class FileScanOperator implements Operator {
 		Datum[] t = new Datum[singleTableElement.length];
 		int i = 0;
 		int j = 0;
-		while (tableMap.size() != j && !tableMap.get(j).getTable().toString()
-				.equalsIgnoreCase(tableName.getName().toString())) {
+		while (tableMap.size() != j
+				&& !tableMap.get(j).getTable().toString()
+						.equalsIgnoreCase(tableName.getName().toString())) {
 			j++;
 		}
 		while (i < singleTableElement.length) {
 			col = tableMap.get(j);
 			value = singleTableElement[i];
-			type = tableColTypeMap.get(tableName.getName().toString().toLowerCase()).get(i).toLowerCase();
+			type = tableColTypeMap
+					.get(tableName.getName().toString().toLowerCase()).get(i)
+					.toLowerCase();
 			if (type.equalsIgnoreCase("int")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dLong(singleTableElement[i], new Column(tableName,col.getColumnName()));
-				//System.out.print(t[i].toComString());
+				t[i] = new Datum.dLong(singleTableElement[i], new Column(
+						tableName, col.getColumnName()));
+				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("decimal")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dDecimal(singleTableElement[i], new Column(tableName,col.getColumnName()));
-				//System.out.print(t[i].toComString());
-			} else if (type.equalsIgnoreCase("String") || type.startsWith("char") || type.startsWith("varchar")) {
+				t[i] = new Datum.dDecimal(singleTableElement[i], new Column(
+						tableName, col.getColumnName()));
+				// System.out.print(t[i].toComString());
+			} else if (type.equalsIgnoreCase("String")
+					|| type.startsWith("char") || type.startsWith("varchar")) {
 				// tupleKeyValueMap.put(key, value);
-				t[i] = new Datum.dString(singleTableElement[i], new Column(tableName,col.getColumnName()));
-				//System.out.print(t[i].toComString());
+				t[i] = new Datum.dString(singleTableElement[i], new Column(
+						tableName, col.getColumnName()));
+				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("date")) {
 				// tupleKeyValueMap.put(key, (new SimpleDateFormat(
 				// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-				t[i] = new Datum.dDate(singleTableElement[i], new Column(tableName,col.getColumnName()));
-				//System.out.print(t[i].toComString());
+				t[i] = new Datum.dDate(singleTableElement[i], new Column(
+						tableName, col.getColumnName()));
+				// System.out.print(t[i].toComString());
 			} else {
 				try {
 					throw new Exception("Not aware of this data type :: "
@@ -116,7 +181,8 @@ public class FileScanOperator implements Operator {
 					e.printStackTrace();
 				}
 			}
-			i++; j++;
+			i++;
+			j++;
 		}
 		return t;
 
