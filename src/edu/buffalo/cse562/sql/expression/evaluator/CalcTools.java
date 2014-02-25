@@ -126,6 +126,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		isExpression = true;
 		andExpression.getLeftExpression().accept(this);
 		boolean leftValue = accumulatorBoolean;
+		if(leftValue==false){
+			return;
+		}
 		andExpression.getRightExpression().accept(this);
 		boolean rightValue = accumulatorBoolean;
 		if (leftValue && rightValue) {
@@ -719,6 +722,9 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		isExpression = true;
 		orExpression.getLeftExpression().accept(this);
 		boolean leftValue = accumulatorBoolean;
+		if(leftValue==true){
+			return;
+		}
 		orExpression.getRightExpression().accept(this);
 		boolean rightValue = accumulatorBoolean;
 		if (leftValue || rightValue) {
