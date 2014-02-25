@@ -77,7 +77,7 @@ public class JoinOperator implements Operator {
 						//System.out.println("fill left");
 						leftBuffer = fillLeftBuffer();
 						if(isBufEmpty(leftBuffer)){
-							System.out.println("both stream end");
+//							System.out.println("both stream end");
 							setTuple(null);
 							return null;
 						}
