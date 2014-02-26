@@ -25,7 +25,7 @@ public class JoinOperator implements Operator {
 		this.right = right;
 		this.expr = expression;
 		this.isTupleMapPresent = true;
-		this.BufferMaxSize = 3;
+		this.BufferMaxSize = 1000;
 		this.leftBuffer = fillLeftBuffer();
 		this.rightBuffer = fillRightBuffer();
 	}
