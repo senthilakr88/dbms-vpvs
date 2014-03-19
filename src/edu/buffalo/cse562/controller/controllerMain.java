@@ -10,7 +10,7 @@ public class controllerMain {
 
 	String[] input;
 	List<String> sqlFiles;
-	String tableDir;
+	String tableDir,swapDir;
 	logManager lg;
 	
 	public controllerMain(String[] args) {
@@ -20,15 +20,24 @@ public class controllerMain {
 	}
 	
 	public void parseInput() {
+
 		for(int i =0; i< input.length;i++){
+
 			if(input[i].equalsIgnoreCase("--data")) {
 				tableDir = input[i+1];
 				i = i+1;
+			} else if(input[i].equalsIgnoreCase("--swap")) {
+				swapDir = input[i+1];
+				i = i+1;
+				
 			} else {
 				sqlFiles.add(input[i]);
 				lg.logger.log(Level.INFO, sqlFiles.toString());
 			}
 		}
+//		System.out.println(tableDir);
+//		System.out.println(swapDir);
+//		System.out.println(sqlFiles);
 		if(sqlFiles != null) {
 			queryParser qp = new queryParser(tableDir,sqlFiles);
 			qp.interpretFile();
