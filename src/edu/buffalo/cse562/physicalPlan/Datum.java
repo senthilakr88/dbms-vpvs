@@ -12,15 +12,12 @@ import net.sf.jsqlparser.schema.Column;
 public interface Datum {
 
 	public String toString();
-
 	public String toComString();
-
 	public Column getColumn();
-
 	public void setColumn(Column column);
-
 	public boolean equals(Column col);
 	public String getStringValue();
+	public int compareTo(Datum[] tuple);
 	
 	public class dLong implements Datum {
 
@@ -115,6 +112,13 @@ public interface Datum {
 			
 		}
 
+		@Override
+		public int compareTo(Datum[] tuple) {
+			int index = TupleStruct.getColIndex(tuple, column);
+			Object key = TupleStruct.getKey(tuple, index);
+			return value.compareTo((Long)key);
+		}
+
 	}
 	
 	public class dDecimal implements Datum {
@@ -195,6 +199,13 @@ public interface Datum {
 			return value.toString();
 		}
 
+		@Override
+		public int compareTo(Datum[] tuple) {
+			int index = TupleStruct.getColIndex(tuple, column);
+			Object key = TupleStruct.getKey(tuple, index);
+			return value.compareTo((Double)key);
+		}
+
 	}
 
 	public class dString implements Datum {
@@ -265,6 +276,13 @@ public interface Datum {
 		@Override
 		public String getStringValue() {
 			return value.toString();
+		}
+
+		@Override
+		public int compareTo(Datum[] tuple) {
+			int index = TupleStruct.getColIndex(tuple, column);
+			Object key = TupleStruct.getKey(tuple, index);
+			return value.compareTo((String)key);
 		}
 
 	}
@@ -354,6 +372,13 @@ public interface Datum {
 		public String getStringValue() {
 			// TODO Auto-generated method stub
 			return null;
+		}
+
+		@Override
+		public int compareTo(Datum[] tuple) {
+			int index = TupleStruct.getColIndex(tuple, column);
+			Object key = TupleStruct.getKey(tuple, index);
+			return value.compareTo((Date)key);
 		}
 
 	}

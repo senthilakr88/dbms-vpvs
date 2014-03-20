@@ -1,6 +1,7 @@
 package edu.buffalo.cse562.physicalPlan;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.jsqlparser.schema.Column;
@@ -57,4 +58,51 @@ public class TupleStruct {
 		return tupleTableMap;
 	}
 	
+	public static Object getKey(Datum[] tuple, int colIndex) {
+		Object key = null;
+		if (colIndex != -1) {
+			Datum row = tuple[colIndex];
+			if (row instanceof Datum.dLong) {
+				key = ((Datum.dLong) row).getValue();
+
+			} else if (row instanceof Datum.dDate) {
+				key = ((Datum.dDate) row).getValue();
+
+			} else if (row instanceof Datum.dString) {
+				key = ((Datum.dString) row).getValue();
+
+			} else if (row instanceof Datum.dDecimal) {
+				key = ((Datum.dDecimal) row).getValue();
+			}
+		} else {
+			System.out.println("Index of datum not identified. Throwing error in TupleStruct");
+		}
+		return key;
+	}
+	
+	public static int getColIndex(Datum[] tuple, Column column) {
+		int index = -1;
+		List<String> tupleTableMap = TupleStruct.getTupleTableMap();
+		String columnName = column.getWholeColumnName().toLowerCase();
+		if (tupleTableMap.contains(columnName)) {
+			index = tupleTableMap.indexOf(columnName);
+		}
+		return index;
+	}
+	
+	public static int compare(Object leftKey2, Object rightKey2) {
+		if (leftKey2 instanceof String && rightKey2 instanceof String) {
+			return ((String) leftKey2).compareTo((String) rightKey2);
+		} else if (leftKey2 instanceof Double && rightKey2 instanceof Double) {
+			return ((Double) leftKey2).compareTo((Double) rightKey2);
+		} else if (leftKey2 instanceof Long && rightKey2 instanceof Long) {
+			return ((Long) leftKey2).compareTo((Long) rightKey2);
+		} else if (leftKey2 instanceof Date && rightKey2 instanceof Date) {
+			return ((Date) leftKey2).compareTo((Date) rightKey2);
+		} else {
+			System.out
+					.println("Unindentified type in HHJoinOperator :: Compare");
+			return -2;
+		}
+	}
 }
