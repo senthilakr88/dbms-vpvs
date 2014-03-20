@@ -82,7 +82,8 @@ public class TupleStruct {
 	
 	public static int getColIndex(Datum[] tuple, Column column) {
 		int index = -1;
-		List<String> tupleTableMap = TupleStruct.getTupleTableMap();
+		List<String> tupleTableMap = getTupleTableMap();
+		System.out.println(tupleTableMap);
 		String columnName = column.getWholeColumnName().toLowerCase();
 		if (tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);
@@ -92,6 +93,7 @@ public class TupleStruct {
 	
 	public static int compare(Object leftKey2, Object rightKey2) {
 		if (leftKey2 instanceof String && rightKey2 instanceof String) {
+			//System.out.println((String) leftKey2 + " :: " + (String) rightKey2 + "::" + ((String) leftKey2).compareTo((String) rightKey2));
 			return ((String) leftKey2).compareTo((String) rightKey2);
 		} else if (leftKey2 instanceof Double && rightKey2 instanceof Double) {
 			return ((Double) leftKey2).compareTo((Double) rightKey2);
@@ -101,7 +103,7 @@ public class TupleStruct {
 			return ((Date) leftKey2).compareTo((Date) rightKey2);
 		} else {
 			System.out
-					.println("Unindentified type in HHJoinOperator :: Compare");
+					.println("Unindentified type in TupleStruct :: Compare");
 			return -2;
 		}
 	}

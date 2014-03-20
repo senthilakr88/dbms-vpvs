@@ -20,11 +20,12 @@ import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
+import edu.buffalo.cse562.physicalPlan.BNLJoinOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
-import edu.buffalo.cse562.physicalPlan.JoinOperator;
+import edu.buffalo.cse562.physicalPlan.HHJoinOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.OrderByOperator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
@@ -98,7 +99,7 @@ public class components {
 				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
-				oper = new JoinOperator(oper, rightOper,
+				oper = new HHJoinOperator(oper, rightOper,
 						joinTable.getOnExpression());
 
 			}
