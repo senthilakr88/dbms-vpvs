@@ -3,9 +3,13 @@ package edu.buffalo.cse562.physicalPlan;
 import java.util.Date;
 
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.sql.expression.evaluator.ColumnFetcher;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
+/* @author - Vinoth Selvaraju
+ * logic - implements sort merge join algorithm that merges two sorted relation (along the join column) with a join key
+ */
 public class SortMergeJoinOperator implements Operator {
 	Operator left; 
 	Operator right; 
@@ -18,11 +22,13 @@ public class SortMergeJoinOperator implements Operator {
 		this.left = left;
 		this.right = right;
 		this.expr = expr;
+		parseJoinExpression();
 	}
 	
 	@Override
 	public void resetStream() {
-		// TODO Auto-generated method stub
+		left.resetStream();
+		right.resetStream();
 	}
 	
 	/*	Read one tuple from joined tuple
@@ -38,12 +44,10 @@ public class SortMergeJoinOperator implements Operator {
 		
 		//loop until any one relation is completely scanned
 		while(inputDatum1!=null && inputDatum2!=null){
-			
 			//get the join attribute datum from each file scan operator
-			Datum singleDatumValue1 = getDatum(inputDatum1); //find the join Column and pass it here
-			Datum singleDatumValue2 = getDatum(inputDatum2); //find the join Column and pass it here
+			Datum singleDatumValue1 = getDatum(inputDatum1,leftJoinKey);
+			Datum singleDatumValue2 = getDatum(inputDatum2,rightJoinKey);
 			if(singleDatumValue1!=null && singleDatumValue2!=null){
-				
 				//compareDatum return 0 if 2 datum are same
 				int compValue = compareDatum(singleDatumValue1,singleDatumValue2);
 				if( compValue == 0){
@@ -175,17 +179,17 @@ public class SortMergeJoinOperator implements Operator {
 		return singleDatumValue;
 	}
 	
+	/* find join Column in left and right relation and populate the class fields leftJoinKey & rightJoinKey
+	 * input - nothing
+	 * output - nothing
+	 */
 	private void parseJoinExpression(){
 		//Evaluate the expression to find the join key
-		Column joinColumn = null;
-		
 		ColumnFetcher cf = new ColumnFetcher();
 		expr.accept(cf);
 		leftJoinKey = cf.getLeftCol();
 		rightJoinKey = cf.getRightCol();
-
 	}
-	
 	
 	/*	concatenate 2 Datum[]
 	 * 	input - 2 Datum[]
