@@ -1,25 +1,28 @@
 package edu.buffalo.cse562.physicalPlan;
 
 import java.util.Date;
+
+import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
 public class SortMergeJoinOperator implements Operator {
-	FileScanOperator fileScanOperRelation1; 
-	FileScanOperator fileScanOperRelation2; 
-	Column joinKey;
+	Operator left; 
+	Operator right; 
+	Expression expr;
+	Column leftJoinKey;
+	Column rightJoinKey;
 	
-	public SortMergeJoinOperator(FileScanOperator fileScanOperRelation1, 
-			FileScanOperator fileScanOperRelation2, Column joinKey){
-		this.fileScanOperRelation1 = fileScanOperRelation1;
-		this.fileScanOperRelation2 = fileScanOperRelation2;
-		this.joinKey = joinKey;
-		
+	public SortMergeJoinOperator(Operator left, 
+			Operator right, Expression expr){
+		this.left = left;
+		this.right = right;
+		this.expr = expr;
 	}
 	
 	@Override
 	public void resetStream() {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	/*	Read one tuple from joined tuple
@@ -30,15 +33,15 @@ public class SortMergeJoinOperator implements Operator {
 	public Datum[] readOneTuple() {
 		//output Datum[]
 		Datum[] sortMergeJoinedDatum = null;
-		Datum[] inputDatum1 = fileScanOperRelation1.readOneTuple();
-		Datum[] inputDatum2 = fileScanOperRelation2.readOneTuple();
+		Datum[] inputDatum1 = left.readOneTuple();
+		Datum[] inputDatum2 = right.readOneTuple();
 		
 		//loop until any one relation is completely scanned
 		while(inputDatum1!=null && inputDatum2!=null){
 			
 			//get the join attribute datum from each file scan operator
-			Datum singleDatumValue1 = getDatum(inputDatum1);
-			Datum singleDatumValue2 = getDatum(inputDatum2);
+			Datum singleDatumValue1 = getDatum(inputDatum1); //find the join Column and pass it here
+			Datum singleDatumValue2 = getDatum(inputDatum2); //find the join Column and pass it here
 			if(singleDatumValue1!=null && singleDatumValue2!=null){
 				
 				//compareDatum return 0 if 2 datum are same
@@ -46,16 +49,17 @@ public class SortMergeJoinOperator implements Operator {
 				if( compValue == 0){
 					sortMergeJoinedDatum = sortMergeJoin(inputDatum1, inputDatum2);
 					//read another tuple from the 2 relations
-					inputDatum1 =fileScanOperRelation1.readOneTuple();
-					inputDatum2 = fileScanOperRelation2.readOneTuple();
+					inputDatum1 =left.readOneTuple();
+					inputDatum2 = right.readOneTuple();
+					break;
 				}
 				else if(compValue == 1){
 					//read another tuple from the relation1
-					inputDatum1 =fileScanOperRelation1.readOneTuple();
+					inputDatum1 =left.readOneTuple();
 				}
 				else{
 					//read another tuple from the relation2
-					inputDatum2 = fileScanOperRelation2.readOneTuple();
+					inputDatum2 = right.readOneTuple();
 				}
 			}	
 		}
@@ -155,20 +159,33 @@ public class SortMergeJoinOperator implements Operator {
 		return output;
 	}
 	
-	/*	get join key datum from Datum[]
-	 * 	input - Datum[]
+	/*	get join column datum from Datum[]
+	 * 	input - Datum[] & join column specific to the relation (Column)
 	 * 	output - Datum
 	 */
-	private Datum getDatum(Datum[] inputDatum1) {
+	private Datum getDatum(Datum[] inputDatum1, Column joinColumn) {
 		Datum singleDatumValue = null;
+	
 		for(int i=0;i<inputDatum1.length;i++){
-			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinKey.getColumnName().trim())){
+			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinColumn.getColumnName().trim())){
 				singleDatumValue = inputDatum1[i];
 				break;
 			}
 		}
 		return singleDatumValue;
 	}
+	
+	private void parseJoinExpression(){
+		//Evaluate the expression to find the join key
+		Column joinColumn = null;
+		
+		ColumnFetcher cf = new ColumnFetcher();
+		expr.accept(cf);
+		leftJoinKey = cf.getLeftCol();
+		rightJoinKey = cf.getRightCol();
+
+	}
+	
 	
 	/*	concatenate 2 Datum[]
 	 * 	input - 2 Datum[]
