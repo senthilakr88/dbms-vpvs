@@ -67,6 +67,7 @@ public class SortMergeJoinOperator implements Operator {
 				}
 			}	
 		}
+		printTuple(sortMergeJoinedDatum);
 		return sortMergeJoinedDatum;
 	}
 	
@@ -201,5 +202,23 @@ public class SortMergeJoinOperator implements Operator {
 		System.arraycopy(inputDatum1, 0, MergedDatumArray, 0, inputDatum1.length);
 		System.arraycopy(inputDatum2, 0, MergedDatumArray, inputDatum1.length, inputDatum2.length);
 		return MergedDatumArray;
-	}	
+	}
+	
+	/* print tuple
+	 * input - Datum[]
+	 * output - nothing
+	 */
+	public void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+		}
+	}
 }
