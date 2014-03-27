@@ -22,6 +22,10 @@ public class ColumnFetcher extends AbstractExpressionVisitor {
 		return rightColumn;
 	}
 	
+	public Column getCol() {
+		return column;
+	}
+	
 	public void visit(Column column) {
 		this.column = column;
 	}

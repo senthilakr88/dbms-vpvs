@@ -107,4 +107,58 @@ public class TupleStruct {
 			return -2;
 		}
 	}
+	
+	public static int getCompareValue(Object t1, Object t2, boolean asc) {
+		if (t1 instanceof Long) {
+			Long value1 = (Long)t1;
+			Long value2 = (Long)t2;
+			int comp = value1.compareTo(value2);
+			//System.out.println(comp);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+
+		} else if (t1 instanceof String) {
+			String value1 = (String)t1;
+			String value2 = (String)t2;
+			int comp = value1.compareTo(value2);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+
+		}  else if (t1 instanceof Date) {
+			Date value1 = (Date)t1;
+			Date value2 = (Date)t2;
+			int comp = value1.compareTo(value2);
+			if(comp == 0) {
+				return comp;
+			} else if(asc) {
+				return comp;
+			} else {
+				if(comp == -1)
+					return 1;
+				else 
+					return -1;
+			}
+		} else {
+			return -2;
+		}
+		
+		
+	}
+
 }
