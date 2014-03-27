@@ -29,10 +29,12 @@ public class queryParser {
 	logManager lg;
 	components comp;
 	String tableDir;
+	String swapDir;
 
-	public queryParser(String tableDir, List<String> sqlFiles) {
+	public queryParser(String tableDir, String swapDir, List<String> sqlFiles) {
 		this.sqlFiles = sqlFiles;
 		this.tableDir = tableDir;
+		this.swapDir = swapDir;
 		lg = new logManager();
 
 	}
@@ -82,6 +84,7 @@ public class queryParser {
 					comp.addColsTypeToTable(createTableStatement.getTable()
 							.getName().toLowerCase(), columnTypeList);
 					comp.setTableDirectory(tableDir);
+					comp.setSwapDirectory(swapDir);
 					// Printing the contents of the HashMap
 					lg.logger.log(Level.INFO, comp.toString());
 
@@ -109,6 +112,7 @@ public class queryParser {
 						// lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
 						comp.addOrderBy(plainSelect.getOrderByElements());
 						comp.addJoins(plainSelect.getJoins());
+						comp.addLimit(plainSelect.getLimit());
 						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 						lg.logger.log(Level.INFO, comp.toString());
 						Operator oper = comp.executePhysicalPlan();

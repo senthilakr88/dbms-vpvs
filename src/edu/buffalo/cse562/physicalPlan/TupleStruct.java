@@ -83,7 +83,7 @@ public class TupleStruct {
 	public static int getColIndex(Datum[] tuple, Column column) {
 		int index = -1;
 		List<String> tupleTableMap = getTupleTableMap();
-		System.out.println(tupleTableMap);
+		//System.out.println(tupleTableMap);
 		String columnName = column.getWholeColumnName().toLowerCase();
 		if (tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);

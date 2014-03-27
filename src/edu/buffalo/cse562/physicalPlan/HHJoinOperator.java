@@ -39,6 +39,7 @@ public class HHJoinOperator implements Operator {
 		rightIndexRet = true;
 		arrayPointer = 0;
 		hashTable = new HashMap<Integer, ArrayList<Datum[]>>();
+		buildHashTable(left);
 	}
 
 	public void resetStream() {
@@ -50,10 +51,6 @@ public class HHJoinOperator implements Operator {
 		ArrayList<Datum[]> listTuple;
 		Object key;
 		Integer keyNo;
-		if (firstTime) {
-			buildHashTable(left);
-		}
-
 		Datum[] leftDatum;
 		if (arrayPointer == 0) {
 			rightDatum = right.readOneTuple();
@@ -114,7 +111,7 @@ public class HHJoinOperator implements Operator {
 
 		while (tempTuple != null) {
 			if (firstTime) {
-				parseExpression(tempTuple);
+				parseExpression();
 				TupleStruct.setTupleTableMap(tempTuple);
 				leftColIndex = TupleStruct.getColIndex(tempTuple, leftKey);
 				firstTime = false;
@@ -132,11 +129,10 @@ public class HHJoinOperator implements Operator {
 			}
 			tempTuple = oper.readOneTuple();
 		}
-		printTuple(hashTable);
+		//printTuple(hashTable);
 	}
 
-	public void parseExpression(Datum[] t) {
-		List<String> tupleTableMap = TupleStruct.getTupleTableMap();
+	public void parseExpression() {
 		ColumnFetcher cf = new ColumnFetcher();
 		expr.accept(cf);
 		leftKey = cf.getLeftCol();

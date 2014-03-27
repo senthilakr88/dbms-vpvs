@@ -10,12 +10,14 @@ public class controllerMain {
 
 	String[] input;
 	List<String> sqlFiles;
-	String tableDir,swapDir;
+	String tableDir;
+	String swapDir;
 	logManager lg;
 	
 	public controllerMain(String[] args) {
 		this.input = args;
 		sqlFiles = new ArrayList<String>();
+		swapDir = null;
 		lg = new logManager();
 	}
 	
@@ -39,7 +41,7 @@ public class controllerMain {
 //		System.out.println(swapDir);
 //		System.out.println(sqlFiles);
 		if(sqlFiles != null) {
-			queryParser qp = new queryParser(tableDir,sqlFiles);
+			queryParser qp = new queryParser(tableDir,swapDir, sqlFiles);
 			qp.interpretFile();
 		}
 		else {

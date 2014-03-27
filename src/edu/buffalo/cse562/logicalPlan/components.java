@@ -12,6 +12,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -26,6 +27,7 @@ import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
 import edu.buffalo.cse562.physicalPlan.HHJoinOperator;
+import edu.buffalo.cse562.physicalPlan.LimitOperator;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.OrderByOperator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
@@ -43,9 +45,11 @@ public class components {
 	ArrayList tableJoins;
 	Expression whereClause;
 	String tableDir;
+	String swapDir;
 	FromItem fromItem;
 	SelectBody selectBody;
 	private List orderbyElements;
+	private Limit limit;
 
 	public components() {
 
@@ -135,6 +139,10 @@ public class components {
 		} else {
 			oper = new ProjectionOperator(oper, projectStmt);
 			
+		}
+		
+		if(limit!=null) {
+			oper = new LimitOperator(oper, limit.getRowCount());
 		}
 
 		return oper;
@@ -234,6 +242,16 @@ public class components {
 	public void addOrderBy(List orderByElements) {
 		this.orderbyElements = orderByElements;
 
+	}
+
+	public void setSwapDirectory(String swapDir) {
+		this.swapDir = swapDir;
+		
+	}
+
+	public void addLimit(Limit limit) {
+		this.limit = limit;
+		
 	}
 
 }
