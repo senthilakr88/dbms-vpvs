@@ -42,6 +42,15 @@ public class SortMergeJoinOperator implements Operator {
 		Datum[] inputDatum1 = left.readOneTuple();
 		Datum[] inputDatum2 = right.readOneTuple();
 		
+//		if(inputDatum2 == null || inputDatum1 == null){
+//			System.out.println("NULL OCCURED");
+//		}
+		
+//		printTuple(inputDatum1);
+//		System.out.println("\n");
+//		printTuple(inputDatum2);
+//		System.out.println("\n");
+		
 		//loop until any one relation is completely scanned
 		while(inputDatum1!=null && inputDatum2!=null){
 			//get the join attribute datum from each file scan operator
@@ -49,12 +58,14 @@ public class SortMergeJoinOperator implements Operator {
 			Datum singleDatumValue2 = getDatum(inputDatum2,rightJoinKey);
 			if(singleDatumValue1!=null && singleDatumValue2!=null){
 				//compareDatum return 0 if 2 datum are same
+				//System.out.println("INSIDE COMP");
 				int compValue = compareDatum(singleDatumValue1,singleDatumValue2);
 				if( compValue == 0){
+					//System.out.println("TUPLES MATCH");
 					sortMergeJoinedDatum = sortMergeJoin(inputDatum1, inputDatum2);
 					//read another tuple from the 2 relations
-					inputDatum1 =left.readOneTuple();
-					inputDatum2 = right.readOneTuple();
+					//inputDatum1 =left.readOneTuple();
+					//inputDatum2 = right.readOneTuple();
 					break;
 				}
 				else if(compValue == 1){
@@ -67,7 +78,7 @@ public class SortMergeJoinOperator implements Operator {
 				}
 			}	
 		}
-		printTuple(sortMergeJoinedDatum);
+		//printTuple(sortMergeJoinedDatum);
 		return sortMergeJoinedDatum;
 	}
 	
