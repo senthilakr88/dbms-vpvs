@@ -38,7 +38,6 @@ public class ProjectionOperator implements Operator {
 		this.selectcolumns = selectcolumns;
 		this.input = input;
 		this.isTupleMapPresent = true;
-
 	}
 
 
@@ -56,6 +55,7 @@ public class ProjectionOperator implements Operator {
 		t = input.readOneTuple();
 		if (t != null) {
 			int i=0;
+			//System.out.println("Entering TupleMapvalue ::"+ isTupleMapPresent);
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t);
 				if(!TupleStruct.isNestedCondition())
@@ -93,7 +93,7 @@ public class ProjectionOperator implements Operator {
 				} else if (stType.equalsIgnoreCase("SelectExpressionItem")){
 //					System.out.println(((SelectExpressionItem) newItem).getExpression().toString());
 					Expression e = ((SelectExpressionItem) newItem).getExpression();
-
+//					System.out.println("Entering Projection expression :: "+e.toString());
 					CalcTools calc = new CalcTools(t); 
 					e.accept(calc);
 					lg.logger.log(Level.INFO, calc.getResult().toString());
@@ -115,7 +115,6 @@ public class ProjectionOperator implements Operator {
 						lg.logger.log(Level.INFO, "========Long");
 						tempDatum = new Datum.dLong(ob.toString(), newCol);
 					} else if (ob instanceof Double) {
-						lg.logger.log(Level.INFO, "========Double");
 						tempDatum = new Datum.dDecimal(ob.toString(), newCol);
 					} else if (ob instanceof String) {
 						lg.logger.log(Level.INFO, "========String");
@@ -153,6 +152,13 @@ public class ProjectionOperator implements Operator {
 //		System.out.println(arrayListDatum.toString());
 		return listDatum;
 
+	}
+
+
+	@Override
+	public void resetTupleMapping() {
+		isTupleMapPresent = true;
+		
 	}
 }
 

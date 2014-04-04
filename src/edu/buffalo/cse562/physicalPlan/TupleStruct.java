@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import edu.buffalo.cse562.physicalPlan.Datum.dDate;
+import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
+import edu.buffalo.cse562.physicalPlan.Datum.dLong;
+import edu.buffalo.cse562.physicalPlan.Datum.dString;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
@@ -114,51 +118,66 @@ public class TupleStruct {
 			Long value2 = (Long)t2;
 			int comp = value1.compareTo(value2);
 			//System.out.println(comp);
-			if(comp == 0) {
-				return comp;
-			} else if(asc) {
-				return comp;
-			} else {
-				if(comp == -1)
-					return 1;
-				else 
-					return -1;
-			}
-
+			return compHelper(comp,asc);
+		} else if (t1 instanceof Double) {
+			Double value1 = (Double)t1;
+			Double value2 = (Double)t2;
+			int comp = value1.compareTo(value2);
+			//System.out.println("compare value :: " +comp);
+			return compHelper(comp,asc);
 		} else if (t1 instanceof String) {
 			String value1 = (String)t1;
 			String value2 = (String)t2;
 			int comp = value1.compareTo(value2);
-			if(comp == 0) {
-				return comp;
-			} else if(asc) {
-				return comp;
-			} else {
-				if(comp == -1)
-					return 1;
-				else 
-					return -1;
-			}
-
+			//System.out.println("compare value :: " +comp);
+			return compHelper(comp,asc);
 		}  else if (t1 instanceof Date) {
 			Date value1 = (Date)t1;
 			Date value2 = (Date)t2;
 			int comp = value1.compareTo(value2);
-			if(comp == 0) {
-				return comp;
-			} else if(asc) {
-				return comp;
-			} else {
-				if(comp == -1)
-					return 1;
-				else 
-					return -1;
-			}
+			return compHelper(comp,asc);
+		} if (t1 instanceof dLong) {
+			Long value1 = ((dLong)t1).getValue();
+			Long value2 = ((dLong)t2).getValue();
+			int comp = value1.compareTo(value2);
+			//System.out.println(comp);
+			return compHelper(comp,asc);
+		}else if (t1 instanceof dDecimal) {
+			Double value1 = ((dDecimal)t1).getValue();
+			Double value2 = ((dDecimal)t2).getValue();
+			int comp = value1.compareTo(value2);
+			//System.out.println("compare value :: " +comp);
+			return compHelper(comp,asc);
+		} else if (t1 instanceof dString) {
+			String value1 = ((dString)t1).getValue();
+			String value2 = ((dString)t2).getValue();
+			System.out.println("value 1 :: "+ value1 + " value2 :: "+value2);
+			int comp = value1.compareTo(value2);
+			//System.out.println("compare value :: " +comp);
+			return compHelper(comp,asc);
+		}  else if (t1 instanceof dDate) {
+			Date value1 = ((dDate)t1).getValue();
+			Date value2 = ((dDate)t2).getValue();
+			int comp = value1.compareTo(value2);
+			return compHelper(comp,asc);
 		} else {
 			return -2;
 		}
 		
 		
+	}
+	
+	private static int compHelper(int comp, boolean asc) {
+		if(comp == 0) {
+			return comp;
+		} else if(asc) {
+			return comp;
+		} else {
+			if(comp == -1)
+				return 1;
+			else 
+				return -1;
+		}
 	}
 
 }

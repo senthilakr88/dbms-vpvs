@@ -72,4 +72,10 @@ public class SelectionOperator implements Operator {
 		return calc.getAccumulatorBoolean();
 	}
 
+	@Override
+	public void resetTupleMapping() {
+		isTupleMapPresent = true;
+		
+	}
+
 }

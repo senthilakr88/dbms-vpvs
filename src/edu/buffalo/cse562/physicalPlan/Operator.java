@@ -4,5 +4,5 @@ public interface Operator {
 
 	public void resetStream();
 	public Datum[] readOneTuple();
-	
+	public void resetTupleMapping();
 }

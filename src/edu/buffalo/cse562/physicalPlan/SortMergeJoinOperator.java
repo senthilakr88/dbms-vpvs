@@ -232,4 +232,10 @@ public class SortMergeJoinOperator implements Operator {
 			}
 		}
 	}
+
+	@Override
+	public void resetTupleMapping() {
+		// TODO Auto-generated method stub
+		
+	}
 }

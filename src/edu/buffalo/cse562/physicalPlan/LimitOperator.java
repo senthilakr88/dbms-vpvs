@@ -24,5 +24,9 @@ public class LimitOperator implements Operator{
 		}
 		
 	}
+	@Override
+	public void resetTupleMapping() {
+		return;		
+	}
 
 }

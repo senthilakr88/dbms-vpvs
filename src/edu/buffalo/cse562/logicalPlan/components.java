@@ -23,6 +23,7 @@ import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.BNLJoinOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
+import edu.buffalo.cse562.physicalPlan.ExternalSort;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
@@ -94,6 +95,7 @@ public class components {
 				tableColTypeMap);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
+
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
@@ -113,14 +115,14 @@ public class components {
 			oper = new SelectionOperator(oper, whereClause);
 
 		}
-		
-		boolean isFunction=false;
-		for(SelectExpressionItem sei : projectStmt) {
+
+		boolean isFunction = false;
+		for (SelectExpressionItem sei : projectStmt) {
 			Expression e = sei.getExpression();
-			if(e instanceof Function) 
+			if (e instanceof Function)
 				isFunction = true;
 		}
-		
+
 		if (((PlainSelect) selectBody).getGroupByColumnReferences() != null) {
 			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
@@ -128,30 +130,34 @@ public class components {
 			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,
 					groupbyList);
 			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
-			OrderBy(finalGroupbyArrayList);
-			return null;
+			//OrderBy(finalGroupbyArrayList);
+			//return null;
 		} else if (isFunction) {
 			PlainSelect select = (PlainSelect) selectBody;
-			AggregateOperator aggrOper = new AggregateOperator(oper, projectStmt);
+			AggregateOperator aggrOper = new AggregateOperator(oper,
+					projectStmt);
 			ArrayList<Datum[]> finalGroupbyArrayList = aggrOper.readOneTuple();
-			OrderBy(finalGroupbyArrayList);
-			return null;
+			//OrderBy(finalGroupbyArrayList);
+			//return null;
 		} else {
+			System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);
-			
 		}
 		
-		if(limit!=null) {
-			oper = new LimitOperator(oper, limit.getRowCount());
+		if (orderbyElements != null) {
+			System.out.println("Entering ExternalSort");
+			oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
 		}
 
+		if (limit != null) {
+			System.out.println("Entering Limit");
+			oper = new LimitOperator(oper, limit.getRowCount());
+		}
 		return oper;
-
 	}
 
-	
 	public void OrderBy(ArrayList<Datum[]> list) {
-		if(list == null)
+		if (list == null)
 			return;
 		OrderByOperator obp = new OrderByOperator(orderbyElements);
 		obp.setListDatum(list);
@@ -160,22 +166,22 @@ public class components {
 		}
 		obp.print();
 	}
-	
+
 	public void processTuples(Operator oper) {
-		OrderByOperator obp = new OrderByOperator(orderbyElements);
+		// OrderByOperator obp = new OrderByOperator(orderbyElements);
 		Datum[] t = oper.readOneTuple();
 		while (t != null) {
-			if (orderbyElements != null) {
-				obp.addTuple(t);
-			} else {
-				printTuple(t);
-			}
+			// if (orderbyElements != null) {
+			// obp.addTuple(t);
+			// } else {
+			printTuple(t);
+			// }
 			t = oper.readOneTuple();
 		}
-		if (orderbyElements != null) {
-			obp.sort();
-			obp.print();
-		}
+		// if (orderbyElements != null) {
+		// obp.sort();
+		// obp.print();
+		// }
 	}
 
 	private void printGroupTuples(ArrayList<Datum[]> finalGroupbyArrayList) {
@@ -246,12 +252,12 @@ public class components {
 
 	public void setSwapDirectory(String swapDir) {
 		this.swapDir = swapDir;
-		
+
 	}
 
 	public void addLimit(Limit limit) {
 		this.limit = limit;
-		
+
 	}
 
 }

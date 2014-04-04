@@ -208,4 +208,10 @@ public class HHJoinOperator implements Operator {
 		// System.out.println("Combining :: " + lt[0] + " :: " +rt[0]);
 		return temp;
 	}
+
+	@Override
+	public void resetTupleMapping() {
+		// TODO Auto-generated method stub
+		
+	}
 }

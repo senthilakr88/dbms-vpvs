@@ -246,4 +246,9 @@ public class BNLJoinOperator implements Operator {
 		this.leftTuple = lt;
 	}
 
+	@Override
+	public void resetTupleMapping() {
+		isTupleMapPresent = true;		
+	}
+
 }

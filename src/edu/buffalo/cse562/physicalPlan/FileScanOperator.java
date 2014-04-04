@@ -199,4 +199,10 @@ public class FileScanOperator implements Operator {
 		}
 
 	}
+
+	@Override
+	public void resetTupleMapping() {
+		return;
+		
+	}
 }
