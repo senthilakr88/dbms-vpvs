@@ -140,17 +140,17 @@ public class components {
 			//OrderBy(finalGroupbyArrayList);
 			//return null;
 		} else {
-			System.out.println("Entering projection");
+//			System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);
 		}
 		
 		if (orderbyElements != null) {
-			System.out.println("Entering ExternalSort");
+//			System.out.println("Entering ExternalSort");
 			oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
 		}
 
 		if (limit != null) {
-			System.out.println("Entering Limit");
+//			System.out.println("Entering Limit");
 			oper = new LimitOperator(oper, limit.getRowCount());
 		}
 		return oper;
