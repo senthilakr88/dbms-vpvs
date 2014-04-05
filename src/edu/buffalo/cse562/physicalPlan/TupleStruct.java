@@ -45,7 +45,7 @@ public class TupleStruct {
 				String alias = tableName.getAlias();
 				if(alias !=null) {
 					tupleTableMap.add(alias.toLowerCase()+"."+datumColumn);
-				} else if(joinCondition) {
+				} else if(joinCondition && tableName.getName() != null) {
 					tupleTableMap.add(tableName.getName()+"."+datumColumn);
 				} else {
 					tupleTableMap.add(datumColumn);

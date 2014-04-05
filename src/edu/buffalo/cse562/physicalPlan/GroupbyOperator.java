@@ -26,7 +26,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
-public class GroupbyOperator {
+public class GroupbyOperator implements Operator{
 	Operator oper;
 	ArrayList<SelectExpressionItem> selectExpressionList;
 	List<Column> groupbyList;
@@ -41,19 +41,45 @@ public class GroupbyOperator {
 	Boolean firstTimeFlag = false;
 	Set<Integer> avgIndexList = new HashSet<Integer> ();
 	Set<String> keyThatIsSumSet = new HashSet<String>();
+	ArrayList<Datum[]> finalGroupbyArrayList;
+	int index;
+	
 
 	public GroupbyOperator(Operator oper,ArrayList<SelectExpressionItem> selectExpressionList, List<Column> groupbyList) {
 		this.oper = oper;
 		this.groupbyList = groupbyList;
 		this.isTupleMapPresent = true;
 		this.selectExpressionList = selectExpressionList;
+		this.finalGroupbyArrayList = computeGrpBy();
+		this.index = 0;
 		
 	}
 
+	@Override
+	public void resetStream() {
+		oper.resetStream();		
+	}
+
+	@Override
+	public Datum[] readOneTuple() {
+		Datum[] temp = null;
+		if(finalGroupbyArrayList!=null && index != finalGroupbyArrayList.size()) {
+			temp = finalGroupbyArrayList.get(index);
+			++index;
+		}
+		return temp;
+	}
+
+	@Override
+	public void resetTupleMapping() {
+		isTupleMapPresent = true;		
+	}
+	
+	
 	/*
 	 * read one tuple from the operator, iterate over the column
 	 */
-	public ArrayList<Datum[]> readOneTuple() {
+	public ArrayList<Datum[]> computeGrpBy() {
 
 		ArrayList<Datum[]> finalGroupByDatumArrayList = new ArrayList<Datum[]>();
 		Datum[] readOneTupleFromOper = oper.readOneTuple();

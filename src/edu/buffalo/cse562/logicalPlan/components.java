@@ -51,11 +51,13 @@ public class components {
 	SelectBody selectBody;
 	private List orderbyElements;
 	private Limit limit;
+	StringBuffer planPrint;
 
 	public components() {
 
 		tableMap = new ArrayList<Column>();
 		tableColTypeMap = new HashMap<String, ArrayList<String>>();
+		planPrint = new StringBuffer();
 		lg = new logManager();
 	}
 
@@ -76,16 +78,12 @@ public class components {
 		this.selectBody = selectBody;
 	}
 
-	public String toString() {
-		StringBuffer toPrint = new StringBuffer();
-		toPrint.append("PROJECT [(" + projectStmt + ")]\n");
-		toPrint.append("SELECT [" + whereClause + "\n");
-		// for (Map.Entry<String, ArrayList<String>> entry :
-		// tableMap.entrySet()) {
-		// toPrint.append("SCAN [" + entry.getKey() + "(" + entry.getValue()
-		// + ")]");
-		// }
-		return toPrint.toString();
+	public void addToPlan(String s) {
+		planPrint.append(s);
+	}
+	
+	public void printPlan() {
+		System.out.println(planPrint.toString());
 	}
 
 	public Operator executePhysicalPlan() {
@@ -100,12 +98,11 @@ public class components {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
 			while (joinIte.hasNext()) {
-
 				Join joinTable = (Join) joinIte.next();
 				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
-				oper = new HHJoinOperator(oper, rightOper,
+				oper = new BNLJoinOperator(oper, rightOper,
 						joinTable.getOnExpression());
 
 			}
@@ -127,18 +124,10 @@ public class components {
 			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
 			List<Column> groupbyList = select.getGroupByColumnReferences();
-			GroupbyOperator groupOper = new GroupbyOperator(oper, projectStmt,
+			oper = new GroupbyOperator(oper, projectStmt,
 					groupbyList);
-			ArrayList<Datum[]> finalGroupbyArrayList = groupOper.readOneTuple();
-			//OrderBy(finalGroupbyArrayList);
-			//return null;
 		} else if (isFunction) {
-			PlainSelect select = (PlainSelect) selectBody;
-			AggregateOperator aggrOper = new AggregateOperator(oper,
-					projectStmt);
-			ArrayList<Datum[]> finalGroupbyArrayList = aggrOper.readOneTuple();
-			//OrderBy(finalGroupbyArrayList);
-			//return null;
+			oper = new AggregateOperator(oper, projectStmt);
 		} else {
 //			System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);

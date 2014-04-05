@@ -31,8 +31,12 @@ public class Mysorter implements Comparator<Datum[]> {
 			Expression exe = ele.getExpression();
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t1);
+				//System.out.println(TupleStruct.getTupleTableMap());
 				isTupleMapPresent = false;
 			}
+			
+			//printTuple(t1);
+			
 			calc1 = new CalcTools(t1);
 			exe.accept(calc1);
 			calc2 = new CalcTools(t2);
@@ -48,6 +52,21 @@ public class Mysorter implements Comparator<Datum[]> {
 		}
 		//System.out.println("Out :: " + calc1.getResult() + " : " + calc2.getResult() + " : " + comparison);
 		return comparison;
+	}
+	
+	public void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			// System.out.println();
+		}
 	}
 
 }

@@ -46,6 +46,7 @@ public class queryParser {
 			fileReader fr = new fileReader(fileIte.next());
 			sqlQueryList = fr.readContents();
 			lg.logger.log(Level.INFO, sqlQueryList.toString());
+//			System.out.println(sqlQueryList);
 			comp = new components();
 			interpretQuery();
 
