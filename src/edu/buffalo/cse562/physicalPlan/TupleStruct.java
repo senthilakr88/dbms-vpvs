@@ -41,6 +41,7 @@ public class TupleStruct {
 			Table tableName = row.getColumn().getTable();
 			
 			String datumColumn = row.getColumn().getColumnName().toLowerCase();
+//			System.out.println(row.getColumn().getColumnName());
 			if(tableName != null) {
 				String alias = tableName.getAlias();
 				if(alias !=null) {
@@ -48,9 +49,11 @@ public class TupleStruct {
 				} else if(joinCondition && tableName.getName() != null) {
 					tupleTableMap.add(tableName.getName()+"."+datumColumn);
 				} else {
+					System.out.println(tableName + " :: " + datumColumn);
 					tupleTableMap.add(datumColumn);
 				}
 			} else {
+				System.out.println(datumColumn);
 				tupleTableMap.add(datumColumn);
 			}
 			

@@ -47,10 +47,17 @@ public class queryParser {
 			fileReader fr = new fileReader(fileIte.next());
 			sqlQueryList = fr.readContents();
 			lg.logger.log(Level.INFO, sqlQueryList.toString());
-//			System.out.println(sqlQueryList);
+//			printQuery();
 //			comp = new components();
 			interpretQuery();
 
+		}
+	}
+	
+	public void printQuery() {
+		Iterator<String> queryIte = sqlQueryList.iterator();
+		while (queryIte.hasNext()) {
+			System.out.println(queryIte.next());
 		}
 	}
 

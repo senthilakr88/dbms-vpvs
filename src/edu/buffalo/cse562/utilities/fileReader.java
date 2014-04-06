@@ -13,11 +13,13 @@ import edu.buffalo.cse562.logger.logManager;
 
 public class fileReader {
 
+	String fileName;
 	File file;
 	List<String> contents;
 	logManager lg;
 
 	public fileReader(String fileName) {
+		this.fileName = fileName;
 		lg = new logManager();
 
 		if (new File(fileName).exists()) {
@@ -37,10 +39,19 @@ public class fileReader {
 	public List<String> readContents() {
 		contents = new ArrayList<String>();
 		try {
+
 			String line = null;
 			Boolean normalQuery = false;
 			Boolean tchpQuery = false;
 			String lineAppend = "";
+			String fileNm = fileName
+					.substring(fileName.lastIndexOf(File.separator) + 1,
+							fileName.length());
+			if (!fileNm.toLowerCase().startsWith("tpch")) {
+				normalQuery = true;
+			} else {
+				tchpQuery = true;
+			}
 			BufferedReader buf = new BufferedReader(new FileReader(file));
 			while ((line = buf.readLine()) != null) {
 
@@ -51,21 +62,20 @@ public class fileReader {
 				else {
 					if (line.contains("--"))
 						line = line.substring(0, line.indexOf("--"));
-					if ((line.endsWith(")") || line.endsWith(";") || normalQuery)
-							&& !tchpQuery) {
+					if (normalQuery) {
 						contents.add(line);
 						normalQuery = true;
 						continue;
 					}
-					if (!line.trim().endsWith(";")) {
-						tchpQuery = true;
-						lineAppend += line + " ";
-					} else {
-						lineAppend += line + " ";
-						contents.add(lineAppend);
-						lineAppend = "";
+					if (tchpQuery) {
+						if (!line.trim().endsWith(";")) {
+							lineAppend += line + " ";
+						} else {
+							lineAppend += line + " ";
+							contents.add(lineAppend);
+							lineAppend = "";
+						}
 					}
-
 				}
 
 			}
