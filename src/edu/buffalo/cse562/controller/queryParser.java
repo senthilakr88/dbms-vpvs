@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
-import edu.buffalo.cse562.logicalPlan.components1;
+import edu.buffalo.cse562.logicalPlan.components;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.utilities.fileReader;
 
@@ -27,7 +27,7 @@ public class queryParser {
 	List<String> sqlFiles;
 	List<String> sqlQueryList;
 	logManager lg;
-	components1 comp;
+	components comp;
 	String tableDir;
 	String swapDir;
 
@@ -35,7 +35,7 @@ public class queryParser {
 		this.sqlFiles = sqlFiles;
 		this.tableDir = tableDir;
 		this.swapDir = swapDir;
-		this.comp = new components1();
+		this.comp = new components();
 		lg = new logManager();
 
 	}

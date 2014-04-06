@@ -188,12 +188,22 @@ public class ExternalSort implements Operator {
 		if (runs == 1) {
 			String s = swapDir + File.separator + "buffer[10].ser";
 			File buffername = new File(s);
-
 			File file2 = new File(masterFile);
 			if (!buffername.renameTo(file2)) {
 				System.out.println("File renaming failed");
 			}
 			return;
+		}
+		if (runs == 0) {
+			ObjectOutputStream out = writeOS(masterFile);
+			try {
+				out.writeObject(null);
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		}
 		int count = 0;
 		String s = null;
@@ -469,8 +479,12 @@ public class ExternalSort implements Operator {
 				// System.out.println("result is null");
 				this.masterBuffer = readOS(masterFile);
 				result = (ArrayList<Datum[]>) masterBuffer.readObject();
-				tuple = result.get(resultIndex);
-				++resultIndex;
+				if (result == null) {
+					tuple = null;
+				} else {
+					tuple = result.get(resultIndex);
+					++resultIndex;
+				}
 			} else {
 				// System.out.println("reading result");
 				if (resultIndex != result.size()) {
