@@ -292,7 +292,7 @@ public class components {
 			oper = new LimitOperator(oper, limit.getRowCount());
 			addToPlan("[Limit on :: "+  joinedTables +" Rows :: "+limit.getRowCount()+"]");
 		}
-		printPlan();
+//		printPlan();
 //		oper.resetTupleMapping();
 		return oper;
 	}
