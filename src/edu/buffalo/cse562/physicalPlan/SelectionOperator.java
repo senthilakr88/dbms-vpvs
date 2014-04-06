@@ -66,7 +66,8 @@ public class SelectionOperator implements Operator {
 //		System.out.println("-------->>"+TupleStruct.getTupleTableMap());
 		if(isTupleMapPresent) {
 			TupleStruct.setTupleTableMap(t);
-			isTupleMapPresent = false;
+			if(!TupleStruct.isNestedCondition())
+				isTupleMapPresent = false;
 		}
 		CalcTools calc = new CalcTools(t);
 //		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");

@@ -210,6 +210,7 @@ public class components {
 
 				oper = new BNLJoinOperator(oper, rightOper,
 						onExpression);
+				
 				if(onExpression !=null) {
 				addToPlan("[Block Nested Join on :: "+  joinedTables + " and " + rightTable +" Expr :: "+onExpression.toString()+"]");
 				} else {
@@ -292,6 +293,7 @@ public class components {
 			addToPlan("[Limit on :: "+  joinedTables +" Rows :: "+limit.getRowCount()+"]");
 		}
 		printPlan();
+//		oper.resetTupleMapping();
 		return oper;
 	}
 

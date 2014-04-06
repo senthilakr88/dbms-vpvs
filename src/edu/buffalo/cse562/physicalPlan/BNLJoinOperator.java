@@ -91,7 +91,12 @@ public class BNLJoinOperator implements Operator {
 				}
 				////System.out.println("combining");
 				t = combine(lt, rt);
-
+//				System.out.println("Left Tuple ::");
+//				printTuple(lt);
+//				System.out.println("Right Tuple ::");
+//				printTuple(rt);
+//				System.out.println("Combined Tuple :: ");
+//				printTuple(t);
 				if (t == null) {
 					
 					return null;
@@ -208,12 +213,14 @@ public class BNLJoinOperator implements Operator {
 
 			if (isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t);
-				isTupleMapPresent = false;
+				if(!TupleStruct.isNestedCondition())
+					isTupleMapPresent = false;
 			}
 //			System.out.println(TupleStruct.getTupleTableMap());
+//			System.out.println(expr.toString());
 			CalcTools calc = new CalcTools(t);
 			expr.accept(calc);
-//			System.out.println(expr.toString());
+			
 			// //System.out.println(calc.getAccumulatorBoolean());
 			return calc.getAccumulatorBoolean();
 		} else {
