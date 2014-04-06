@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
@@ -496,7 +498,43 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(LikeExpression likeExpression) {
-		visitBinaryExpression(likeExpression);
+		likeExpression.getLeftExpression().accept(this);
+		Object leftValue = accumulator;
+		likeExpression.getRightExpression().accept(this);
+		Object rightValue = accumulator;
+		String rightString = (String) rightValue;
+		Pattern pattern = null;
+		if(rightString.contains("%")){
+			 String patternString = rightString.replace("%", ".*");
+			 pattern = Pattern.compile(patternString);
+		}
+		else if(rightString.contains("_")){
+			 String patternString = rightString.replace("_", ".?");
+			 pattern = Pattern.compile(patternString);
+		}
+		if(leftValue instanceof String){
+			String leftString = (String) leftValue;
+			Matcher matcher = pattern.matcher(leftString);
+			if(matcher.find()){
+			 accumulatorBoolean = true;
+			}
+		}
+		else if(leftValue instanceof Double){
+			Double leftDouble = (Double) leftValue;
+			String leftString = String.valueOf(leftDouble);
+			Matcher matcher = pattern.matcher(leftString);
+			if(matcher.find()){
+				accumulatorBoolean = true;
+			} 
+		}
+		else if(leftValue instanceof Long){
+			Long leftLong = (Long) leftValue;
+			String leftString = String.valueOf(leftLong);
+			Matcher matcher = pattern.matcher(leftString);
+			if(matcher.find()){
+				accumulatorBoolean = true;
+			}
+		}
 	}
 
 	@Override
