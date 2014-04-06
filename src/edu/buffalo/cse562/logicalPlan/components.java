@@ -100,10 +100,15 @@ public class components {
 		Operator oper = null;
 
 		if (whereClause != null) {
-			AndVisitor calc = new AndVisitor();
-			whereClause.accept(calc);
-			//			System.out.println(calc.getList());
-			List<Expression> expList = calc.getList();
+			List<Expression> expList = new ArrayList<Expression>();
+			try{
+				AndVisitor calc = new AndVisitor();
+				whereClause.accept(calc);
+				//			System.out.println(calc.getList());
+				expList = calc.getList();	
+			} catch(UnsupportedOperationException e) {
+				expList.add(whereClause);
+			}
 			for(Expression e:expList){
 				ExpressionSplitter split = new ExpressionSplitter();
 				e.accept(split);
