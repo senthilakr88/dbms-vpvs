@@ -1,7 +1,6 @@
 bin/
-data/
 other/
-sqlfile/
+swapDir/
 .classpath
 .project
 .metadata/

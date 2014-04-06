@@ -71,7 +71,7 @@ public class components {
 		lg = new logManager();
 	}
 
-	public void initializeNewStatement() {
+	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
 
 	}
@@ -357,6 +357,17 @@ public class components {
 	public void addLimit(Limit limit) {
 		this.limit = limit;
 
+	}
+	
+	public void resetParam() {
+		projectStmt = null;
+		whereClause = null;
+		selectBody = null;
+		fromItem = null;
+		planPrint = new StringBuffer();
+		orderbyElements = null;
+		limit = null;
+		tableJoins = null;
 	}
 
 }

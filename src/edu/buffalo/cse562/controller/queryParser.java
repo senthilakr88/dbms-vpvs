@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
-import edu.buffalo.cse562.logicalPlan.components;
+import edu.buffalo.cse562.logicalPlan.components1;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.utilities.fileReader;
 
@@ -27,7 +27,7 @@ public class queryParser {
 	List<String> sqlFiles;
 	List<String> sqlQueryList;
 	logManager lg;
-	components comp;
+	components1 comp;
 	String tableDir;
 	String swapDir;
 
@@ -35,6 +35,7 @@ public class queryParser {
 		this.sqlFiles = sqlFiles;
 		this.tableDir = tableDir;
 		this.swapDir = swapDir;
+		this.comp = new components1();
 		lg = new logManager();
 
 	}
@@ -47,7 +48,7 @@ public class queryParser {
 			sqlQueryList = fr.readContents();
 			lg.logger.log(Level.INFO, sqlQueryList.toString());
 //			System.out.println(sqlQueryList);
-			comp = new components();
+//			comp = new components();
 			interpretQuery();
 
 		}
@@ -90,7 +91,7 @@ public class queryParser {
 					lg.logger.log(Level.INFO, comp.toString());
 
 				} else if (statement instanceof Select) {
-					comp.initializeNewStatement();
+					comp.initializeParam();
 					SelectBody selectStmt = ((Select) statement)
 							.getSelectBody();
 					if (selectStmt instanceof PlainSelect) {
@@ -119,6 +120,7 @@ public class queryParser {
 						Operator oper = comp.executePhysicalPlan();
 						if(oper!=null)
 						comp.processTuples(oper);
+						comp.resetParam();
 					} else {
 						System.out
 								.println("Select type of statement !!! still not handled");

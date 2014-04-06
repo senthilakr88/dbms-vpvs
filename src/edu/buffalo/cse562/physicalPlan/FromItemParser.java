@@ -47,7 +47,7 @@ public class FromItemParser implements FromItemVisitor {
 			PlainSelect plainSelect = (PlainSelect) subSelect.getSelectBody();
 			//System.out.println(plainSelect.toString());
 			components comp = new components();
-			comp.initializeNewStatement();
+			comp.initializeParam();
 			comp.addColsToTable((ArrayList<Column>) tableMap);
 			comp.addColsTypeToTable(tableColTypeMap);
 			comp.setTableDirectory(basePath);
