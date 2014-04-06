@@ -94,6 +94,8 @@ public class ProjectionOperator implements Operator {
 //					System.out.println(((SelectExpressionItem) newItem).getExpression().toString());
 					Expression e = ((SelectExpressionItem) newItem).getExpression();
 //					System.out.println("Entering Projection expression :: "+e.toString());
+//					TupleStruct.setTupleTableMap(t);
+//					System.out.println(TupleStruct.getTupleTableMap());
 					CalcTools calc = new CalcTools(t); 
 					e.accept(calc);
 					lg.logger.log(Level.INFO, calc.getResult().toString());

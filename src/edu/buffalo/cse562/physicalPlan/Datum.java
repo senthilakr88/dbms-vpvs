@@ -45,7 +45,10 @@ public interface Datum {
 		String aliasName;
 
 		public Column getColumn() {
-			return new Column(new Table(schemaName, tableName), columnName);
+			if(aliasName == null)
+				return new Column(new Table(schemaName, tableName), columnName);
+			else
+				return new Column(new Table(schemaName, aliasName), columnName);
 		}
 
 		// public void setColumn(Column column) {
@@ -193,7 +196,10 @@ public interface Datum {
 		String aliasName;
 
 		public Column getColumn() {
-			return new Column(new Table(schemaName, tableName), columnName);
+			if(aliasName == null)
+				return new Column(new Table(schemaName, tableName), columnName);
+			else
+				return new Column(new Table(schemaName, aliasName), columnName);
 		}
 
 		// public void setColumn(Column column) {
@@ -344,7 +350,10 @@ public interface Datum {
 		}
 
 		public Column getColumn() {
-			return new Column(new Table(schemaName, tableName), columnName);
+			if(aliasName == null)
+				return new Column(new Table(schemaName, tableName), columnName);
+			else
+				return new Column(new Table(schemaName, aliasName), columnName);
 		}
 
 		// public void setColumn(Column column) {
@@ -520,7 +529,10 @@ public interface Datum {
 
 		@Override
 		public Column getColumn() {
-			return new Column(new Table(schemaName, tableName), columnName);
+			if(aliasName == null)
+				return new Column(new Table(schemaName, tableName), columnName);
+			else
+				return new Column(new Table(schemaName, aliasName), columnName);
 		}
 
 		// @Override

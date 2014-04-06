@@ -96,7 +96,7 @@ public class BNLJoinOperator implements Operator {
 					
 					return null;
 				}
-				if (!evaluate(t, expr)) {
+				if (expr!= null && !evaluate(t, expr)) {
 					t = null;
 				}
 			}  else {
@@ -210,8 +210,10 @@ public class BNLJoinOperator implements Operator {
 				TupleStruct.setTupleTableMap(t);
 				isTupleMapPresent = false;
 			}
+//			System.out.println(TupleStruct.getTupleTableMap());
 			CalcTools calc = new CalcTools(t);
 			expr.accept(calc);
+//			System.out.println(expr.toString());
 			// //System.out.println(calc.getAccumulatorBoolean());
 			return calc.getAccumulatorBoolean();
 		} else {

@@ -7,17 +7,20 @@ import java.util.List;
 
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
-public class OrderByOperator {
+public class OrderByOperator implements Operator{
 	Operator oper;
 	Datum[] t1, t2;
 	List<Datum[]> listDatum;
 	List<OrderByElement> elements;
+	int index;
 
 	// Boolean firstEntry;
 
-	public OrderByOperator(List<OrderByElement> elements) {
+	public OrderByOperator(List<OrderByElement> elements, List<Datum[]> listDatum) {
 		this.elements = elements;
-		this.listDatum = new ArrayList<Datum[]>();
+		this.listDatum = listDatum;
+		this.index = 0;
+		sort();
 	}
 
 	public List<Datum[]> getListDatum() {
@@ -54,6 +57,27 @@ public class OrderByOperator {
 			System.out.println();
 		}
 		}
+	}
+
+	@Override
+	public void resetStream() {
+		oper.resetStream();		
+	}
+
+	@Override
+	public Datum[] readOneTuple() {
+		Datum[] temp = null;
+		if(listDatum!=null && index != listDatum.size()) {
+			temp = listDatum.get(index);
+			++index;
+		}
+		return temp;
+	}
+
+	@Override
+	public void resetTupleMapping() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

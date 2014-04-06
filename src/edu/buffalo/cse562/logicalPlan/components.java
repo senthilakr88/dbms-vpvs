@@ -89,11 +89,16 @@ public class components {
 	}
 
 	public void addToPlan(String s) {
-		planPrint.append(s);
+		s += "\n"+planPrint.toString();
+		planPrint = new StringBuffer(s);
 	}
 
 	public void printPlan() {
+		System.out.println();
+		System.out.println("-------------------------------------------------");
 		System.out.println(planPrint.toString());
+		System.out.println("-------------------------------------------------");
+		System.out.println();
 	}
 
 	public Operator executePhysicalPlan() {
@@ -136,6 +141,7 @@ public class components {
 				tableColTypeMap);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
+		addToPlan(fip.getPlan().toString());
 		//		System.out.println("First table"+fip.getOperatorTableName());
 		String operTable = fip.getOperatorTableName();
 		eList = singleTableMap.get(operTable);
@@ -147,6 +153,7 @@ public class components {
 			}
 
 			oper = new SelectionOperator(oper, leftWhereClause);
+			addToPlan("[Selection on :: "+ operTable  +" Expr :: "+leftWhereClause.toString()+"]");
 		}
 		joinedTables.add(operTable);
 
@@ -160,6 +167,7 @@ public class components {
 
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
+				addToPlan(fip.getPlan().toString());
 				//				System.out.println("NAME"+fip.getOperatorTableName());
 				//				System.out.println("Right table "+fip.getOperatorTableName());
 				String rightTable = fip.getOperatorTableName();
@@ -173,6 +181,7 @@ public class components {
 					}
 					//					System.out.println(rightWhereClause);
 					rightOper = new SelectionOperator(rightOper, rightWhereClause);
+					addToPlan("[Selection on :: "+ rightTable  +" Expr :: "+rightWhereClause.toString()+"]");
 				}
 //				System.out.println(onExpressionList);
 //				System.out.println(onTableLists);
@@ -201,6 +210,11 @@ public class components {
 
 				oper = new BNLJoinOperator(oper, rightOper,
 						onExpression);
+				if(onExpression !=null) {
+				addToPlan("[Block Nested Join on :: "+  joinedTables + " and " + rightTable +" Expr :: "+onExpression.toString()+"]");
+				} else {
+					addToPlan("[Block Nested Join on :: "+  joinedTables + " and " + rightTable +" No Expression]");
+				}
 			}
 		}
 
@@ -226,6 +240,7 @@ public class components {
 		}
 		if (fullWhereClause!=null){
 			oper = new SelectionOperator(oper, fullWhereClause);
+			addToPlan("[Selection on :: "+  joinedTables +" Expr :: "+fullWhereClause.toString()+"]");
 		}
 
 		boolean isFunction = false;
@@ -241,35 +256,55 @@ public class components {
 			List<Column> groupbyList = select.getGroupByColumnReferences();
 			oper = new GroupbyOperator(oper, projectStmt,
 					groupbyList);
+			addToPlan("[Group By on :: "+  joinedTables +" Groupby :: "+groupbyList.toString()+"]");
+			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
 		} else if (isFunction) {
 			oper = new AggregateOperator(oper, projectStmt);
+			addToPlan("[Aggregate on :: "+  joinedTables+"]");
+			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
 		} else {
 			//			System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);
+			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
 		}
 
 		if (orderbyElements != null) {
 			//			System.out.println("Entering ExternalSort");
-			oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
+			if(swapDir !=null && swapDir.length() > 0) {
+				oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
+				addToPlan("[External Sort on :: "+  joinedTables +" OrderBy :: "+orderbyElements.toString()+"]");
+			} else {
+				List<Datum[]> listDatum= new ArrayList<Datum[]>();
+				Datum[] t = oper.readOneTuple();
+				while (t != null) {
+					listDatum.add(t);
+					t = oper.readOneTuple();
+				}
+				oper = new OrderByOperator(orderbyElements, listDatum);
+				addToPlan("[Normal Sort on :: "+  joinedTables +" OrderBy :: "+orderbyElements.toString()+"]");
+			}
+				
 		}
 
 		if (limit != null) {
 			//			System.out.println("Entering Limit");
 			oper = new LimitOperator(oper, limit.getRowCount());
+			addToPlan("[Limit on :: "+  joinedTables +" Rows :: "+limit.getRowCount()+"]");
 		}
+		printPlan();
 		return oper;
 	}
 
-	public void OrderBy(ArrayList<Datum[]> list) {
-		if (list == null)
-			return;
-		OrderByOperator obp = new OrderByOperator(orderbyElements);
-		obp.setListDatum(list);
-		if (orderbyElements != null) {
-			obp.sort();
-		}
-		obp.print();
-	}
+//	public void OrderBy(ArrayList<Datum[]> list) {
+//		if (list == null)
+//			return;
+//		OrderByOperator obp = new OrderByOperator(orderbyElements, list);
+//		obp.setListDatum(list);
+//		if (orderbyElements != null) {
+//			obp.sort();
+//		}
+//		obp.print();
+//	}
 
 	public void processTuples(Operator oper) {
 		// OrderByOperator obp = new OrderByOperator(orderbyElements);

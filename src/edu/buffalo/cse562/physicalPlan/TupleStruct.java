@@ -49,11 +49,11 @@ public class TupleStruct {
 				} else if(joinCondition && tableName.getName() != null) {
 					tupleTableMap.add(tableName.getName()+"."+datumColumn);
 				} else {
-					System.out.println(tableName + " :: " + datumColumn);
+//					System.out.println(tableName + " :: " + datumColumn);
 					tupleTableMap.add(datumColumn);
 				}
 			} else {
-				System.out.println(datumColumn);
+//				System.out.println(datumColumn);
 				tupleTableMap.add(datumColumn);
 			}
 			

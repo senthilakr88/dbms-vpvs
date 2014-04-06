@@ -31,11 +31,11 @@ public class Mysorter implements Comparator<Datum[]> {
 			Expression exe = ele.getExpression();
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t1);
-				//System.out.println(TupleStruct.getTupleTableMap());
+//				System.out.println(TupleStruct.getTupleTableMap());
 				isTupleMapPresent = false;
 			}
 			
-			//printTuple(t1);
+//			printTuple(t1);
 			
 			calc1 = new CalcTools(t1);
 			exe.accept(calc1);

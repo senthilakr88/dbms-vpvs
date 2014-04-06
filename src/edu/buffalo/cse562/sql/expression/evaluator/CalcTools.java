@@ -25,6 +25,7 @@ import edu.buffalo.cse562.physicalPlan.TupleStruct;
 
 public class CalcTools extends AbstractExpressionVisitor {
 	private Object accumulator;
+	private Object accCount;
 	private boolean accumulatorBoolean;
 //	private Boolean isExpression;
 	private Column columnValue;
@@ -37,6 +38,10 @@ public class CalcTools extends AbstractExpressionVisitor {
 	public Object getResult() {
 		// lg.logger.log(Level.INFO, String.valueOf(accumulator));
 		return accumulator;
+	}
+	
+	public Object getCountResult() {
+		return accCount;
 	}
 
 	public CalcTools(Datum[] t2) {
@@ -284,10 +289,18 @@ public class CalcTools extends AbstractExpressionVisitor {
     
     public void count(List eList) {
         lg.logger.log(Level.INFO, "COUNT Function");
-        
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
-        this.accumulator = Long.parseLong(String.valueOf(1));;
-        
+//        System.out.println("entering count");
+        this.accumulator = Long.parseLong(String.valueOf(1));
+        TupleStruct.setTupleTableMap(this.t);
+        CalcTools ct = new CalcTools(this.t);
+        Expression e = (Expression) eList.get(0);
+//        System.out.println("Expression :: "+eList.toString());
+        e.accept(ct);
+//        System.out.println("Setting count accum");
+        this.accCount = ct.getResult();
+//        System.out.println("Setting accum");
+        this.accumulator = Long.parseLong(String.valueOf(1));
         lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
