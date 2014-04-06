@@ -442,7 +442,7 @@ public interface Datum {
 		}
 	}
 
-	public class dDate implements Datum {
+	public class dDate implements Datum, Serializable {
 
 		Date value;
 		int year;

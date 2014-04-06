@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
-public class AggregateOperator {
+public class AggregateOperator implements Operator {
 	Operator oper;
 	ArrayList<SelectExpressionItem> selectExpressionList;
 
@@ -35,6 +35,8 @@ public class AggregateOperator {
 	Integer masterCount;
 	ArrayList<Integer> avgIndex; 
 	boolean isAvgFirst;
+	ArrayList<Datum[]> finalGroupbyArrayList;
+	int index;
 
 	public AggregateOperator(Operator oper,
 			ArrayList<SelectExpressionItem> selectExpressionList) {
@@ -45,17 +47,33 @@ public class AggregateOperator {
 		this.masterCount = 0;
 		this.avgIndex = new ArrayList<Integer>();
 		this.isAvgFirst = true;
+		this.finalGroupbyArrayList = computeAggFunc();
+		this.index = 0;
 	}
 
 	public void resetStream() {
-		// TODO Auto-generated method stub
+		oper.resetStream();
+	}
+	
+	@Override
+	public Datum[] readOneTuple() {
+		Datum[] temp = null;
+		if(finalGroupbyArrayList!=null && index != finalGroupbyArrayList.size()) {
+			temp = finalGroupbyArrayList.get(index);
+			++index;
+		}
+		return temp;
+	}
 
+	@Override
+	public void resetTupleMapping() {
+		isTupleMapPresent = true;		
 	}
 
 	/*
 	 * read one tuple from the operator, iterate over the column
 	 */
-	public ArrayList<Datum[]> readOneTuple() {
+	public ArrayList<Datum[]> computeAggFunc() {
 
 		ArrayList<Datum[]> finalGroupByDatumArrayList = new ArrayList<Datum[]>();
 		Datum[] readOneTupleFromOper = oper.readOneTuple();

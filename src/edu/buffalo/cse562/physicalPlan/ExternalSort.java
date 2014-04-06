@@ -38,7 +38,6 @@ public class ExternalSort implements Operator {
 	HashMap<Integer, ArrayList<Datum[]>> hmap;
 	ArrayList<Datum[]> result = null;
 	Integer resultIndex;
-	// BufferedReader[] buffread = null;
 	ArrayList<ObjectInputStream> buffread = null;
 	List<OrderByElement> elements;
 	List<Integer> index;
@@ -54,7 +53,7 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 300;
+		this.bufferMaxSize = 10000;
 		this.first = true;
 		this.tableName = tableName;
 		this.resultIndex = 0;
@@ -65,7 +64,6 @@ public class ExternalSort implements Operator {
 
 		hmap = new HashMap<Integer, ArrayList<Datum[]>>();
 		asc = new ArrayList<Boolean>();
-		result = new ArrayList<Datum[]>();
 		buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 		buffread = new ArrayList<ObjectInputStream>();
 		sortfile();
@@ -73,37 +71,36 @@ public class ExternalSort implements Operator {
 
 	public boolean readFile(ObjectInputStream br, int i) {
 		try {
-			buffer.put(i, (ArrayList<Datum[]>) br.readObject());
+
+			// System.out.println("br.available :: "+br.available());
+			ArrayList<Datum[]> datum = (ArrayList<Datum[]>) br.readObject();
+			if (datum != null) {
+				// System.out.println("Reading buffer from ");
+				buffer.put(i, datum);
+				return true;
+			} else {
+				// System.out.println("Closing Buffer");
+				br.close();
+
+			}
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		if (buffer.get(i).size() > 0)
-			return true;
-		else {
-			try {
-				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return false;
-		}
+		return false;
 
 	}
 
 	// Used to create a writer for an object stream
 	public void writedata(ObjectOutputStream out, int i) {
 		try {
+			// System.out.println(out.toString());
 			if (i < 0) {
 				out.writeObject(result);
 			} else
 				out.writeObject(buffer.get(i));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -114,7 +111,6 @@ public class ExternalSort implements Operator {
 		try {
 			out = new ObjectOutputStream(new FileOutputStream(fileName));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return out;
@@ -126,7 +122,6 @@ public class ExternalSort implements Operator {
 		try {
 			in = new ObjectInputStream(new FileInputStream(fileName));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return in;
@@ -166,113 +161,76 @@ public class ExternalSort implements Operator {
 
 		try {
 			while (readfile(i, 1)) {
-				System.out.println("Entering to sort Data :: ");
+				// System.out.println("Entering to sort Data :: ");
 				sortdata(i);
 				oper.resetTupleMapping();
 				s = swapDir + File.separator + "buffer[";
-				index = Integer.toString(i) + Integer.toString(1);
+				index = Integer.toString(1) + Integer.toString(i);
 				s = s + index + "].ser";
 				ObjectOutputStream out = writeOS(s);
 				writedata(out, i);
-				// writedata(s, i);
-				out.close();
 				buffer.remove(i);
+				writedata(out, i);
+				out.close();
 				i++;
 			}
-			System.out.println("printing tuples");
-			printTuple(buffer);
+			// System.out.println("printing tuples");
+			// printTuple(buffer);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return i;
 	}
 
-	public void printTuple(Map<Integer, ArrayList<Datum[]>> hashTable) {
-		Iterator it = hashTable.entrySet().iterator();
-		ArrayList<Datum[]> tempList;
-		while (it.hasNext()) {
-			Map.Entry pairs = (Map.Entry) it.next();
-			System.out.print(pairs.getKey() + " = ");
-			tempList = (ArrayList<Datum[]>) pairs.getValue();
-			Iterator it1 = tempList.iterator();
-			while (it1.hasNext()) {
-				printTuple((Datum[]) it1.next());
-				System.out.print(",");
-			}
-			System.out.println();
-		}
-	}
-
-	public void printTuple(Datum[] row) {
-		Boolean first = true;
-		if (row != null && row.length != 0) {
-			for (Datum col : row) {
-				if (!first)
-					System.out.print("|" + col);
-				else {
-					System.out.print(col);
-					first = false;
-				}
-			}
-			// System.out.println();
-		}
-	}
-
-	public void printTuple(ArrayList<Datum[]> row) {
-		Datum[] temp;
-		if (row != null) {
-			Iterator ite = row.iterator();
-			while (ite.hasNext()) {
-				printTuple((Datum[]) ite.next());
-				System.out.print(" , ");
-			}
-			System.out.println();
-		}
-	}
-
-	@SuppressWarnings("unchecked")
 	public void sortfile() {
 		// Initial sort, completed phase 1
 		int runs = readpage();
+		if (runs == 1) {
+			String s = swapDir + File.separator + "buffer[10].ser";
+			File buffername = new File(s);
+
+			File file2 = new File(masterFile);
+			if (!buffername.renameTo(file2)) {
+				System.out.println("File renaming failed");
+			}
+			return;
+		}
 		int count = 0;
 		String s = null;
-		// String line = null;
-		// Datum[] oneTupleFromDat = null;
-		// BufferedReader[] reader = null;
-		ObjectInputStream in;
-		int i = -1, k = 0, runcurrent = 0, depth = 1, filenumber = 0;
+
+		int i = 0, k = 0, runcurrent = 0, depth = 1, filenumber = 0;
 		boolean check = true;
 		while (i < runs && check) {
-			if (runs > 5) {
+			if (runs - i >= 5) {
 				k = 5;
 			} else {
-				k = runs;
+				k = runs - i;
 			}
 
 			count = k;
 			while (count > 0) {
-				i++;
+
 				s = swapDir + File.separator + "buffer[";
-				String index = Integer.toString(i) + Integer.toString(depth);
+				String index = Integer.toString(depth) + Integer.toString(i);
 				s = s + index + "].ser";
-				// buffread[i] = createinputreader(s);
-				// readfile(buffread[i], i, depth);
-				System.out.println(s);
+
 				buffread.add(readOS(s));
+
 				readFile(buffread.get(i), i);
-				// readFile(s, i);
+
 				count--;
+				i++;
 			}
-			printTuple(buffer);
-			filenumber++;
+
 			runcurrent++;
 
 			if (runcurrent == 1 && i == runs) {
-				secondsort(i - k + 1, k, filenumber, 0, s);
+				secondsort(i - k, k, filenumber, 0);
 			} else {
-				secondsort(i - k + 1, k, filenumber, depth, s);
+				secondsort(i - k, k, filenumber, depth);
 			}
+
+			filenumber++;
 
 			if (i == runs) {
 				if (runcurrent == 1) {
@@ -285,106 +243,120 @@ public class ExternalSort implements Operator {
 				depth = depth + 1;
 				k = 0;
 				i = 0;
+				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+				buffread = new ArrayList<ObjectInputStream>();
 			}
 		}
 	}
 
-	void secondsort(int start, int count, int filenumber, int depth,
-			String fileName) {
-		// int runcount = 0;
-		ObjectOutputStream out = null;
-		Map<Integer, Boolean> map1 = new HashMap<Integer, Boolean>();
-		// List<ArrayList<Datum[]>> group1 = new
-		// ArrayList<ArrayList<Datum[]>>();
-		int i = 0, counter = 1;
-		int numberofemptylists = 0;
-		// String depthstr = Integer.toString(depth);
+	void secondsort(int start, int count, int filenumber, int depth) {
 
-		// while (i < count) {
-		// group1.add(buffer[start]);
-		// start++;
-		// i++;
-		// }
-		// start = start - count;
-		int k = start, j;
+		ObjectOutputStream out = null;
+		int counter = 1;
+		int numberofemptylists = 0;
+
+		int k = start;
 		Datum[] lowest = null;
-		int capacity = 1000;
-		// Iterator<ArrayList<Datum[]>> iter = group1.iterator();
+		int capacity = 10000;
+
 		ArrayList<Datum[]> list1 = null;
 		Datum[] element;
 		int removeindex = -1;
 		boolean check = true;
+		ArrayList<Integer> indexTraversal = new ArrayList<Integer>();
+		for (k = start; k < (start + count); k++)
+			indexTraversal.add(k);
+		Iterator<Integer> itIndexTrav = indexTraversal.iterator();
 		try {
-			while (result.size() < capacity && check) { // while we still have
-														// something to add
-				System.out.println(" start :: " + start + " count :: " + count);
-				for (k = start; k < (start + count); k++) {
-					System.out.println(" k :: " + k);
-					if (map1.containsKey(k)) {
-						continue;
-					}
+			result = new ArrayList<Datum[]>();
+			while (result.size() < capacity && check) {
+				while (itIndexTrav.hasNext()) {
+					k = itIndexTrav.next();
+					// System.out.println("start :: "+start+" :: "+count);
+					// System.out.println("k :: " + k);
 					list1 = buffer.get(k);
-
-					if (list1 != null) {
+					// System.out.print("list1 :: ");
+					// printTuple(list1);
+					if (list1 != null && list1.size() > 0) {
 						element = list1.get(0);
-//						System.out.print("Element Value :: ");
-//						printTuple(element);
+
 						if (first) {
+							TupleStruct.setTupleTableMap(element);
 							computeIndex(element);
+
 							first = false;
 						}
 						if (lowest == null) {
 							lowest = element;
 							removeindex = k;
-//							System.out.print("Lowest 1 Value :: ");
-//							printTuple(element);
-							System.out.println();
+
 						} else if (compare(list1.get(0), lowest) <= 0) {
 							lowest = element;
 							removeindex = k;
-//							System.out.print("Lowest 2 Value :: ");
-//							printTuple(element);
-							System.out.println();
+
 						}
 					} else {
-						// boolean s = false;
-						// if (depth < 0)
-						// s = ;
-						// else
-						// s = readfile(buffread[j], k, depth);
+
 						if (readFile(buffread.get(k), k)) {
+
 							k--;
 							continue;
 						} else {
-							// boolean ch = false;
-							// if (depth < 0) {
-							// depth = depth + 30000;
-							// ch = true;
-							// }
-							if (!map1.containsKey(k)) {
-								map1.put(k, true);
-								numberofemptylists++;
 
-								if (numberofemptylists == count) {
+							itIndexTrav.remove();
+							numberofemptylists++;
+							if (numberofemptylists == (count - 1)) {
+								// System.out.println("writing to list");
+								if (counter == 1) {
+									String s = computeFile(depth, filenumber);
+									//
+									out = writeOS(s);
+									//
+									counter = 0;
+								}
+								if (result.size() > 0) {
+									// System.out.print("result last :: ");
+									// printTuple(result);
+									// System.out.println();
 									writedata(out, -2);
-									result.clear();
-									check = false;
-									map1.clear();
-									out.close();
-									break;
+								}
+								int m = indexTraversal.get(0);
+								if (buffer.get(m).size() > 0) {
+									// System.out.print("buffer last :: ");
+									// printTuple(buffer.get(m));
+									// System.out.println();
+									writedata(out, m);
+								}
+								while (readFile(buffread.get(m), m)) {
+									// System.out.print("buffer last fin :: ");
+									// printTuple(buffer.get(m));
+									// System.out.println();
+									writedata(out, m);
 								}
 
+								// break;
+
+								// }
+								check = false;
+								list1 = null;
+								indexTraversal.clear();
+								break;
+
 							}
-							// if (ch == true) {
-							// ch = false;
-							// depth = depth - 30000;
-							// }
+
 						}
 
 					}
 				}
-				result.add(lowest);
+				if (!check)
+					break;
 
+				result.add(lowest);
+				// System.out.println();
+				// System.out.print("result :: ");
+				// printTuple(result);
+				// System.out.println();
+				// System.out.println(indexTraversal);
 				if (removeindex != -1) {
 					lowest = null;
 					buffer.get(removeindex).remove(0);
@@ -392,39 +364,42 @@ public class ExternalSort implements Operator {
 
 					throw new Exception("Invalid Index in external sort"
 							+ removeindex);
-
 				}
-
-				printTuple(result);
+				itIndexTrav = indexTraversal.iterator();
 				if (result.size() == capacity) {
 
 					if (counter == 1) {
-						String s = null;
-						String index = null;
-						if (depth == 0) {
-							s = masterFile;
-						} else {
-							s = swapDir + File.separator + "buffer[";
-							index = Integer.toString(i)
-									+ Integer.toString(depth + 1);
-							s = s + index + "].ser";
-						}
-
+						String s = computeFile(depth, filenumber);
 						out = writeOS(s);
 						counter = 0;
 					}
-
 					writedata(out, -2);
-					result.clear();
+					result = new ArrayList<Datum[]>();
 				}
-
 			}
+			result = null;
+			writedata(out, -2);
+			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	String computeFile(int depth, int i) {
+
+		String s = null, index = null;
+		if (depth == 0) {
+			s = masterFile;
+		} else {
+			s = swapDir + File.separator + "buffer[";
+			index = Integer.toString(depth + 1) + Integer.toString(i);
+			s = s + index + "].ser";
+		}
+
+		return s;
 	}
 
 	void sortdata(int i) {
@@ -461,28 +436,22 @@ public class ExternalSort implements Operator {
 	}
 
 	public int compare(Datum[] t1, Datum[] t2) {
-		// Iterator iter = elements.iterator();
-		// CalcTools calc1 = null, calc2 = null;
 		int comparison = -2;
 		int k = 0;
 		int indexSize = index.size();
-//		System.out.println("index :: " + index);
 		int ind;
 		while (k < indexSize) {
 			ind = index.get(k);
 			comparison = TupleStruct.getCompareValue((Object) t1[ind],
 					(Object) t2[ind], asc.get(k));
-//			System.out.println(" Order :: " + asc.get(k));
-//			System.out.println(" comparison :: " + comparison);
+
 			if (comparison != 0) {
-				// System.out.println("In :: " + calc1.getResult() + " : " +
-				// calc2.getResult() + " : " + comparison);
+
 				return comparison;
 			}
 			k++;
 		}
-		// System.out.println("Out :: " + calc1.getResult() + " : " +
-		// calc2.getResult() + " : " + comparison);
+
 		return comparison;
 
 	}
@@ -497,33 +466,36 @@ public class ExternalSort implements Operator {
 		Datum[] tuple = null;
 		try {
 			if (result == null) {
+				// System.out.println("result is null");
 				this.masterBuffer = readOS(masterFile);
-
 				result = (ArrayList<Datum[]>) masterBuffer.readObject();
-
 				tuple = result.get(resultIndex);
 				++resultIndex;
 			} else {
+				// System.out.println("reading result");
 				if (resultIndex != result.size()) {
 					tuple = result.get(resultIndex);
 					++resultIndex;
 				} else {
+					// System.out.println("refilling result");
 					result = (ArrayList<Datum[]>) masterBuffer.readObject();
+					// printTuple(result);
 					resultIndex = 0;
 					if (result != null) {
+						// System.out.println("re-reading result");
 						tuple = result.get(resultIndex);
 						++resultIndex;
 					} else {
+						// System.out.println("No more Tuples");
+						masterBuffer.close();
 						tuple = null;
 					}
 				}
 
 			}
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -532,8 +504,49 @@ public class ExternalSort implements Operator {
 
 	@Override
 	public void resetTupleMapping() {
-		// TODO Auto-generated method stub
 
+	}
+
+	public void printTuple(Map<Integer, ArrayList<Datum[]>> hashTable) {
+		Iterator it = hashTable.entrySet().iterator();
+		ArrayList<Datum[]> tempList;
+		while (it.hasNext()) {
+			Map.Entry pairs = (Map.Entry) it.next();
+			System.out.print(pairs.getKey() + " = ");
+			tempList = (ArrayList<Datum[]>) pairs.getValue();
+			Iterator it1 = tempList.iterator();
+			while (it1.hasNext()) {
+				printTuple((Datum[]) it1.next());
+				System.out.print(",");
+			}
+			System.out.println();
+		}
+	}
+
+	public void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			// System.out.println();
+		}
+	}
+
+	public void printTuple(ArrayList<Datum[]> row) {
+		if (row != null) {
+			Iterator ite = row.iterator();
+			while (ite.hasNext()) {
+				printTuple((Datum[]) ite.next());
+				System.out.print(" , ");
+			}
+			System.out.println();
+		}
 	}
 
 }
