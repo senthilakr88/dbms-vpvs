@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -36,6 +37,9 @@ import edu.buffalo.cse562.physicalPlan.SelectionOperator;
 import edu.buffalo.cse562.physicalPlan.Test;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
+import edu.buffalo.cse562.sql.expression.evaluator.AndVisitor;
+import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.sql.expression.evaluator.ExpressionSplitter;
 
 public class components {
 
@@ -52,6 +56,12 @@ public class components {
 	private List orderbyElements;
 	private Limit limit;
 	StringBuffer planPrint;
+	HashMap<String, List<Expression>> singleTableMap = new HashMap<String, List<Expression>>();
+	List<Expression> eList = new ArrayList<Expression>();
+	ArrayList<Expression> onExpressionList = new ArrayList<Expression>();
+	ArrayList<List<String>> onTableLists = new ArrayList<List<String>>();
+	ArrayList<Expression> otherList = new ArrayList<Expression>();
+	ArrayList<String> joinedTables = new ArrayList<String>();
 
 	public components() {
 
@@ -81,7 +91,7 @@ public class components {
 	public void addToPlan(String s) {
 		planPrint.append(s);
 	}
-	
+
 	public void printPlan() {
 		System.out.println(planPrint.toString());
 	}
@@ -89,10 +99,52 @@ public class components {
 	public Operator executePhysicalPlan() {
 		Operator oper = null;
 
+		if (whereClause != null) {
+			AndVisitor calc = new AndVisitor();
+			whereClause.accept(calc);
+			//			System.out.println(calc.getList());
+			List<Expression> expList = calc.getList();
+			for(Expression e:expList){
+				ExpressionSplitter split = new ExpressionSplitter();
+				e.accept(split);
+				//				System.out.println("Number of columns in this expression is "+split.getColumnCounter());
+				//				System.out.println(split.getTableList());
+				if(split.getColumnCounter()==1){
+					eList = singleTableMap.get(split.getTableList().get(0));
+					if (eList== null) {
+						//						System.out.println();
+						eList = new ArrayList<Expression>();
+					}
+					eList.add(e);
+					singleTableMap.put(split.getTableList().get(0), eList);
+				} else if (split.getColumnCounter()==2) {
+					onExpressionList.add(e);
+					onTableLists.add(split.getTableList());
+				} else {
+					otherList.add(e);
+				}
+			}
+		}
+		//		System.out.println(singleTableMap);
+		//		System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
 				tableColTypeMap);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
+		//		System.out.println("First table"+fip.getOperatorTableName());
+		String operTable = fip.getOperatorTableName();
+		eList = singleTableMap.get(operTable);
+		Expression leftWhereClause = null;
+		if(eList!=null) {
+			leftWhereClause = eList.get(0);
+			for(int i = 1; i < eList.size(); i++) {
+				leftWhereClause = new AndExpression(leftWhereClause, eList.get(i));	
+			}
+
+			oper = new SelectionOperator(oper, leftWhereClause);
+		}
+		joinedTables.add(operTable);
+
 
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
@@ -100,17 +152,75 @@ public class components {
 			while (joinIte.hasNext()) {
 				Join joinTable = (Join) joinIte.next();
 				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
+
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
-				oper = new BNLJoinOperator(oper, rightOper,
-						joinTable.getOnExpression());
+				//				System.out.println("NAME"+fip.getOperatorTableName());
+				//				System.out.println("Right table "+fip.getOperatorTableName());
+				String rightTable = fip.getOperatorTableName();
+				eList = singleTableMap.get(rightTable);
 
+				Expression rightWhereClause = null;
+				if(eList!=null) {
+					rightWhereClause = eList.get(0);
+					for(int i = 1; i < eList.size(); i++) {
+						rightWhereClause = new AndExpression(rightWhereClause, eList.get(i));
+					}
+					//					System.out.println(rightWhereClause);
+					rightOper = new SelectionOperator(rightOper, rightWhereClause);
+				}
+//				System.out.println(onExpressionList);
+//				System.out.println(onTableLists);
+				Expression onExpression = null;
+				if(joinTable.getOnExpression()==null){
+					joinedTables.add(rightTable);
+					for(int i=0;i<onTableLists.size();i++) {
+						Boolean onExpFlag = true;
+						for(String tableName:onTableLists.get(i)) {
+							if(!joinedTables.contains(tableName)){
+								onExpFlag = false;
+							}
+						}
+						if(onExpFlag==true){
+							onExpression = onExpressionList.get(i);
+							onExpressionList.remove(i);
+							onTableLists.remove(i);
+							break;
+						}
+					}
+				} else {
+					onExpression = joinTable.getOnExpression();
+				}
+				//				System.out.println("Joined tables---"+joinedTables);
+				//				System.out.println("join on condition"+onExpression);
+
+				oper = new BNLJoinOperator(oper, rightOper,
+						onExpression);
 			}
 		}
 
-		if (whereClause != null) {
-			oper = new SelectionOperator(oper, whereClause);
-
+		Expression fullWhereClause = null;
+		if(onExpressionList!=null&&onExpressionList.size()!=0) {
+			//			System.out.println("Right only selection exists!!!!"+eList);
+			fullWhereClause = onExpressionList.get(0);
+			for(int i = 1; i < onExpressionList.size(); i++) {
+				fullWhereClause = new AndExpression(fullWhereClause, onExpressionList.get(i));
+			}
+			//			System.out.println(rightWhereClause);
+		}
+		if(otherList!=null&&otherList.size()!=0) {
+				if (fullWhereClause==null){
+					fullWhereClause = otherList.get(0);
+				} else {
+					fullWhereClause = new AndExpression(fullWhereClause, otherList.get(0));
+				}
+				for(int i = 1; i < otherList.size(); i++) {
+					fullWhereClause = new AndExpression(fullWhereClause, otherList.get(i));
+				}
+			//			System.out.println(rightWhereClause);
+		}
+		if (fullWhereClause!=null){
+			oper = new SelectionOperator(oper, fullWhereClause);
 		}
 
 		boolean isFunction = false;
@@ -129,17 +239,17 @@ public class components {
 		} else if (isFunction) {
 			oper = new AggregateOperator(oper, projectStmt);
 		} else {
-//			System.out.println("Entering projection");
+			//			System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);
 		}
-		
+
 		if (orderbyElements != null) {
-//			System.out.println("Entering ExternalSort");
+			//			System.out.println("Entering ExternalSort");
 			oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
 		}
 
 		if (limit != null) {
-//			System.out.println("Entering Limit");
+			//			System.out.println("Entering Limit");
 			oper = new LimitOperator(oper, limit.getRowCount());
 		}
 		return oper;
@@ -174,8 +284,8 @@ public class components {
 	}
 
 	private void printGroupTuples(ArrayList<Datum[]> finalGroupbyArrayList) {
-		System.out
-				.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+		//		System.out
+		//		.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
 		for (Datum[] singleDatum : finalGroupbyArrayList) {
 			printTuple(singleDatum);
 		}
@@ -197,7 +307,7 @@ public class components {
 	}
 
 	public void setTableDirectory(String tableDir) {
-
+		//		System.out.println("Setting to "+tableDir);
 		this.tableDir = tableDir;
 
 	}

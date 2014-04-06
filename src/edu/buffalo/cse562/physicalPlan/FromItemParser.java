@@ -21,6 +21,7 @@ public class FromItemParser implements FromItemVisitor {
 	Operator oper = null;
 	String basePath;
 	List<Column> tableMap;
+	String tableName;
 	Map<String, ArrayList<String>> tableColTypeMap;
 
 	public FromItemParser(String basePath, List<Column> tableMap,
@@ -32,13 +33,15 @@ public class FromItemParser implements FromItemVisitor {
 
 	@Override
 	public void visit(Table table) {
-		
+//		System.out.println("Came to table");
+		tableName = table.getWholeTableName();
 		oper = new FileScanOperator(table, basePath, tableMap, tableColTypeMap);
 
 	}
 
 	@Override
 	public void visit(SubSelect subSelect) {
+		System.out.println("Came to subselect");
 		SelectBody selectStmt = subSelect.getSelectBody();
 		if (selectStmt instanceof PlainSelect) {
 			PlainSelect plainSelect = (PlainSelect) subSelect.getSelectBody();
@@ -68,6 +71,10 @@ public class FromItemParser implements FromItemVisitor {
 
 	public Operator getOperator() {
 		return oper;
+	}
+	
+	public String getOperatorTableName() {
+		return tableName;
 	}
 
 }

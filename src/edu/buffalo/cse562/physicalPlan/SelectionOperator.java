@@ -36,7 +36,7 @@ public class SelectionOperator implements Operator {
 	@Override
 	public Datum[] readOneTuple() {
 
-		//System.out.println("Select operator readOneTuple method called");
+//		System.out.println("Select operator readOneTuple method called for "+input.getClass()+" and Condition is "+condition);
 
 		Datum[] t = null;
 		do {
@@ -46,11 +46,12 @@ public class SelectionOperator implements Operator {
 				return null;
 			}
 			if(!evaluate(t,condition)) {
-				//System.out.println("Condition not Satisfied");
+//				System.out.println("Condition not Satisfied");
 				t = null;
-			} //else {
-				//System.out.println("Condition satisfied");
-			//}
+			} 
+//			else {
+//				System.out.println("Condition satisfied");
+//			}
 		} while(t==null);
 		//System.out.println("Came here 2");
 
@@ -62,6 +63,7 @@ public class SelectionOperator implements Operator {
 	
 	private boolean evaluate(Datum[] t, Expression condition2) {
 
+//		System.out.println("-------->>"+TupleStruct.getTupleTableMap());
 		if(isTupleMapPresent) {
 			TupleStruct.setTupleTableMap(t);
 			isTupleMapPresent = false;
