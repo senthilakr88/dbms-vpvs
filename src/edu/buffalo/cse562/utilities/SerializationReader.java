@@ -15,25 +15,33 @@ import edu.buffalo.cse562.physicalPlan.Datum;
 public class SerializationReader {
 
 	
-	public static boolean readFile(ObjectInputStream br) {
+	public static void readFile(ObjectInputStream br) {
 		try {
 
 			// System.out.println("br.available :: "+br.available());
 			ArrayList<Datum[]> datum = (ArrayList<Datum[]>) br.readObject();
-			if (datum != null) {
-				printTuple(datum);
-				return true;
-			} else {
-				// System.out.println("Closing Buffer");
-				br.close();
-
-			}
+			while (datum != null) {
+				Iterator iter = datum.iterator();
+				while(iter.hasNext()) {
+					Datum[] temp = (Datum[]) iter.next();
+					printTuple(temp);
+					System.out.println();
+				}				
+				datum = (ArrayList<Datum[]>) br.readObject();
+			} 
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		return false;
+		
 
 	}
 
