@@ -29,17 +29,21 @@ public class HHJoinOperator implements Operator {
 	Integer arrayPointer;
 	Map<Integer, ArrayList<Datum[]>> hashTable;
 	Datum[] rightDatum;
+	String rightTable;
 
-	public HHJoinOperator(Operator left, Operator right, Expression expression) {
+	public HHJoinOperator(Operator left, Operator right, Expression expression, String rightTable) {
 		this.left = left;
 		this.right = right;
 		this.expr = expression;
 		this.partitions = 1000;
+		this.rightTable = rightTable;
 		firstTime = true;
 		rightIndexRet = true;
 		arrayPointer = 0;
 		hashTable = new HashMap<Integer, ArrayList<Datum[]>>();
+//		System.out.println(leftColIndex + " :: " + rightColIndex);
 		buildHashTable(left);
+//		printTuple(hashTable);
 	}
 
 	public void resetStream() {
@@ -51,7 +55,7 @@ public class HHJoinOperator implements Operator {
 		ArrayList<Datum[]> listTuple;
 		Object key;
 		Integer keyNo;
-		Datum[] leftDatum;
+		Datum[] leftDatum = null;
 		if (arrayPointer == 0) {
 			rightDatum = right.readOneTuple();
 			if (rightIndexRet) {
@@ -59,26 +63,51 @@ public class HHJoinOperator implements Operator {
 				rightColIndex = TupleStruct.getColIndex(rightDatum, rightKey);
 				rightIndexRet = false;
 			}
-			if(rightDatum == null) {
+			if (rightDatum == null) {
 				return null;
 			}
 		}
+
 		key = TupleStruct.getKey(rightDatum, rightColIndex);
 		keyNo = partNo(key);
 		listTuple = hashTable.get(keyNo);
-		leftDatum = searchHashTable(listTuple, key);
-		if(leftDatum == null) {
+//		System.out.println("Validating listTuple");
+
+		if (listTuple != null) {
+//			System.out.println("Finding FirsTuple");
+//			System.out.println(key + " :: " + keyNo);
+			leftDatum = searchHashTable(listTuple, key);
+		}
+
+		if (leftDatum == null) {
+			arrayPointer = 0;
 			rightDatum = right.readOneTuple();
-			if(rightDatum == null) {
+			if (rightDatum == null) {
 				return null;
 			}
 			key = TupleStruct.getKey(rightDatum, rightColIndex);
 			keyNo = partNo(key);
 			listTuple = hashTable.get(keyNo);
-			leftDatum = searchHashTable(listTuple, key);
-			
+			if (listTuple == null) {
+				while (listTuple == null) {
+					rightDatum = right.readOneTuple();
+					if (rightDatum == null) {
+						return null;
+					}
+					key = TupleStruct.getKey(rightDatum, rightColIndex);
+					keyNo = partNo(key);
+					listTuple = hashTable.get(keyNo);
+				}
+				leftDatum = searchHashTable(listTuple, key);
+			} else {
+				leftDatum = searchHashTable(listTuple, key);
+			}
+
 		}
+
 		joinTuple = combine(leftDatum, rightDatum);
+//		System.out.print("JoinTuple :: ");
+//		printTuple(joinTuple);
 		return joinTuple;
 
 	}
@@ -93,15 +122,13 @@ public class HHJoinOperator implements Operator {
 			leftKey = TupleStruct.getKey(leftDatum, leftColIndex);
 			compareTo = TupleStruct.compare(leftKey, rightKey);
 			++arrayPointer;
-			if (compareTo == 0) {				
+			if (compareTo == 0) {
 				return leftDatum;
-			} 
+			}
 		}
 		arrayPointer = 0;
 		return null;
 	}
-
-	
 
 	public void buildHashTable(Operator oper) {
 		Object key;
@@ -111,8 +138,10 @@ public class HHJoinOperator implements Operator {
 
 		while (tempTuple != null) {
 			if (firstTime) {
-				parseExpression();
 				TupleStruct.setTupleTableMap(tempTuple);
+				parseExpression(rightTable);				
+//				 System.out.println("Structure :: " + TupleStruct.getTupleTableMap());
+//				 System.out.println("LeftKey :: "+leftKey.getColumnName());
 				leftColIndex = TupleStruct.getColIndex(tempTuple, leftKey);
 				firstTime = false;
 			}
@@ -129,11 +158,11 @@ public class HHJoinOperator implements Operator {
 			}
 			tempTuple = oper.readOneTuple();
 		}
-		//printTuple(hashTable);
+		// printTuple(hashTable);
 	}
 
-	public void parseExpression() {
-		ColumnFetcher cf = new ColumnFetcher();
+	public void parseExpression(String rightTable) {
+		ColumnFetcher cf = new ColumnFetcher(rightTable);
 		expr.accept(cf);
 		leftKey = cf.getLeftCol();
 		rightKey = cf.getRightCol();
@@ -150,19 +179,19 @@ public class HHJoinOperator implements Operator {
 	public void printTuple(Map<Integer, ArrayList<Datum[]>> hashTable) {
 		Iterator it = hashTable.entrySet().iterator();
 		ArrayList<Datum[]> tempList;
-	    while (it.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)it.next();
-	        System.out.print(pairs.getKey() + " = ");
-	        tempList = (ArrayList<Datum[]>) pairs.getValue();
-	        Iterator it1 = tempList.iterator();
-	        while(it1.hasNext()) {
-	        	printTuple((Datum[])it1.next());
-	        	System.out.print(",");
-	        }
-	        System.out.println();
-	    }
+		while (it.hasNext()) {
+			Map.Entry pairs = (Map.Entry) it.next();
+			System.out.print(pairs.getKey() + " = ");
+			tempList = (ArrayList<Datum[]>) pairs.getValue();
+			Iterator it1 = tempList.iterator();
+			while (it1.hasNext()) {
+				printTuple((Datum[]) it1.next());
+				System.out.println(",");
+			}
+			System.out.println();
+		}
 	}
-	
+
 	public void printTuple(Datum[] row) {
 		Boolean first = true;
 		if (row != null && row.length != 0) {
@@ -212,6 +241,6 @@ public class HHJoinOperator implements Operator {
 	@Override
 	public void resetTupleMapping() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

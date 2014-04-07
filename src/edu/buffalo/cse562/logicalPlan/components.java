@@ -14,6 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -34,11 +35,14 @@ import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.OrderByOperator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
+import edu.buffalo.cse562.physicalPlan.SortMergeJoinOperator;
 import edu.buffalo.cse562.physicalPlan.Test;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
 import edu.buffalo.cse562.sql.expression.evaluator.AndVisitor;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.sql.expression.evaluator.ColumnFetcher;
+import edu.buffalo.cse562.sql.expression.evaluator.EqualityCheck;
 import edu.buffalo.cse562.sql.expression.evaluator.ExpressionSplitter;
 
 public class components {
@@ -62,6 +66,10 @@ public class components {
 	ArrayList<List<String>> onTableLists = new ArrayList<List<String>>();
 	ArrayList<Expression> otherList = new ArrayList<Expression>();
 	ArrayList<String> joinedTables = new ArrayList<String>();
+	Long minFileSize;
+	Long fileThreshold;
+	Boolean firstTime;
+	Map<String, String> joinCol;
 
 	public components() {
 
@@ -73,7 +81,9 @@ public class components {
 
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
-
+		joinCol = new HashMap<String, String>();
+		this.fileThreshold = Long.valueOf(500);
+		this.firstTime = true;
 	}
 
 	public void addProjectStmts(List<SelectExpressionItem> list) {
@@ -89,7 +99,7 @@ public class components {
 	}
 
 	public void addToPlan(String s) {
-		s += "\n"+planPrint.toString();
+		s += "\n" + planPrint.toString();
 		planPrint = new StringBuffer(s);
 	}
 
@@ -106,28 +116,28 @@ public class components {
 
 		if (whereClause != null) {
 			List<Expression> expList = new ArrayList<Expression>();
-			try{
+			try {
 				AndVisitor calc = new AndVisitor();
 				whereClause.accept(calc);
-				//			System.out.println(calc.getList());
-				expList = calc.getList();	
-			} catch(UnsupportedOperationException e) {
+				// System.out.println(calc.getList());
+				expList = calc.getList();
+			} catch (UnsupportedOperationException e) {
 				expList.add(whereClause);
 			}
-			for(Expression e:expList){
+			for (Expression e : expList) {
 				ExpressionSplitter split = new ExpressionSplitter();
 				e.accept(split);
-				//				System.out.println("Number of columns in this expression is "+split.getColumnCounter());
-				//				System.out.println(split.getTableList());
-				if(split.getColumnCounter()==1){
+				// System.out.println("Number of columns in this expression is "+split.getColumnCounter());
+				// System.out.println(split.getTableList());
+				if (split.getColumnCounter() == 1) {
 					eList = singleTableMap.get(split.getTableList().get(0));
-					if (eList== null) {
-						//						System.out.println();
+					if (eList == null) {
+						// System.out.println();
 						eList = new ArrayList<Expression>();
 					}
 					eList.add(e);
 					singleTableMap.put(split.getTableList().get(0), eList);
-				} else if (split.getColumnCounter()==2) {
+				} else if (split.getColumnCounter() == 2) {
 					onExpressionList.add(e);
 					onTableLists.add(split.getTableList());
 				} else {
@@ -135,28 +145,29 @@ public class components {
 				}
 			}
 		}
-		//		System.out.println(singleTableMap);
-		//		System.out.println("TableDir----->"+tableDir);
+		// System.out.println(singleTableMap);
+		// System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
 				tableColTypeMap);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
 		addToPlan(fip.getPlan().toString());
-		//		System.out.println("First table"+fip.getOperatorTableName());
+		// System.out.println("First table"+fip.getOperatorTableName());
 		String operTable = fip.getOperatorTableName();
 		eList = singleTableMap.get(operTable);
 		Expression leftWhereClause = null;
-		if(eList!=null) {
+		if (eList != null) {
 			leftWhereClause = eList.get(0);
-			for(int i = 1; i < eList.size(); i++) {
-				leftWhereClause = new AndExpression(leftWhereClause, eList.get(i));	
+			for (int i = 1; i < eList.size(); i++) {
+				leftWhereClause = new AndExpression(leftWhereClause,
+						eList.get(i));
 			}
 
 			oper = new SelectionOperator(oper, leftWhereClause);
-			addToPlan("[Selection on :: "+ operTable  +" Expr :: "+leftWhereClause.toString()+"]");
+			addToPlan("[Selection on :: " + operTable + " Expr :: "
+					+ leftWhereClause.toString() + "]");
 		}
 		joinedTables.add(operTable);
-
 
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
@@ -168,34 +179,37 @@ public class components {
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
 				addToPlan(fip.getPlan().toString());
-				//				System.out.println("NAME"+fip.getOperatorTableName());
-				//				System.out.println("Right table "+fip.getOperatorTableName());
+				// System.out.println("NAME"+fip.getOperatorTableName());
+				// System.out.println("Right table "+fip.getOperatorTableName());
 				String rightTable = fip.getOperatorTableName();
 				eList = singleTableMap.get(rightTable);
 
 				Expression rightWhereClause = null;
-				if(eList!=null) {
+				if (eList != null) {
 					rightWhereClause = eList.get(0);
-					for(int i = 1; i < eList.size(); i++) {
-						rightWhereClause = new AndExpression(rightWhereClause, eList.get(i));
+					for (int i = 1; i < eList.size(); i++) {
+						rightWhereClause = new AndExpression(rightWhereClause,
+								eList.get(i));
 					}
-					//					System.out.println(rightWhereClause);
-					rightOper = new SelectionOperator(rightOper, rightWhereClause);
-					addToPlan("[Selection on :: "+ rightTable  +" Expr :: "+rightWhereClause.toString()+"]");
+					// System.out.println(rightWhereClause);
+					rightOper = new SelectionOperator(rightOper,
+							rightWhereClause);
+					addToPlan("[Selection on :: " + rightTable + " Expr :: "
+							+ rightWhereClause.toString() + "]");
 				}
-//				System.out.println(onExpressionList);
-//				System.out.println(onTableLists);
+				// System.out.println(onExpressionList);
+				// System.out.println(onTableLists);
 				Expression onExpression = null;
-				if(joinTable.getOnExpression()==null){
+				if (joinTable.getOnExpression() == null) {
 					joinedTables.add(rightTable);
-					for(int i=0;i<onTableLists.size();i++) {
+					for (int i = 0; i < onTableLists.size(); i++) {
 						Boolean onExpFlag = true;
-						for(String tableName:onTableLists.get(i)) {
-							if(!joinedTables.contains(tableName)){
+						for (String tableName : onTableLists.get(i)) {
+							if (!joinedTables.contains(tableName)) {
 								onExpFlag = false;
 							}
 						}
-						if(onExpFlag==true){
+						if (onExpFlag == true) {
 							onExpression = onExpressionList.get(i);
 							onExpressionList.remove(i);
 							onTableLists.remove(i);
@@ -205,43 +219,116 @@ public class components {
 				} else {
 					onExpression = joinTable.getOnExpression();
 				}
-				//				System.out.println("Joined tables---"+joinedTables);
-				//				System.out.println("join on condition"+onExpression);
+				// System.out.println("Joined tables---"+joinedTables);
+				// System.out.println("join on condition"+onExpression);
 
-				oper = new BNLJoinOperator(oper, rightOper,
-						onExpression);
-				
-				if(onExpression !=null) {
-				addToPlan("[Block Nested Join on :: "+  joinedTables + " and " + rightTable +" Expr :: "+onExpression.toString()+"]");
+				Boolean equalityCheck;
+				if (onExpression != null) {
+					EqualityCheck ec = new EqualityCheck();
+					try {
+						onExpression.accept(ec);
+						equalityCheck = true;
+					} catch (Exception e) {
+						equalityCheck = false;
+					}
+					if (!equalityCheck) {
+						oper = new BNLJoinOperator(oper, rightOper,
+								onExpression);
+						addToPlan("[Block Nested Join on :: " + joinedTables
+								+ " and " + rightTable + " Expr :: "
+								+ onExpression.toString() + "]");
+					} else {
+						if (minFileSize.compareTo(fileThreshold) > 0 && swapDir != null
+								&& swapDir.length() > 0) {
+							ArrayList<OrderByElement> obe;
+							ColumnFetcher cf = new ColumnFetcher(rightTable);
+							onExpression.accept(cf);
+							OrderByElement temp = new OrderByElement();
+							Column lc = cf.getLeftCol();
+							Column rc = cf.getRightCol();
+							String lcs = lc.getColumnName();
+							String rcs = rc.getColumnName();
+							Table lt = cf.getLeftTab();
+							Table rt = cf.getRightTab();
+							String lts = lt.getAlias() == null ? lt.getName() : lt.getAlias();
+							String rts = rt.getAlias() == null ? rt.getName() : rt.getAlias();
+							if (!joinCol.containsKey(lts) && !lcs
+											.equalsIgnoreCase(joinCol
+													.get(lts))) {
+								joinCol.put(lts, lcs);
+								temp.setExpression(lc);
+								 obe = new ArrayList<OrderByElement>();
+								obe.add(temp);
+								addToPlan("[External Sort on :: "
+										+ lts + " OrderBy :: "
+										+ obe.toString() + "]");
+								oper = new ExternalSort(oper, lts, obe,
+										swapDir);
+								firstTime = false;
+							}
+							if (!joinCol.containsKey(rts)
+									&& !rcs.equalsIgnoreCase(joinCol
+											.get(rts))) {
+								joinCol.put(rts, rcs);
+								temp = new OrderByElement();
+								temp.setExpression(rc);
+								obe = new ArrayList<OrderByElement>();
+								obe.add(temp);
+								addToPlan("[External Sort on :: "
+										+ rts + " OrderBy :: "
+										+ obe.toString() + "]");
+								rightOper = new ExternalSort(rightOper, rts, obe,
+										swapDir);
+							}
+							addToPlan("[Sort Merge Join on :: " + joinedTables
+									+ " and " + rightTable + " Expr :: "
+									+ onExpression.toString() + "]");
+							oper = new SortMergeJoinOperator(oper, rightOper,
+									onExpression);
+						} else {
+							addToPlan("[Hybrid Hash Join on :: " + joinedTables
+									+ " and " + rightTable + " Expr :: "
+									+ onExpression.toString() + "]");
+							oper = new HHJoinOperator(oper, rightOper,
+									onExpression, rightTable);
+						}
+					}
+
 				} else {
-					addToPlan("[Block Nested Join on :: "+  joinedTables + " and " + rightTable +" No Expression]");
+					oper = new BNLJoinOperator(oper, rightOper, onExpression);
+					addToPlan("[Block Nested Join on :: " + joinedTables
+							+ " and " + rightTable + " No Expression]");
 				}
 			}
 		}
 
 		Expression fullWhereClause = null;
-		if(onExpressionList!=null&&onExpressionList.size()!=0) {
-			//			System.out.println("Right only selection exists!!!!"+eList);
+		if (onExpressionList != null && onExpressionList.size() != 0) {
+			// System.out.println("Right only selection exists!!!!"+eList);
 			fullWhereClause = onExpressionList.get(0);
-			for(int i = 1; i < onExpressionList.size(); i++) {
-				fullWhereClause = new AndExpression(fullWhereClause, onExpressionList.get(i));
+			for (int i = 1; i < onExpressionList.size(); i++) {
+				fullWhereClause = new AndExpression(fullWhereClause,
+						onExpressionList.get(i));
 			}
-			//			System.out.println(rightWhereClause);
+			// System.out.println(rightWhereClause);
 		}
-		if(otherList!=null&&otherList.size()!=0) {
-				if (fullWhereClause==null){
-					fullWhereClause = otherList.get(0);
-				} else {
-					fullWhereClause = new AndExpression(fullWhereClause, otherList.get(0));
-				}
-				for(int i = 1; i < otherList.size(); i++) {
-					fullWhereClause = new AndExpression(fullWhereClause, otherList.get(i));
-				}
-			//			System.out.println(rightWhereClause);
+		if (otherList != null && otherList.size() != 0) {
+			if (fullWhereClause == null) {
+				fullWhereClause = otherList.get(0);
+			} else {
+				fullWhereClause = new AndExpression(fullWhereClause,
+						otherList.get(0));
+			}
+			for (int i = 1; i < otherList.size(); i++) {
+				fullWhereClause = new AndExpression(fullWhereClause,
+						otherList.get(i));
+			}
+			// System.out.println(rightWhereClause);
 		}
-		if (fullWhereClause!=null){
+		if (fullWhereClause != null) {
 			oper = new SelectionOperator(oper, fullWhereClause);
-			addToPlan("[Selection on :: "+  joinedTables +" Expr :: "+fullWhereClause.toString()+"]");
+			addToPlan("[Selection on :: " + joinedTables + " Expr :: "
+					+ fullWhereClause.toString() + "]");
 		}
 
 		boolean isFunction = false;
@@ -255,58 +342,65 @@ public class components {
 			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
 			List<Column> groupbyList = select.getGroupByColumnReferences();
-			oper = new GroupbyOperator(oper, projectStmt,
-					groupbyList);
-			addToPlan("[Group By on :: "+  joinedTables +" Groupby :: "+groupbyList.toString()+"]");
-			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
+			oper = new GroupbyOperator(oper, projectStmt, groupbyList);
+			addToPlan("[Group By on :: " + joinedTables + " Groupby :: "
+					+ groupbyList.toString() + "]");
+			addToPlan("[Projection on :: " + joinedTables + " Columns :: "
+					+ projectStmt.toString() + "]");
 		} else if (isFunction) {
 			oper = new AggregateOperator(oper, projectStmt);
-			addToPlan("[Aggregate on :: "+  joinedTables+"]");
-			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
+			addToPlan("[Aggregate on :: " + joinedTables + "]");
+			addToPlan("[Projection on :: " + joinedTables + " Columns :: "
+					+ projectStmt.toString() + "]");
 		} else {
-			//			System.out.println("Entering projection");
+			// System.out.println("Entering projection");
 			oper = new ProjectionOperator(oper, projectStmt);
-			addToPlan("[Projection on :: "+  joinedTables +" Columns :: "+projectStmt.toString()+"]");
+			addToPlan("[Projection on :: " + joinedTables + " Columns :: "
+					+ projectStmt.toString() + "]");
 		}
 
 		if (orderbyElements != null) {
-			//			System.out.println("Entering ExternalSort");
-			if(swapDir !=null && swapDir.length() > 0) {
-				oper = new ExternalSort(oper, "master", orderbyElements, swapDir);
-				addToPlan("[External Sort on :: "+  joinedTables +" OrderBy :: "+orderbyElements.toString()+"]");
+			// System.out.println("Entering ExternalSort");
+			if (swapDir != null && swapDir.length() > 0) {
+				addToPlan("[External Sort on :: " + joinedTables
+						+ " OrderBy :: " + orderbyElements.toString() + "]");
+				oper = new ExternalSort(oper, "masterExternal",
+						orderbyElements, swapDir);
 			} else {
-				List<Datum[]> listDatum= new ArrayList<Datum[]>();
+				List<Datum[]> listDatum = new ArrayList<Datum[]>();
 				Datum[] t = oper.readOneTuple();
 				while (t != null) {
 					listDatum.add(t);
 					t = oper.readOneTuple();
 				}
 				oper = new OrderByOperator(orderbyElements, listDatum);
-				addToPlan("[Normal Sort on :: "+  joinedTables +" OrderBy :: "+orderbyElements.toString()+"]");
+				addToPlan("[Normal Sort on :: " + joinedTables + " OrderBy :: "
+						+ orderbyElements.toString() + "]");
 			}
-				
+
 		}
 
 		if (limit != null) {
-			//			System.out.println("Entering Limit");
+			// System.out.println("Entering Limit");
 			oper = new LimitOperator(oper, limit.getRowCount());
-			addToPlan("[Limit on :: "+  joinedTables +" Rows :: "+limit.getRowCount()+"]");
+			addToPlan("[Limit on :: " + joinedTables + " Rows :: "
+					+ limit.getRowCount() + "]");
 		}
 //		printPlan();
-//		oper.resetTupleMapping();
+		// oper.resetTupleMapping();
 		return oper;
 	}
 
-//	public void OrderBy(ArrayList<Datum[]> list) {
-//		if (list == null)
-//			return;
-//		OrderByOperator obp = new OrderByOperator(orderbyElements, list);
-//		obp.setListDatum(list);
-//		if (orderbyElements != null) {
-//			obp.sort();
-//		}
-//		obp.print();
-//	}
+	// public void OrderBy(ArrayList<Datum[]> list) {
+	// if (list == null)
+	// return;
+	// OrderByOperator obp = new OrderByOperator(orderbyElements, list);
+	// obp.setListDatum(list);
+	// if (orderbyElements != null) {
+	// obp.sort();
+	// }
+	// obp.print();
+	// }
 
 	public void processTuples(Operator oper) {
 		// OrderByOperator obp = new OrderByOperator(orderbyElements);
@@ -326,8 +420,8 @@ public class components {
 	}
 
 	private void printGroupTuples(ArrayList<Datum[]> finalGroupbyArrayList) {
-		//		System.out
-		//		.println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
+		// System.out
+		// .println("------------PRINTING TUPLE FROM GROUPBY OPERATOR--------");
 		for (Datum[] singleDatum : finalGroupbyArrayList) {
 			printTuple(singleDatum);
 		}
@@ -349,7 +443,7 @@ public class components {
 	}
 
 	public void setTableDirectory(String tableDir) {
-		//		System.out.println("Setting to "+tableDir);
+		// System.out.println("Setting to "+tableDir);
 		this.tableDir = tableDir;
 
 	}
@@ -400,7 +494,7 @@ public class components {
 		this.limit = limit;
 
 	}
-	
+
 	public void resetParam() {
 		projectStmt = null;
 		whereClause = null;
@@ -410,6 +504,14 @@ public class components {
 		orderbyElements = null;
 		limit = null;
 		tableJoins = null;
+		firstTime = true;
+	}
+
+	public void addFileSize(Long fileSizeComp) {
+//		System.out.println(fileSizeComp);
+//		11632
+		minFileSize = fileSizeComp;
+		
 	}
 
 }

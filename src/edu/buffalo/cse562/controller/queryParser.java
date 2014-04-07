@@ -1,5 +1,6 @@
 package edu.buffalo.cse562.controller;
 
+import java.io.File;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -83,6 +85,8 @@ public class queryParser {
 					ArrayList<ColumnDefinition> columnDefinitionList = (ArrayList) createTableStatement
 							.getColumnDefinitions();
 					Table table = createTableStatement.getTable();
+					String tableName = createTableStatement.getTable()
+							.getName().toLowerCase();
 					for (ColumnDefinition s : columnDefinitionList) {
 						columnNameList
 								.add(new Column(table, s.getColumnName()));
@@ -90,8 +94,7 @@ public class queryParser {
 					}
 					// Adding table name and column names to the map
 					comp.addColsToTable(columnNameList);
-					comp.addColsTypeToTable(createTableStatement.getTable()
-							.getName().toLowerCase(), columnTypeList);
+					comp.addColsTypeToTable(tableName, columnTypeList);
 					comp.setTableDirectory(tableDir);
 					comp.setSwapDirectory(swapDir);
 					// Printing the contents of the HashMap
@@ -102,7 +105,7 @@ public class queryParser {
 					SelectBody selectStmt = ((Select) statement)
 							.getSelectBody();
 					if (selectStmt instanceof PlainSelect) {
-						
+												
 						PlainSelect plainSelect = (PlainSelect) selectStmt;
 						lg.logger.log(Level.INFO, "plainSelect :: "
 								+ plainSelect.toString());
@@ -120,7 +123,10 @@ public class queryParser {
 						// lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
 						// lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
 						comp.addOrderBy(plainSelect.getOrderByElements());
+						
 						comp.addJoins(plainSelect.getJoins());
+						
+						comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 						comp.addLimit(plainSelect.getLimit());
 						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 						lg.logger.log(Level.INFO, comp.toString());
@@ -143,6 +149,31 @@ public class queryParser {
 			}
 		}
 
+	}
+
+	private Long fileSizeComp(List joins) {
+		boolean first = true;
+		Long minSize = null;
+		String basePath = tableDir + File.separator;
+		if (!(new File(basePath).exists())) {
+			basePath = new File("").getAbsolutePath() + File.separator
+					+ basePath;
+		} 
+		Iterator JoinIte = joins.iterator();
+		while(JoinIte.hasNext()) {
+			Join j = (Join) JoinIte.next();
+			if(j.getRightItem() instanceof Table) {
+				Table t =  (Table) j.getRightItem();
+				String tableName = t.getName();
+				File f = new File(basePath+File.separator+tableName+".dat");
+				if(first) {
+					minSize = f.length();
+				} else if(minSize.compareTo(f.length()) < 0) {
+					minSize = f.length();
+				}
+			}
+		}
+		return minSize;
 	}
 
 }

@@ -60,6 +60,7 @@ public class ExternalSort implements Operator {
 		if (!(new File(swapDir).exists())) {
 			swapDir = new File("").getAbsolutePath() + File.separator + swapDir;
 		}
+		//System.out.println(swapDir);
 		this.masterFile = swapDir + File.separator + tableName + ".ser";
 
 		hmap = new HashMap<Integer, ArrayList<Datum[]>>();
@@ -502,6 +503,11 @@ public class ExternalSort implements Operator {
 					} else {
 						// System.out.println("No more Tuples");
 						masterBuffer.close();
+						File f = new File(swapDir);
+						for(File file: f.listFiles())  {
+//							System.out.println(file.toString());
+							file.delete();
+						}
 						tuple = null;
 					}
 				}
