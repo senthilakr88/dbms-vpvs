@@ -89,6 +89,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 		int index=-1;
 //		System.out.println("Is Expression---->"+isExpression);
+//		System.out.println("Came to get column value");
 		if(firstEntry==null){
 			columnValue = column;
 		}
@@ -219,7 +220,59 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		}
+	}
+	
+	@Override
+	public void visit(NotEqualsTo notEqualsTo) {
+//		System.out.println("Left EXP---"+notEqualsTo.getLeftExpression());
+//		System.out.println("Right EXP---"+notEqualsTo.getRightExpression());
+		//System.out.println("INSIDE NOT EQUALS");
+		// lg.logger.log(Level.INFO, "Came to greater than");
+//		isExpression = true;
+		accumulatorBoolean = false;
+		notEqualsTo.getLeftExpression().accept(this);
+		Object leftValue = accumulator;
 
+		
+//		lg.logger.log(Level.INFO, leftValue.getClass().getName());
+		notEqualsTo.getRightExpression().accept(this);
+		Object rightValue = accumulator;
+		
+//		System.out.println("left val-"+leftValue);
+//		System.out.println("right val-"+rightValue);
+//		lg.logger.log(Level.INFO, rightValue.getClass().getName());
+		if (leftValue instanceof String && rightValue instanceof String) {
+			//System.out.println("INSTANCE STRING");
+			String leftStringValue = (String) leftValue;
+//			System.out.println("LEFT"+leftStringValue);
+			String rightStringValue = (String) rightValue;
+//			System.out.println("RIGHT"+rightStringValue);
+			if (!leftStringValue.equalsIgnoreCase(rightStringValue)) {
+//				System.out.println("FLAG TRUE");
+//				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Double && rightValue instanceof Double) {
+//			System.out.println("INSTANCE DOUBLE");
+			if (((Double)leftValue).compareTo((Double)rightValue) != 0) {
+//				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Long && rightValue instanceof Long) {
+//			System.out.println("INSTANCE LONG");
+			if (((Long)leftValue).compareTo((Long)rightValue) != 0) {
+//				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		} else if (leftValue instanceof Date && rightValue instanceof Date) {
+//			System.out.println("INSTANCE DATE");
+			Date date1 = (Date) leftValue;
+			Date date2 = (Date) rightValue;
+			if (!date1.equals(date2)) {
+//				lg.logger.log(Level.INFO, "GREATER GREATER");
+				accumulatorBoolean = true;
+			}
+		}
 	}
 
     @Override                                                                                                                                                             
@@ -710,41 +763,6 @@ public class CalcTools extends AbstractExpressionVisitor {
 		}
 	}
 
-	@Override
-	public void visit(NotEqualsTo notEqualsTo) {
-		// lg.logger.log(Level.INFO, "Came to greater than");
-//		isExpression = true;
-		accumulatorBoolean = false;
-		notEqualsTo.getLeftExpression().accept(this);
-		Object leftValue = accumulator;
-		lg.logger.log(Level.INFO, leftValue.getClass().getName());
-		notEqualsTo.getRightExpression().accept(this);
-		Object rightValue = accumulator;
-		lg.logger.log(Level.INFO, rightValue.getClass().getName());
-		if (leftValue instanceof String && rightValue instanceof String) {
-			if (!leftValue.equals(rightValue)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
-				accumulatorBoolean = true;
-			}
-		} else if (leftValue instanceof Double && rightValue instanceof Double) {
-			if (((Double)leftValue).compareTo((Double)rightValue) != 0) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
-				accumulatorBoolean = true;
-			}
-		} else if (leftValue instanceof Long && rightValue instanceof Long) {
-			if (((Long)leftValue).compareTo((Long)rightValue) != 0) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
-				accumulatorBoolean = true;
-			}
-		} else if (leftValue instanceof Date && rightValue instanceof Date) {
-			Date date1 = (Date) leftValue;
-			Date date2 = (Date) rightValue;
-			if (!date1.equals(date2)) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
-				accumulatorBoolean = true;
-			}
-		}
-	}
 
 	@Override
 	public void visit(NullValue nullValue) {
