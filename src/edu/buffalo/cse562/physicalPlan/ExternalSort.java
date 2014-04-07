@@ -280,7 +280,7 @@ public class ExternalSort implements Operator {
 
 		int k = start;
 		Datum[] lowest = null;
-		int capacity = 10000;
+		int capacity = 5000;
 
 		ArrayList<Datum[]> list1 = null;
 		Datum[] element;
@@ -382,6 +382,7 @@ public class ExternalSort implements Operator {
 				// System.out.println(indexTraversal);
 				if (removeindex != -1) {
 					lowest = null;
+					if(buffer!=null && buffer.size() > 0)
 					buffer.get(removeindex).remove(0);
 				} else {
 
@@ -530,7 +531,9 @@ public class ExternalSort implements Operator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+//		System.out.println(masterFile + " :: External Sort :: ");
+//		printTuple(tuple);
+		System.out.println();
 		return tuple;
 	}
 
