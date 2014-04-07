@@ -67,6 +67,7 @@ public class GroupbyOperator implements Operator {
 
 	@Override
 	public Datum[] readOneTuple() {
+		//System.out.println("INSIDE GROUP BY READ ONE TUPLE");
 		Datum[] temp = null;
 		if (finalGroupbyArrayList != null
 				&& index != finalGroupbyArrayList.size()) {
@@ -124,8 +125,7 @@ public class GroupbyOperator implements Operator {
 					mapKey.append(singleDatum.getStringValue());
 					// System.out.println(mapKey);
 				} else {
-					System.out.println("Not able to find a match"
-							+ datumColumnName + " : " + grpColName);
+					System.out.println("Not able to find a match"+ datumColumnName + " : " + grpColName);
 					return null;
 				}
 			}
@@ -145,11 +145,11 @@ public class GroupbyOperator implements Operator {
 				CalcTools calc = new CalcTools(readOneTupleFromOper);
 
 				if (e instanceof Function) {
-					// System.out.println("PRINT THERE IS A FUNCTION IN THE SELECT BODY");
+					//System.out.println("PRINT THERE IS A FUNCTION IN THE SELECT BODY");
 					Function aggregateFunction = (Function) e;
 					// aggregareFunctionList.add(aggregateFunction);
 					funcName = aggregateFunction.getName();
-					// System.out.println("FUNC NAME IN CHECK:"+funcName);
+					//System.out.println("FUNC NAME IN CHECK:"+funcName);
 					fnMap.put(itr, funcName);
 				} else {
 					fnMap.put(itr, "col");
@@ -157,7 +157,8 @@ public class GroupbyOperator implements Operator {
 				e.accept(calc);
 				Datum tempDatum = getDatum(calc, newItem);
 				if ("count".equalsIgnoreCase(funcName)) {
-					countValue = (String) calc.getCountResult();
+					countValue = String.valueOf((Long)calc.getCountResult());
+					//System.out.println("PRINT COUNT VALUE"+ countValue);
 				}
 				newSelectItemsArray[itr] = tempDatum;
 
