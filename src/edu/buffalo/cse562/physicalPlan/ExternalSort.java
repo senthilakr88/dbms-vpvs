@@ -503,11 +503,11 @@ public class ExternalSort implements Operator {
 					} else {
 						// System.out.println("No more Tuples");
 						masterBuffer.close();
-						File f = new File(swapDir);
-						for(File file: f.listFiles())  {
-//							System.out.println(file.toString());
-							file.delete();
-						}
+//						File f = new File(swapDir);
+//						for(File file: f.listFiles())  {
+////							System.out.println(file.toString());
+//							file.delete();
+//						}
 						tuple = null;
 					}
 				}

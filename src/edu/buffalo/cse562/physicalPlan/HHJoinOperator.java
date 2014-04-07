@@ -42,7 +42,8 @@ public class HHJoinOperator implements Operator {
 		arrayPointer = 0;
 		hashTable = new HashMap<Integer, ArrayList<Datum[]>>();
 //		System.out.println(leftColIndex + " :: " + rightColIndex);
-		buildHashTable(left);
+//		System.out.println("Hash Table Construct starting ");
+		buildHashTable();
 //		printTuple(hashTable);
 	}
 
@@ -51,15 +52,18 @@ public class HHJoinOperator implements Operator {
 	}
 
 	public Datum[] readOneTuple() {
+//		System.out.println("entering readOneTuple");
 		Datum[] joinTuple = null;
 		ArrayList<Datum[]> listTuple;
 		Object key;
 		Integer keyNo;
 		Datum[] leftDatum = null;
 		if (arrayPointer == 0) {
+			right.resetStream();
 			rightDatum = right.readOneTuple();
 			if (rightIndexRet) {
 				TupleStruct.setTupleTableMap(rightDatum);
+//				System.out.println("Computing right index");
 				rightColIndex = TupleStruct.getColIndex(rightDatum, rightKey);
 				rightIndexRet = false;
 			}
@@ -79,8 +83,9 @@ public class HHJoinOperator implements Operator {
 			leftDatum = searchHashTable(listTuple, key);
 		}
 
-		if (leftDatum == null) {
+		while (leftDatum == null) {
 			arrayPointer = 0;
+			right.resetTupleMapping();
 			rightDatum = right.readOneTuple();
 			if (rightDatum == null) {
 				return null;
@@ -89,7 +94,9 @@ public class HHJoinOperator implements Operator {
 			keyNo = partNo(key);
 			listTuple = hashTable.get(keyNo);
 			if (listTuple == null) {
+//				System.out.println("listTuple is empty");
 				while (listTuple == null) {
+					right.resetTupleMapping();
 					rightDatum = right.readOneTuple();
 					if (rightDatum == null) {
 						return null;
@@ -98,8 +105,13 @@ public class HHJoinOperator implements Operator {
 					keyNo = partNo(key);
 					listTuple = hashTable.get(keyNo);
 				}
+//				System.out.println("non traversal :: finding a datum after listTraversal" );
+				printTuple(leftDatum);
 				leftDatum = searchHashTable(listTuple, key);
 			} else {
+//				System.out.println(key + " :: " + keyNo);
+//				System.out.println("non - list Traversal" );
+				printTuple(leftDatum);
 				leftDatum = searchHashTable(listTuple, key);
 			}
 
@@ -130,23 +142,36 @@ public class HHJoinOperator implements Operator {
 		return null;
 	}
 
-	public void buildHashTable(Operator oper) {
+	public void buildHashTable() {
 		Object key;
 		int keyNo;
 		ArrayList<Datum[]> listTuple;
-		Datum[] tempTuple = oper.readOneTuple();
+		Datum[] tempTuple = left.readOneTuple();
 
+//		if(oper == null) {
+//			System.out.println("oper is empty");
+//		}
+//		
+//		if(tempTuple == null) {
+//			System.out.println("No more Tuples");
+//		}
+		
+//		System.out.println("Table Constructed begins");
 		while (tempTuple != null) {
 			if (firstTime) {
-				TupleStruct.setTupleTableMap(tempTuple);
+				
 				parseExpression(rightTable);				
 //				 System.out.println("Structure :: " + TupleStruct.getTupleTableMap());
 //				 System.out.println("LeftKey :: "+leftKey.getColumnName());
+//				System.out.println("Right Table parsing completes");
+//				System.out.println("Calling Hash Join Column Index");
+				TupleStruct.setTupleTableMap(tempTuple);
 				leftColIndex = TupleStruct.getColIndex(tempTuple, leftKey);
 				firstTime = false;
 			}
 			key = TupleStruct.getKey(tempTuple, leftColIndex);
 			keyNo = partNo(key);
+//			System.out.println("Entered to add Hashtable");
 			if (!hashTable.containsKey(keyNo)) {
 				listTuple = new ArrayList<Datum[]>();
 				listTuple.add(tempTuple);
@@ -156,8 +181,10 @@ public class HHJoinOperator implements Operator {
 				listTuple.add(tempTuple);
 				hashTable.put(keyNo, listTuple);
 			}
-			tempTuple = oper.readOneTuple();
+			tempTuple = left.readOneTuple();
 		}
+		
+//		System.out.println("Building hash Table completed");
 		// printTuple(hashTable);
 	}
 
