@@ -82,7 +82,7 @@ public class components {
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
 		joinCol = new HashMap<String, String>();
-		this.fileThreshold = Long.valueOf(500);
+		this.fileThreshold = Long.valueOf(500000);
 		this.firstTime = true;
 	}
 
@@ -252,7 +252,7 @@ public class components {
 							Table rt = cf.getRightTab();
 							String lts = lt.getAlias() == null ? lt.getName() : lt.getAlias();
 							String rts = rt.getAlias() == null ? rt.getName() : rt.getAlias();
-							if (!joinCol.containsKey(lts) && !lcs
+							if (!joinCol.containsKey(lts) || !lcs
 											.equalsIgnoreCase(joinCol
 													.get(lts))) {
 								joinCol.put(lts, lcs);
@@ -267,7 +267,7 @@ public class components {
 								firstTime = false;
 							}
 							if (!joinCol.containsKey(rts)
-									&& !rcs.equalsIgnoreCase(joinCol
+									|| !rcs.equalsIgnoreCase(joinCol
 											.get(rts))) {
 								joinCol.put(rts, rcs);
 								temp = new OrderByElement();

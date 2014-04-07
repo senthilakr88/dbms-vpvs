@@ -57,11 +57,20 @@ public class ExternalSort implements Operator {
 		this.first = true;
 		this.tableName = tableName;
 		this.resultIndex = 0;
-		if (!(new File(swapDir).exists())) {
-			swapDir = new File("").getAbsolutePath() + File.separator + swapDir;
+		this.swapDir = this.swapDir + File.separator + tableName + File.separator ;
+//		System.out.println(this.swapDir);
+		if (!(new File(this.swapDir).exists())) {
+			this.swapDir = new File("").getAbsolutePath() + File.separator + this.swapDir;
+			boolean result = new File(this.swapDir).mkdirs();
+			if(!result)
+				System.out.println("Parent Directories not created");
+		} else {
+			boolean result = new File(this.swapDir).mkdirs();
+			if(!result)
+				System.out.println("Parent Directories not created");
 		}
-		//System.out.println(swapDir);
-		this.masterFile = swapDir + File.separator + tableName + ".ser";
+//		System.out.println(this.swapDir);
+		this.masterFile = this.swapDir + File.separator + tableName+".ser";
 
 		hmap = new HashMap<Integer, ArrayList<Datum[]>>();
 		asc = new ArrayList<Boolean>();
@@ -165,6 +174,7 @@ public class ExternalSort implements Operator {
 				// System.out.println("Entering to sort Data :: ");
 				sortdata(i);
 				oper.resetTupleMapping();
+//				System.out.println(swapDir);
 				s = swapDir + File.separator + "buffer[";
 				index = Integer.toString(1) + Integer.toString(i);
 				s = s + index + "].ser";
@@ -187,8 +197,10 @@ public class ExternalSort implements Operator {
 		// Initial sort, completed phase 1
 		int runs = readpage();
 		if (runs == 1) {
+//			System.out.println(swapDir);
 			String s = swapDir + File.separator + "buffer[10].ser";
 			File buffername = new File(s);
+			
 			File file2 = new File(masterFile);
 			if (!buffername.renameTo(file2)) {
 				System.out.println("File renaming failed");
