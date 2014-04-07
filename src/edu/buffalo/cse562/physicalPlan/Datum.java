@@ -251,7 +251,7 @@ public interface Datum {
 		}
 
 		public String toString() {
-			return String.format("%.2f", value);
+			return String.format("%.4f", value);
 		}
 
 		// public String toComString() {
