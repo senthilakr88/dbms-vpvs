@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Instructions
-# Go into the 'src' folder 
+# Go into the 'src' folder
 # Ensure that this file has execute permissions
 # Usage: testpy <sqlfilename>
 # Example testpy tpch1.sql
@@ -9,18 +9,61 @@
 import datetime
 import os
 import sys
-#if not os.path.exists('/tmp/myresults/'):
-    #os.makedirs('/tmp/myresults/')
-t1 = datetime.datetime.now()
-resultFile = sys.argv[1].split(".")[0]+t1.strftime("%Y-%m-%d-%H-%M-%s")+".dat"
-os.system("java -cp ../bin:../other/jsqlparser.jar edu.buffalo.cse562.Main --data /../data/LittleBigDataEvaluation --swap /tmp /../data/LittleBigDataEvaluation/"+sys.argv[1]+" > /tmp/myresults/"+resultFile)
-expectedFile = "../data/LittleBigDataEvaluation/"+sys.argv[1].split(".")[0]+".expected.dat"
-t2 = datetime.datetime.now()
-import filecmp
-print filecmp.cmp('/tmp/myresults/'+resultFile,expectedFile)
-diff = t2-t1
-print diff
-print diff.seconds
-print diff.microseconds
+
+def createResultFolder():
+    if not os.path.exists(os.path.join(os.getcwd(),'..','myresults',)):
+        os.makedirs(os.path.join(os.getcwd(),'..','myresults',));
+
+def setFilePaths(sqlFileName):
+    resultFileName = sqlFileName.split(".")[0]+datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%s")+".dat"
+    resultFile = os.path.join('..','myresults',resultFileName)
+    binFolder = os.path.join('..','bin')
+    jsqlJar = os.path.join('..','other','jsqlparser.jar')
+    dataFolder = os.path.join('..','data','LittleBigdataEvaluation')
+    swapFolder = os.path.join('..','swapDir')
+    sqlFile = os.path.join('..','data','LittleBigDataEvaluation',sqlFileName)
+    expectedFile = os.path.join('..','data','LittleBigDataEvaluation',sys.argv[1].split(".")[0]+".expected.dat")
+
+    return (binFolder, jsqlJar, dataFolder, swapFolder, sqlFile, resultFile, expectedFile)
 
 
+def runCode(paths):
+    # print paths
+    start_time = datetime.datetime.now()
+    os.system("java -cp "+paths[0]+":"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" --swap "+paths[3]+" /"+paths[4]+" > "+paths[5])
+    end_time = datetime.datetime.now()
+    return start_time, end_time
+
+def createSwapFolder():
+    if not os.path.exists(os.path.join(os.getcwd(),'..','swapDir',)):
+        os.makedirs(os.path.join(os.getcwd(),'..','swapDir',))
+
+def compareFile(fp):
+    import filecmp
+    print "Is the result generated and expected same? :",
+    print filecmp.cmp(fp[5],fp[6])
+
+def purgeSwapFolder():
+    import shutil
+    if not os.path.exists(os.path.join(os.getcwd(),'..','swapDir',)):
+        shutil.rmtree(os.path.join(os.getcwd(),'..','swapDir',))
+
+def printTimeDiff(times):
+    diff = times[1]-times[0]
+    print "Time taken for query evaluation: ",
+    print diff
+    print "In seconds: ",
+    print diff.seconds
+    # print diff.microseconds
+
+
+if __name__=='__main__':
+    createResultFolder()
+    sqlFileName = sys.argv[1]
+    print "For file: ", sqlFileName
+    fp = setFilePaths(sqlFileName)
+    purgeSwapFolder()
+    createSwapFolder()
+    # print fp
+    printTimeDiff(runCode(fp))
+    print compareFile(fp)
