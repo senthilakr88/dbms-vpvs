@@ -107,7 +107,7 @@ public class GroupbyOperator implements Operator {
 				// System.out.println(TupleStruct.getTupleTableMap());
 				datumColumnName = (ArrayList<String>) TupleStruct
 						.getTupleTableMap();
-				if (!TupleStruct.isNestedCondition())
+				if (!TupleStruct.isNestedCondition() && !TupleStruct.getJoinCondition())
 					isTupleMapPresent = false;
 			}
 			StringBuilder mapKey = new StringBuilder();
@@ -140,10 +140,13 @@ public class GroupbyOperator implements Operator {
 				// System.out.println("EXPRESSION"+countExpression);
 				SelectExpressionItem newItem = selectExpressionList.get(itr);
 				Expression e = newItem.getExpression();
+				
+//				System.out.println("Expression e :: " +e.toString());
+				
 				String funcName = null;
 
 				CalcTools calc = new CalcTools(readOneTupleFromOper);
-
+//				printTuple(readOneTupleFromOper);
 				if (e instanceof Function) {
 					//System.out.println("PRINT THERE IS A FUNCTION IN THE SELECT BODY");
 					Function aggregateFunction = (Function) e;
@@ -156,6 +159,9 @@ public class GroupbyOperator implements Operator {
 				}
 				e.accept(calc);
 				Datum tempDatum = getDatum(calc, newItem);
+				
+//				printTuple(tempDatum);
+				
 				if ("count".equalsIgnoreCase(funcName)) {
 					countValue = String.valueOf((Long)calc.getCountResult());
 					//System.out.println("PRINT COUNT VALUE"+ countValue);
@@ -225,17 +231,19 @@ public class GroupbyOperator implements Operator {
 //							+ " :: " + datumArray[i] + " :: " + funcName + "::"
 //							+ tempDatum[i]);
 				}
-
+//				printTuple(tempDatum);
 				groupByMap.put(mapKey.toString(), tempDatum);
 				mapGroupCountMap.put(mapKey.toString(), tempCount);
 				// System.out.println("PRINT COUNT GROUP MAP");
 				// printCountMap(mapGroupCountMap);
 
 			}
+//			if(TupleStruct.getJoinCondition())
+//			this.oper.resetTupleMapping();
 			readOneTupleFromOper = this.oper.readOneTuple();
 		}
-		// System.out.println("PRINT MAP");
-		// printMap(groupByMap);
+//		 System.out.println("PRINT MAP");
+//		 printMap(groupByMap);
 		// System.out.println(keyThatIsSumSet);
 		// avg code
 		if (avgFlag == true) {
@@ -260,8 +268,9 @@ public class GroupbyOperator implements Operator {
 		}
 		
 		// System.out.println("PRINT MAP AFTER AVG IF AVG IS THERE!!!");
-		// printMap(groupByMap);
-		// printCountMap(mapGroupCountMap);
+//		 printMap(groupByMap);
+//		 System.out.println("----------------------");
+//		 printCountMap(mapGroupCountMap);
 		finalGroupByDatumArrayList.addAll(groupByMap.values());
 		return finalGroupByDatumArrayList;
 	}
@@ -374,11 +383,16 @@ public class GroupbyOperator implements Operator {
 			printTuple(MapValue);
 		}
 	}
+	
+	private void printTuple(Datum tempDatum) {
+		System.out.println(tempDatum.toString());
+	}
 
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
 		Object calcOut = calc.getResult();
-
+//		System.out.println(newItem.toString());
+//		System.out.println(calcOut.toString());
 		if (newItem.getAlias() != null) {
 			// System.out.println("Alias :: "+ newItem.getAlias());
 			newCol = new Column(null, newItem.getAlias());
@@ -411,6 +425,7 @@ public class GroupbyOperator implements Operator {
 			tempDatum = new Datum.dDecimal((Double) (calcOut), newCol);
 
 		}
+		
 		return tempDatum;
 	}
 

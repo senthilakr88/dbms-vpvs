@@ -152,6 +152,8 @@ public class ProjectionOperator implements Operator {
 		}
 		listDatum = arrayListDatum.toArray(listDatum);
 //		System.out.println(arrayListDatum.toString());
+//		System.out.println("Reporting from projection");
+//		printTuple(listDatum);
 		return listDatum;
 
 	}
@@ -161,6 +163,21 @@ public class ProjectionOperator implements Operator {
 	public void resetTupleMapping() {
 		isTupleMapPresent = true;
 		
+	}
+	
+	public void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			// System.out.println();
+		}
 	}
 }
 

@@ -37,11 +37,15 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public Object getResult() {
 		// lg.logger.log(Level.INFO, String.valueOf(accumulator));
-		return accumulator;
+		Object accTemp = this.accumulator;
+		this.accumulator = null;
+		return accTemp;
 	}
 	
 	public Object getCountResult() {
-		return accCount;
+		Object accTemp = this.accCount;
+		this.accCount = null;
+		return accTemp;
 	}
 
 	public CalcTools(Datum[] t2) {
@@ -99,8 +103,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 			index = tupleTableMap.indexOf(columnName);
 		}
 		
-		//System.out.println(tupleTableMap);
-		//System.out.println(columnName);
+//		System.out.println(tupleTableMap);
+//		System.out.println(columnName);
 		
 		Datum row = t[index];
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
@@ -109,6 +113,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		System.out.println(index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
+//		System.out.println(index + " : " + columnName + " : "+tupleTableMap);
 		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
 

@@ -21,6 +21,7 @@ public class OrderByOperator implements Operator{
 		this.listDatum = listDatum;
 		this.index = 0;
 		sort();
+//		print();
 	}
 
 	public List<Datum[]> getListDatum() {
