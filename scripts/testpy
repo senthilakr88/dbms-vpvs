@@ -1,10 +1,23 @@
 #!/usr/bin/python
+
+# Instructions
+# Go into the 'src' folder 
+# Ensure that this file has execute permissions
+# Usage: testpy <sqlfilename>
+# Example testpy tpch1.sql
+
 import datetime
 import os
 import sys
+#if not os.path.exists('/tmp/myresults/'):
+    #os.makedirs('/tmp/myresults/')
 t1 = datetime.datetime.now()
-os.system("java -cp ../bin:../other/jsqlparser.jar edu.buffalo.cse562.Main --data /../data /../sqlfile/"+sys.argv[1]+" > "+sys.argv[1]+".dat")
+resultFile = sys.argv[1].split(".")[0]+t1.strftime("%Y-%m-%d-%H-%M-%s")+".dat"
+os.system("java -cp ../bin:../other/jsqlparser.jar edu.buffalo.cse562.Main --data /../data/LittleBigDataEvaluation --swap /tmp /../data/LittleBigDataEvaluation/"+sys.argv[1]+" > /tmp/myresults/"+resultFile)
+expectedFile = "../data/LittleBigDataEvaluation/"+sys.argv[1].split(".")[0]+".expected.dat"
 t2 = datetime.datetime.now()
+import filecmp
+print filecmp.cmp('/tmp/myresults/'+resultFile,expectedFile)
 diff = t2-t1
 print diff
 print diff.seconds

@@ -16,6 +16,8 @@ public class SortMergeJoinOperator implements Operator {
 	Expression expr;
 	Column leftJoinKey;
 	Column rightJoinKey;
+	int leftIndex;
+	int rightIndex;
 	
 	public SortMergeJoinOperator(Operator left, 
 			Operator right, Expression expr){
@@ -42,6 +44,15 @@ public class SortMergeJoinOperator implements Operator {
 		Datum[] inputDatum1 = left.readOneTuple();
 		Datum[] inputDatum2 = right.readOneTuple();
 		
+//		leftIndex = getDatumIndex(inputDatum1,leftJoinKey);
+//		rightIndex = getDatumIndex(inputDatum2,rightJoinKey);
+		
+		TupleStruct.setTupleTableMap(inputDatum1);
+		leftIndex = TupleStruct.getColIndex(inputDatum1, leftJoinKey);
+		
+		TupleStruct.setTupleTableMap(inputDatum2);
+		rightIndex = TupleStruct.getColIndex(inputDatum2, rightJoinKey);
+		
 //		if(inputDatum2 == null || inputDatum1 == null){
 //			System.out.println("NULL OCCURED");
 //		}
@@ -54,8 +65,12 @@ public class SortMergeJoinOperator implements Operator {
 		//loop until any one relation is completely scanned
 		while(inputDatum1!=null && inputDatum2!=null){
 			//get the join attribute datum from each file scan operator
-			Datum singleDatumValue1 = getDatum(inputDatum1,leftJoinKey);
-			Datum singleDatumValue2 = getDatum(inputDatum2,rightJoinKey);
+//			Datum singleDatumValue1 = getDatum(inputDatum1,leftJoinKey);
+//			Datum singleDatumValue2 = getDatum(inputDatum2,rightJoinKey);
+			
+			Datum singleDatumValue1 = inputDatum1[leftIndex];
+			Datum singleDatumValue2 = inputDatum2[rightIndex];
+			
 			if(singleDatumValue1!=null && singleDatumValue2!=null){
 				//compareDatum return 0 if 2 datum are same
 				//System.out.println("INSIDE COMP");
@@ -190,6 +205,23 @@ public class SortMergeJoinOperator implements Operator {
 		}
 		return singleDatumValue;
 	}
+	
+	/*	get join column datum index from Datum[]
+	 * 	input - Datum[] & join column specific to the relation (Column)
+	 * 	output - Datum
+	 */
+	private int getDatumIndex(Datum[] inputDatum1, Column joinColumn) {
+		int index = -1;
+	
+		for(int i=0;i<inputDatum1.length;i++){
+			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinColumn.getColumnName().trim())){
+				index = i;
+				break;
+			}
+		}
+		return index;
+	}
+	
 	
 	/* find join Column in left and right relation and populate the class fields leftJoinKey & rightJoinKey
 	 * input - nothing
