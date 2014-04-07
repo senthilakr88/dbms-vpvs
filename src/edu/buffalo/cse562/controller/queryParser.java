@@ -49,13 +49,13 @@ public class queryParser {
 			fileReader fr = new fileReader(fileIte.next());
 			sqlQueryList = fr.readContents();
 			lg.logger.log(Level.INFO, sqlQueryList.toString());
-//			printQuery();
-//			comp = new components();
+			//			printQuery();
+			//			comp = new components();
 			interpretQuery();
 
 		}
 	}
-	
+
 	public void printQuery() {
 		Iterator<String> queryIte = sqlQueryList.iterator();
 		while (queryIte.hasNext()) {
@@ -89,7 +89,7 @@ public class queryParser {
 							.getName().toLowerCase();
 					for (ColumnDefinition s : columnDefinitionList) {
 						columnNameList
-								.add(new Column(table, s.getColumnName()));
+						.add(new Column(table, s.getColumnName()));
 						columnTypeList.add(s.getColDataType().toString());
 					}
 					// Adding table name and column names to the map
@@ -105,7 +105,7 @@ public class queryParser {
 					SelectBody selectStmt = ((Select) statement)
 							.getSelectBody();
 					if (selectStmt instanceof PlainSelect) {
-												
+
 						PlainSelect plainSelect = (PlainSelect) selectStmt;
 						lg.logger.log(Level.INFO, "plainSelect :: "
 								+ plainSelect.toString());
@@ -123,25 +123,25 @@ public class queryParser {
 						// lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
 						// lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
 						comp.addOrderBy(plainSelect.getOrderByElements());
-						
+
 						comp.addJoins(plainSelect.getJoins());
-						
+
 						comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 						comp.addLimit(plainSelect.getLimit());
 						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 						lg.logger.log(Level.INFO, comp.toString());
 						Operator oper = comp.executePhysicalPlan();
 						if(oper!=null)
-						comp.processTuples(oper);
+							comp.processTuples(oper);
 						comp.resetParam();
 					} else {
 						System.out
-								.println("Select type of statement !!! still not handled");
+						.println("Select type of statement !!! still not handled");
 					}
 
 				} else {
 					System.out
-							.println("Not a create or select statement !!! Skipped from validation");
+					.println("Not a create or select statement !!! Skipped from validation");
 				}
 			} catch (JSQLParserException e) {
 				// TODO Auto-generated catch block
@@ -159,19 +159,23 @@ public class queryParser {
 			basePath = new File("").getAbsolutePath() + File.separator
 					+ basePath;
 		} 
-		Iterator JoinIte = joins.iterator();
-		while(JoinIte.hasNext()) {
-			Join j = (Join) JoinIte.next();
-			if(j.getRightItem() instanceof Table) {
-				Table t =  (Table) j.getRightItem();
-				String tableName = t.getName();
-				File f = new File(basePath+File.separator+tableName+".dat");
-				if(first) {
-					minSize = f.length();
-				} else if(minSize.compareTo(f.length()) < 0) {
-					minSize = f.length();
+		if(joins!=null){
+			Iterator JoinIte = joins.iterator();
+			while(JoinIte.hasNext()) {
+				Join j = (Join) JoinIte.next();
+				if(j.getRightItem() instanceof Table) {
+					Table t =  (Table) j.getRightItem();
+					String tableName = t.getName();
+					File f = new File(basePath+File.separator+tableName+".dat");
+					if(first) {
+						minSize = f.length();
+					} else if(minSize.compareTo(f.length()) < 0) {
+						minSize = f.length();
+					}
 				}
 			}
+		} else {
+			minSize = Long.valueOf(10000);
 		}
 		return minSize;
 	}

@@ -510,7 +510,7 @@ public class components {
 	public void addFileSize(Long fileSizeComp) {
 //		System.out.println(fileSizeComp);
 //		11632
-		minFileSize = fileSizeComp;
+		this.minFileSize = fileSizeComp;
 		
 	}
 

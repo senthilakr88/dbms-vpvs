@@ -2,6 +2,7 @@ package edu.buffalo.cse562.physicalPlan;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -10,6 +11,7 @@ import edu.buffalo.cse562.logicalPlan.components;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -19,7 +21,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 public class FromItemParser implements FromItemVisitor {
 
 	Operator oper = null;
-	String basePath;
+	String basePath = null;
 	List<Column> tableMap;
 	String tableName;
 	Map<String, ArrayList<String>> tableColTypeMap;
@@ -74,6 +76,7 @@ public class FromItemParser implements FromItemVisitor {
 			comp.addWhereConditions(plainSelect.getWhere());
 			comp.addOrderBy(plainSelect.getOrderByElements());
 			comp.addJoins(plainSelect.getJoins());
+			comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 			TupleStruct.setNestedCondition(true);
 //			printPlan();
 			oper = comp.executePhysicalPlan();
@@ -105,4 +108,32 @@ public class FromItemParser implements FromItemVisitor {
 		return tableName;
 	}
 
+	private Long fileSizeComp(List joins) {
+		boolean first = true;
+		Long minSize = null;
+		String basePath1 = basePath + File.separator;
+		if (!(new File(basePath1).exists())) {
+			basePath1 = new File("").getAbsolutePath() + File.separator
+					+ basePath1;
+		} 
+		if(joins!=null){
+			Iterator JoinIte = joins.iterator();
+			while(JoinIte.hasNext()) {
+				Join j = (Join) JoinIte.next();
+				if(j.getRightItem() instanceof Table) {
+					Table t =  (Table) j.getRightItem();
+					String tableName = t.getName();
+					File f = new File(basePath1+File.separator+tableName+".dat");
+					if(first) {
+						minSize = f.length();
+					} else if(minSize.compareTo(f.length()) < 0) {
+						minSize = f.length();
+					}
+				}
+			}
+		} else {
+			minSize = Long.valueOf(10000);
+		}
+		return minSize;
+	}
 }
