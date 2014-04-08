@@ -30,6 +30,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 //	private Boolean isExpression;
 	private Column columnValue;
 	private Boolean firstEntry;
+	private Boolean isColumnOnly=null;
+	private int columnCount=0;
 	logManager lg = new logManager();
 	Datum[] t;
 	List<String> tupleTableMap;
@@ -52,10 +54,13 @@ public class CalcTools extends AbstractExpressionVisitor {
 		t = t2;
 //		isExpression = null;
 		firstEntry=null;
+		isColumnOnly=null;
+		columnCount=0;
 	}
 
 	@Override
 	public void visit(Addition addition) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		// lg.logger.log(Level.INFO, "Came to addition");
 		if(firstEntry==null){
 			firstEntry=true;
@@ -92,6 +97,13 @@ public class CalcTools extends AbstractExpressionVisitor {
 	public void visit(Column column) {
 
 		int index=-1;
+//		if(isColumnOnly!=null&&isColumnOnly==false) {
+//			isColumnOnly=true;
+//			System.out.println(isColumnOnly);
+//			columnCount+=1;
+//			System.out.println(columnCount);
+//		}
+		
 //		System.out.println("Is Expression---->"+isExpression);
 //		System.out.println("Came to get column value");
 		if(firstEntry==null){
@@ -110,9 +122,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
-//		System.out.println(index + ":" + row.toComString() + " : "
-//				+ column.getTable().getName() + ":" + column.getColumnName()
-//				+ ":" + row.equals(column));
+
 //		System.out.println(index + " : " + columnName + " : "+tupleTableMap);
 		if (row instanceof Datum.dLong) {
 			accumulator = ((Datum.dLong) row).getValue();
@@ -125,6 +135,21 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 		} else if (row instanceof Datum.dDecimal) {
 			accumulator = ((Datum.dDecimal) row).getValue();
+//			System.out.println(accumulator);
+//			System.out.println("ASDF");
+//			System.out.println(isColumnOnly);
+			if(isColumnOnly==null)//&&isColumnOnly!=false)
+			{
+//				System.out.println("IS Column Only"+columnName);
+				isColumnOnly = true;
+				accumulator = (double)Math.round((double)accumulator * 100) / 100;
+//				System.out.println(accumulator);
+//				accumulator = accumulator;
+			}
+//			System.out.println(index + ":" + " : "
+//					+ column.getTable().getName() + ":" + column.getColumnName()
+//					+ ":" + row.equals(column));
+//			System.out.println(accumulator);
 		}
 		lg.logger.log(Level.INFO, accumulator.toString());
 	}
@@ -133,6 +158,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	public void visit(AndExpression andExpression) {
 		// lg.logger.log(Level.INFO, "Came to and expression");
 //		isExpression = true;
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		andExpression.getLeftExpression().accept(this);
 		boolean leftValue = accumulatorBoolean;
 		if(leftValue==false){
@@ -159,6 +185,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	@Override
 	public void visit(Division division) {
 		// lg.logger.log(Level.INFO, "Came to addition");
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		if(firstEntry==null){
 			firstEntry=true;
 //			System.out.println("Full Expression->"+division.toString());
@@ -195,6 +222,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 	public void visit(EqualsTo equalsTo) {
 		// lg.logger.log(Level.INFO, "Came to greater than");
 //		isExpression = true;
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		accumulatorBoolean = false;
 		equalsTo.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -236,6 +264,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		//System.out.println("INSIDE NOT EQUALS");
 		// lg.logger.log(Level.INFO, "Came to greater than");
 //		isExpression = true;
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		accumulatorBoolean = false;
 		notEqualsTo.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
@@ -282,6 +311,8 @@ public class CalcTools extends AbstractExpressionVisitor {
     @Override                                                                                                                                                             
     public void visit(Function function) {
 //    	isExpression = true;
+    	if(isColumnOnly==null) { isColumnOnly=false;};
+//    	System.out.println("This is a function");
         lg.logger.log(Level.INFO, "Function");
         String functionName = function.getName().toLowerCase();
         ExpressionList parameters = function.getParameters();
@@ -424,6 +455,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(GreaterThan greaterThan) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		lg.logger.log(Level.INFO, "Came to greater than");
 //		System.out.println("Came into greater than");
 //		isExpression = true;
@@ -488,6 +520,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(GreaterThanEquals greaterThanEquals) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		accumulatorBoolean = false;
 //		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to greater than equals");
@@ -568,6 +601,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(LikeExpression likeExpression) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		likeExpression.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
 		likeExpression.getRightExpression().accept(this);
@@ -628,6 +662,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(MinorThan minorThan) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		accumulatorBoolean = false;
 //		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to greater than equals");
@@ -682,6 +717,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(MinorThanEquals minorThanEquals) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		accumulatorBoolean = false;
 //		isExpression = true;
 		// lg.logger.log(Level.INFO, "Came to minor than equals");
@@ -737,6 +773,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(Multiplication multiplication) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		// lg.logger.log(Level.INFO, "Came to multiplication");
 //		isExpression = true;
 		if(firstEntry==null){
@@ -775,6 +812,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(OrExpression orExpression) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		// lg.logger.log(Level.INFO, "Came to OR expression");
 //		isExpression = true;
 		orExpression.getLeftExpression().accept(this);
@@ -795,6 +833,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(Parenthesis parenthesis) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		parenthesis.getExpression().accept(this);
 	}
 
@@ -806,6 +845,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(Subtraction subtraction) {
+		if(isColumnOnly==null) { isColumnOnly=false;};
 		// lg.logger.log(Level.INFO, "Came to subtraction");
 //		isExpression = true;
 		if(firstEntry==null){
@@ -927,6 +967,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public void setAccumulatorBoolean(boolean accumulatorBoolean) {
 		this.accumulatorBoolean = accumulatorBoolean;
+	}
+
+	public Boolean isColumn() {
+		// TODO Auto-generated method stub
+		return isColumnOnly;
 	}
 	
 }

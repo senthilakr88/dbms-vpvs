@@ -288,7 +288,7 @@ public class GroupbyOperator implements Operator {
 				Double avg = val1 / tempCountDouble;
 				avgColumnName = avgDatum.getColumn();
 				return new Datum.dDecimal(String.valueOf(avg),
-						avgDatum.getColumn());
+						avgDatum.getColumn(),4);
 			} else if (avgDatum instanceof dString) {
 				// System.out.println("Date not handled !!! in sum");
 				return null;
@@ -304,7 +304,7 @@ public class GroupbyOperator implements Operator {
 				Double result = value1 / groupCount;
 				result = result * 100 / 100;
 				return new Datum.dDecimal(String.valueOf(result),
-						avgDatum.getColumn());
+						avgDatum.getColumn(),4);
 			} else {
 				// System.out.println("Unknown datatype not handled !!! in sum");
 				return null;
@@ -422,7 +422,14 @@ public class GroupbyOperator implements Operator {
 
 		} else if (calcOut instanceof Double) {
 			Double value = (Double) calcOut;
-			tempDatum = new Datum.dDecimal((Double) (calcOut), newCol);
+			Boolean isColumn = calc.isColumn();
+//			System.out.println("GROUPPPP");
+			if(isColumn!=null&&isColumn==true){
+				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 2);
+			} else {
+				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 4);
+			}
+//			tempDatum = new Datum.dDecimal((Double) (calcOut), newCol);
 
 		}
 		
@@ -457,7 +464,7 @@ public class GroupbyOperator implements Operator {
 			Double value1 = ((dDecimal) t1).getValue();
 			Double value2 = ((dDecimal) t2).getValue();
 			return new Datum.dDecimal(String.valueOf(value1 + value2),
-					t1.getColumn());
+					t1.getColumn(),4);
 		} else {
 			// System.out.println("Unknown datatype not handled !!! in sum");
 			return null;

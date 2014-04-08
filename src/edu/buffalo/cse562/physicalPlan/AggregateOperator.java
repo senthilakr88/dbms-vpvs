@@ -200,6 +200,7 @@ public class AggregateOperator implements Operator {
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
 		Object calcOut = calc.getResult();
+		Boolean isColumn = calc.isColumn();
 		if (newItem.getAlias() != null) {
 			// System.out.println("Alias");
 			newCol = new Column(null, newItem.getAlias());
@@ -228,7 +229,13 @@ public class AggregateOperator implements Operator {
 
 		} else if (calcOut instanceof Double) {
 			Double value = (Double) calcOut;
-			tempDatum = new Datum.dDecimal(calcOut.toString(), newCol);
+			System.out.println("AGGREGATE");
+			if(isColumn!=null&&isColumn==true){
+				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 2);
+			} else {
+				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 4);
+			}
+//			tempDatum = new Datum.dDecimal(calcOut.toString(), newCol);
 		}
 		return tempDatum;
 	}
@@ -261,7 +268,7 @@ public class AggregateOperator implements Operator {
 			Double value1 = ((dDecimal) t1).getValue();
 			Double value2 = ((dDecimal) t2).getValue();
 			return new Datum.dDecimal(String.valueOf(value1 + value2),
-					t1.getColumn());
+					t1.getColumn(),4);
 		} else {
 			System.out.println("Unknown datatype not handled !!! in sum");
 			return null;
@@ -274,7 +281,7 @@ public class AggregateOperator implements Operator {
 			Double value1 = Double.parseDouble(((dLong) t1).getStringValue());
 			Double value2 = ((dDecimal) t2).getValue();
 			return new Datum.dDecimal(value1 / value2,
-					t1.getColumn());
+					t1.getColumn(),4);
 		} else if (t1 instanceof dString) {
 			System.out.println("String not handled !!! in avg");
 			return null;
@@ -285,7 +292,7 @@ public class AggregateOperator implements Operator {
 			Double value1 = ((dDecimal) t1).getValue();
 			Double value2 = ((dDecimal) t2).getValue();
 			return new Datum.dDecimal(value1 / value2,
-					t1.getColumn());
+					t1.getColumn(),4);
 		} else {
 			System.out.println("Unknown datatype not handled !!! in avg");
 			return null;

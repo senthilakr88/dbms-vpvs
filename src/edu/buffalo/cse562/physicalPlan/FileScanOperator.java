@@ -158,7 +158,7 @@ public class FileScanOperator implements Operator {
 			} else if (type.equalsIgnoreCase("decimal")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
 				t[i] = new Datum.dDecimal(singleTableElement[i], new Column(
-						tableName, col.getColumnName()));
+						tableName, col.getColumnName()),4);
 				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("String")
 					|| type.startsWith("char") || type.startsWith("varchar")) {
