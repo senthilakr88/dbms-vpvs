@@ -66,25 +66,25 @@ public class SortMergeJoinOperator implements Operator {
 				Datum leftSingleDatum = null;
 				Datum rightSingleDatum = null;
 				if(inputDatum2!=null){
-//					System.out.println("1singleleft"+leftSingleDatum);
-//					System.out.println("1singleright"+rightSingleDatum);
+					//					System.out.println("1singleleft"+leftSingleDatum);
+					//					System.out.println("1singleright"+rightSingleDatum);
 					inputDatum2 =right.readOneTuple();
 					inputDatum2TempList.add(inputDatum2);
 					//Datum[] inputDatum2Temp = inputDatum2;
 
 
 					if(inputDatum1 != null){
-//						printTuple(inputDatum1);
+						//						printTuple(inputDatum1);
 						leftSingleDatum = inputDatum1[leftIndex];
 					}
 
 					if(inputDatum2!=null){
-//						printTuple(inputDatum2);
+						//						printTuple(inputDatum2);
 						rightSingleDatum = inputDatum2[rightIndex];
 					}
 
-//					System.out.println("2singleleft"+leftSingleDatum);
-//					System.out.println("2singleright"+rightSingleDatum);					//				if(inputDatum2==null)System.out.println("2 NULL");
+					//					System.out.println("2singleleft"+leftSingleDatum);
+					//					System.out.println("2singleright"+rightSingleDatum);					//				if(inputDatum2==null)System.out.println("2 NULL");
 					if (leftSingleDatum != null && rightSingleDatum!=null) {
 						if (compareDatum(leftSingleDatum, rightSingleDatum) == 0) {
 							//System.out.println("first join order");
@@ -92,8 +92,7 @@ public class SortMergeJoinOperator implements Operator {
 							//System.out.println(matchFlag);
 							//printTuple(inputDatum1);
 							//printTuple(inputDatum2);
-							sortMergeJoinedDatum = sortMergeJoin(inputDatum1,
-									inputDatum2);
+							sortMergeJoinedDatum = sortMergeJoin(inputDatum1,inputDatum2);
 							//System.out.println("------------------------END--------------------------");
 							return sortMergeJoinedDatum;
 							//break;
@@ -105,33 +104,46 @@ public class SortMergeJoinOperator implements Operator {
 				}
 			}
 			if(matchFlag == true && checkListFlag == true){
-//				System.out.println("INSIDE GREY");
+				//				System.out.println("INSIDE GREY");
+				Datum leftSingleDatum = null;
 				checkListFlag = false;
 				matchFlag = false;
-				inputDatum1 = left.readOneTuple();
+				if(inputDatum1!=null){
+					inputDatum1 = left.readOneTuple();
+				}
 				//				if (inputDatum1==null){
 				//					System.out.println("NULL");
 				//				}
-
-				Datum leftSingleDatum = inputDatum1[leftIndex];
-				if(inputDatum2TempList.size()>0){
+				if(inputDatum1!=null){
+					leftSingleDatum = inputDatum1[leftIndex];
+				}
+				
+				System.out.println("List size"+inputDatum2TempList.size());
+				if(!inputDatum2TempList.isEmpty()){
 					for(Datum[] passedInputDatum2:inputDatum2TempList){
+						printTuple(passedInputDatum2);
+//						if(passedInputDatum2[0] == null){
+//							System.out.println("DATUM NULL");
+//						}
 						Datum rightSingleDatum=passedInputDatum2[rightIndex];
-						while(inputDatum1!=null && compareDatum(leftSingleDatum,rightSingleDatum) == 0){
-							//printTuple(inputDatum1);
-							//printTuple(inputDatum2);
-							//System.out.println("second join order");
-							sortMergeJoinedDatum = sortMergeJoin(inputDatum1, passedInputDatum2);
-							return sortMergeJoinedDatum;
-							//								inputDatum1 = left.readOneTuple();
-							//								leftSingleDatum = inputDatum1[leftIndex];
+						if (leftSingleDatum != null && rightSingleDatum!=null) {
+							while(inputDatum1!=null && compareDatum(leftSingleDatum,rightSingleDatum) == 0){
+								inputDatum2TempList = new ArrayList<Datum[]>();
+								//printTuple(inputDatum1);
+								//printTuple(inputDatum2);
+								//System.out.println("second join order");
+								sortMergeJoinedDatum = sortMergeJoin(inputDatum1, passedInputDatum2);
+								return sortMergeJoinedDatum;
+								//								inputDatum1 = left.readOneTuple();
+								//								leftSingleDatum = inputDatum1[leftIndex];
+							}
 						}
 					}
 				}
 			}	
 		}
 
-
+		inputDatum2TempList = new ArrayList<Datum[]>();
 		//loop until any one relation is completely scanned
 		while(inputDatum1!=null && inputDatum2!=null){
 			//System.out.println("INSIDE WHILE");
@@ -154,32 +166,25 @@ public class SortMergeJoinOperator implements Operator {
 				//System.out.println("Usual merge");
 				//printTuple(inputDatum1);
 				//System.out.println("MATCHED RIGHT TUPLE");
-				//printTuple(inputDatum2);
+				//printTuple(inputDatum2);s
 
 				matchFlag=true;
 				sortMergeJoinedDatum = sortMergeJoin(inputDatum1, inputDatum2);
 				break;
 			}
 			else if(compValue < 0){
-				//					if(tempMatchTuple.size()>1){
-				//						tempMatchTuple.clear();
-				//					}
 				//read another tuple from the relation1
 				inputDatum1 =left.readOneTuple();
 				//System.out.println("INPUT TUPLE FROM LEFT");
 				//printTuple(inputDatum1);
 			}
 			else{
-				//					if(tempMatchTuple.size()>1){
-				//						tempMatchTuple.clear();
-				//					}
 				//read another tuple from the relation2
 				inputDatum2 = right.readOneTuple();
 				//System.out.println("INPUT TUPLE FROM RIGHT");
 				//printTuple(inputDatum2);
 			}
 		}	
-		//	}
 		//printTuple(sortMergeJoinedDatum);
 		//System.out.println("------------------------END--------------------------");
 		return sortMergeJoinedDatum;
