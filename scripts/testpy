@@ -39,9 +39,12 @@ def createSwapFolder():
         os.makedirs(os.path.join(os.getcwd(),'..','swapDir',))
 
 def compareFile(fp):
-    import filecmp
-    print "Is the result generated and expected same? :",
-    print filecmp.cmp(fp[5],fp[6])
+    try: 
+        import filecmp
+        print "Is the result generated and expected same? :",
+        print filecmp.cmp(fp[5],fp[6])
+    except:
+        print "Unable to compare files"
 
 def purgeSwapFolder():
     import shutil
@@ -66,4 +69,4 @@ if __name__=='__main__':
     createSwapFolder()
     # print fp
     printTimeDiff(runCode(fp))
-    print compareFile(fp)
+    compareFile(fp)

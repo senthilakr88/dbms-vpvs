@@ -37,15 +37,15 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	public Object getResult() {
 		// lg.logger.log(Level.INFO, String.valueOf(accumulator));
-		Object accTemp = this.accumulator;
-		this.accumulator = null;
-		return accTemp;
+//		Object accTemp = this.accumulator;
+//		this.accumulator = null;
+		return accumulator;
 	}
 	
 	public Object getCountResult() {
-		Object accTemp = this.accCount;
-		this.accCount = null;
-		return accTemp;
+//		Object accTemp = this.accCount;
+//		this.accCount = null;
+		return accCount;
 	}
 
 	public CalcTools(Datum[] t2) {
