@@ -371,7 +371,7 @@ public class ExternalSort implements Operator {
 								// }
 								
 								check = false;
-								System.out.println("Changing check value :: " + check);
+//								System.out.println("Changing check value :: " + check);
 								list1 = null;
 								indexTraversal.clear();
 								break;
