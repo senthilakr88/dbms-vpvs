@@ -27,10 +27,16 @@ def setFilePaths(sqlFileName):
     return (binFolder, jsqlJar, dataFolder, swapFolder, sqlFile, resultFile, expectedFile)
 
 
-def runCode(paths):
+def runCode(paths, withSwap):
     # print paths
     start_time = datetime.datetime.now()
-    os.system("java -cp "+paths[0]+":"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" --swap "+paths[3]+" /"+paths[4]+" > "+paths[5])
+    if withSwap:
+        #print "with swap"
+        os.system("java -cp "+paths[0]+":"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" --swap "+paths[3]+" /"+paths[4]+" > "+paths[5])
+    else:
+        #print "without swap"
+        os.system("java -cp "+paths[0]+":"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" /"+paths[4]+" > "+paths[5])
+
     end_time = datetime.datetime.now()
     return start_time, end_time
 
@@ -63,10 +69,14 @@ def printTimeDiff(times):
 if __name__=='__main__':
     createResultFolder()
     sqlFileName = sys.argv[1]
+    if ('--no-swap' in sys.argv):
+        withSwap = False
+    else:
+        withSwap = True
     print "For file: ", sqlFileName
     fp = setFilePaths(sqlFileName)
     purgeSwapFolder()
     createSwapFolder()
     # print fp
-    printTimeDiff(runCode(fp))
+    printTimeDiff(runCode(fp,withSwap))
     compareFile(fp)
