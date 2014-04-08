@@ -112,12 +112,18 @@ public class ProjectionOperator implements Operator {
 					//                System.out.println(newCol.getWholeColumnName());
 
 					Object ob = calc.getResult();
+					Boolean isColumn = calc.isColumn();
 					Datum tempDatum = null;
 					if (ob instanceof Long) {
 						lg.logger.log(Level.INFO, "========Long");
 						tempDatum = new Datum.dLong(ob.toString(), newCol);
 					} else if (ob instanceof Double) {
-						tempDatum = new Datum.dDecimal(ob.toString(), newCol);
+						if(isColumn!=null&&isColumn==true){
+							tempDatum = new Datum.dDecimal(ob.toString(), newCol, 2);
+						} else {
+							tempDatum = new Datum.dDecimal(ob.toString(), newCol, 4);
+						}
+
 					} else if (ob instanceof String) {
 						lg.logger.log(Level.INFO, "========String");
 						tempDatum = new Datum.dString((String) ob, newCol);

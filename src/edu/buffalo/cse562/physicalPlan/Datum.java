@@ -194,6 +194,7 @@ public interface Datum {
 		String tableName;
 		String schemaName;
 		String aliasName;
+		int precision;
 
 		public Column getColumn() {
 			if(aliasName == null)
@@ -206,8 +207,10 @@ public interface Datum {
 		// this.column = column;
 		// }
 
-		public dDecimal(String s, Column col) {
+		public dDecimal(String s, Column col, int prec) {
 			value = Double.parseDouble(s);
+			precision = prec;
+//			System.out.println("Precision is "+precision+" for column ");
 			if (col != null) {
 				this.columnName = col.getColumnName();
 				if (col.getTable() != null) {
@@ -218,8 +221,9 @@ public interface Datum {
 			}
 		}
 
-		public dDecimal(Double s, Column col) {
+		public dDecimal(Double s, Column col, int prec) {
 			value = s;
+			precision = prec;
 			if (col != null) {
 				this.columnName = col.getColumnName();
 				if (col.getTable() != null) {
@@ -251,7 +255,12 @@ public interface Datum {
 		}
 
 		public String toString() {
-			return String.format("%.4f", value);
+			if(precision==2){
+				return String.format("%.2f", value);
+			} else {
+				return String.format("%.4f", value);	
+			}
+			
 		}
 
 		// public String toComString() {

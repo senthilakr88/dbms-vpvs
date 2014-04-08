@@ -57,11 +57,13 @@ public class SortMergeJoinOperator implements Operator {
 			inputDatum2 = right.readOneTuple();
 			leftIndex = getDatumIndex(inputDatum1,leftJoinKey);
 			rightIndex = getDatumIndex(inputDatum2,rightJoinKey);
+			System.out.println(rightIndex);
 			initialDatumReadflag = true;
 		}
 		else{
 			if(matchFlag = true){
 //				keep the left same and vary the right
+<<<<<<< HEAD
 				Datum leftSingleDatum = null;
 				Datum rightSingleDatum = null;
 				if(inputDatum2!=null){
@@ -72,6 +74,16 @@ public class SortMergeJoinOperator implements Operator {
 					rightSingleDatum = inputDatum2[rightIndex];
 				}
 				
+=======
+				inputDatum2 =right.readOneTuple();
+				inputDatum2TempList.add(inputDatum2);
+				if(inputDatum2==null){
+					System.out.println("NULL");
+				}
+				//Datum[] inputDatum2Temp = inputDatum2;
+				Datum leftSingleDatum = inputDatum1[leftIndex];
+				Datum rightSingleDatum = inputDatum2[rightIndex];
+>>>>>>> 70679603e2d7607296dc72000a63c0b470e5470f
 				
 				while(inputDatum2!=null && compareDatum(leftSingleDatum,rightSingleDatum) == 0){
 					//System.out.println("first join order");
