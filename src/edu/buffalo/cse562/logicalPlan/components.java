@@ -75,7 +75,7 @@ public class components {
 
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
-		this.fileThreshold = Long.valueOf(500000);
+		this.fileThreshold = Long.valueOf(50000000);
 		this.firstTime = true;
 	}
 
@@ -394,7 +394,7 @@ public class components {
 //		printPlan();
 		if (orderbyElements != null) {
 			// System.out.println("Entering ExternalSort");
-			if (swapDir != null && swapDir.length() > 0) {
+			if (this.minFileSize.compareTo(this.fileThreshold) > 0 && swapDir != null && swapDir.length() > 0) {
 				addToPlan("[External Sort on :: " + joinedTables
 						+ " OrderBy :: " + orderbyElements.toString() + "]");
 				oper = new ExternalSort(oper, "masterExternal",
@@ -419,7 +419,7 @@ public class components {
 			addToPlan("[Limit on :: " + joinedTables + " Rows :: "
 					+ limit.getRowCount() + "]");
 		}
-		//		printPlan();
+//		printPlan();
 		// oper.resetTupleMapping();
 		return oper;
 	}
