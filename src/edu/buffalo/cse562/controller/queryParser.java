@@ -153,7 +153,7 @@ public class queryParser {
 
 	private Long fileSizeComp(List joins) {
 		boolean first = true;
-		Long minSize = null;
+		Long maxSize = null;
 		String basePath = tableDir + File.separator;
 		if (!(new File(basePath).exists())) {
 			basePath = new File("").getAbsolutePath() + File.separator
@@ -168,16 +168,18 @@ public class queryParser {
 					String tableName = t.getName();
 					File f = new File(basePath+File.separator+tableName+".dat");
 					if(first) {
-						minSize = f.length();
-					} else if(minSize.compareTo(f.length()) < 0) {
-						minSize = f.length();
+						maxSize = f.length();
+						first = false;
+					} else if(maxSize.compareTo(f.length()) < 0) {
+						maxSize = f.length();
 					}
+//					System.out.println(tableName + " :: " + f.length() + "::" + maxSize);
 				}
 			}
 		} else {
-			minSize = Long.valueOf(10000);
+			maxSize = Long.valueOf(1000000);
 		}
-		return minSize;
+		return maxSize;
 	}
 
 }

@@ -117,6 +117,12 @@ public class HHJoinOperator implements Operator {
 
 		}
 
+//		System.out.println("--------------------");
+//		printTuple(leftDatum);
+//		System.out.println();
+//		printTuple(rightDatum);
+//		System.out.println();
+//		System.out.println("--------------------");
 		joinTuple = combine(leftDatum, rightDatum);
 //		System.out.print("JoinTuple :: ");
 //		printTuple(joinTuple);

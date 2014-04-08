@@ -24,15 +24,17 @@ public class FromItemParser implements FromItemVisitor {
 	String basePath = null;
 	List<Column> tableMap;
 	String tableName;
+	String swapDir;
 	Map<String, ArrayList<String>> tableColTypeMap;
 	StringBuffer planPrint;
 
 	public FromItemParser(String basePath, List<Column> tableMap,
-			Map<String, ArrayList<String>> tableColTypeMap) {
+			Map<String, ArrayList<String>> tableColTypeMap, String swapDir) {
 		this.basePath = basePath;
 		this.tableMap = tableMap;
 		this.tableColTypeMap = tableColTypeMap;
 		this.planPrint = new StringBuffer();
+		this.swapDir = swapDir;
 	}
 
 	public void addToPlan(String s) {
@@ -70,6 +72,7 @@ public class FromItemParser implements FromItemVisitor {
 			comp.addColsToTable((ArrayList<Column>) tableMap);
 			comp.addColsTypeToTable(tableColTypeMap);
 			comp.setTableDirectory(basePath);
+			comp.setSwapDirectory(swapDir);
 			comp.addProjectStmts(plainSelect.getSelectItems());
 			comp.setSelectBody(selectStmt);
 			comp.setFromItems(plainSelect.getFromItem());
@@ -110,7 +113,7 @@ public class FromItemParser implements FromItemVisitor {
 
 	private Long fileSizeComp(List joins) {
 		boolean first = true;
-		Long minSize = null;
+		Long maxSize = null;
 		String basePath1 = basePath + File.separator;
 		if (!(new File(basePath1).exists())) {
 			basePath1 = new File("").getAbsolutePath() + File.separator
@@ -118,6 +121,7 @@ public class FromItemParser implements FromItemVisitor {
 		} 
 		if(joins!=null){
 			Iterator JoinIte = joins.iterator();
+//			System.out.println(joins);
 			while(JoinIte.hasNext()) {
 				Join j = (Join) JoinIte.next();
 				if(j.getRightItem() instanceof Table) {
@@ -125,15 +129,18 @@ public class FromItemParser implements FromItemVisitor {
 					String tableName = t.getName();
 					File f = new File(basePath1+File.separator+tableName+".dat");
 					if(first) {
-						minSize = f.length();
-					} else if(minSize.compareTo(f.length()) < 0) {
-						minSize = f.length();
+						maxSize = f.length();
+						first = false;
+					} else if(maxSize.compareTo(f.length()) < 0) {
+						maxSize = f.length();
 					}
+//					System.out.println("From Item Parser");
+//					System.out.println(tableName + " :: " + f.length() + "::" + maxSize);
 				}
 			}
 		} else {
-			minSize = Long.valueOf(10000);
+			maxSize = Long.valueOf(1000000);
 		}
-		return minSize;
+		return maxSize;
 	}
 }

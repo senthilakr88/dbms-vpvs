@@ -46,31 +46,42 @@ public class ExternalSort implements Operator {
 	String tableName;
 	List<Boolean> asc;
 	Boolean first;
+	Integer kWay;
+	Integer capacity;
+	
 
 	// Constructor of ExternalSort
 	public ExternalSort(Operator oper, String tableName, List elements,
-			String swapDir) {
+			String swapDir, Integer countTable) {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 1000;
+		this.bufferMaxSize = 130000;
+		this.kWay = 5;
+		this.capacity = 26000;
 		this.first = true;
 		this.tableName = tableName;
 		this.resultIndex = 0;
-		this.swapDir = this.swapDir + File.separator + tableName + File.separator ;
+		this.swapDir = this.swapDir + File.separator + tableName + (countTable == null ? 0 : countTable) + "_" ;
 //		System.out.println(this.swapDir);
 		if (!(new File(this.swapDir).exists())) {
 			this.swapDir = new File("").getAbsolutePath() + File.separator + this.swapDir;
-			boolean result = new File(this.swapDir).mkdirs();
-			if(!result)
-				System.out.println("Parent Directories not created");
-		} else {
-			boolean result = new File(this.swapDir).mkdirs();
-			if(!result)
-				System.out.println("Parent Directories not created");
-		}
+		} 
+//			File swapDirObj = new File(this.swapDir);
+//			boolean result = swapDirObj.mkdirs();
+//			if(!result) {
+//				System.out.println("Parent Directories not created");
+//			}
+		
+//		else {
+//			boolean result = new File(this.swapDir).mkdirs();
+//			if(!result) {
+//				System.out.println("Parent Directories not created");
+//				
+//			}
+//		}
 //		System.out.println(this.swapDir);
-		this.masterFile = this.swapDir + File.separator + tableName+".ser";
+		this.masterFile = this.swapDir + tableName+".ser";
 
 		hmap = new HashMap<Integer, ArrayList<Datum[]>>();
 		asc = new ArrayList<Boolean>();
@@ -175,7 +186,7 @@ public class ExternalSort implements Operator {
 				sortdata(i);
 				oper.resetTupleMapping();
 //				System.out.println(swapDir);
-				s = swapDir + File.separator + "buffer[";
+				s = swapDir + "buffer[";
 				index = Integer.toString(1) + Integer.toString(i);
 				s = s + index + "].ser";
 				ObjectOutputStream out = writeOS(s);
@@ -198,7 +209,7 @@ public class ExternalSort implements Operator {
 		int runs = readpage();
 		if (runs == 1) {
 //			System.out.println(swapDir);
-			String s = swapDir + File.separator + "buffer[10].ser";
+			String s = swapDir + "buffer[10].ser";
 			File buffername = new File(s);
 			
 			File file2 = new File(masterFile);
@@ -224,8 +235,8 @@ public class ExternalSort implements Operator {
 		int i = 0, k = 0, runcurrent = 0, depth = 1, filenumber = 0;
 		boolean check = true;
 		while (i < runs && check) {
-			if (runs - i >= 5) {
-				k = 5;
+			if (runs - i >= kWay) {
+				k = kWay;
 			} else {
 				k = runs - i;
 			}
@@ -233,7 +244,7 @@ public class ExternalSort implements Operator {
 			count = k;
 			while (count > 0) {
 
-				s = swapDir + File.separator + "buffer[";
+				s = swapDir + "buffer[";
 				String index = Integer.toString(depth) + Integer.toString(i);
 				s = s + index + "].ser";
 
@@ -280,8 +291,6 @@ public class ExternalSort implements Operator {
 
 		int k = start;
 		Datum[] lowest = null;
-		int capacity = 5000;
-
 		ArrayList<Datum[]> list1 = null;
 		Datum[] element;
 		int removeindex = -1;
@@ -360,7 +369,9 @@ public class ExternalSort implements Operator {
 								// break;
 
 								// }
+								
 								check = false;
+								System.out.println("Changing check value :: " + check);
 								list1 = null;
 								indexTraversal.clear();
 								break;
@@ -371,6 +382,7 @@ public class ExternalSort implements Operator {
 
 					}
 				}
+				
 				if (!check)
 					break;
 
@@ -382,7 +394,7 @@ public class ExternalSort implements Operator {
 				// System.out.println(indexTraversal);
 				if (removeindex != -1) {
 					lowest = null;
-					if(buffer!=null && buffer.size() > 0)
+					if(buffer!=null && buffer.get(removeindex).size() > 0)
 					buffer.get(removeindex).remove(0);
 				} else {
 
@@ -418,7 +430,7 @@ public class ExternalSort implements Operator {
 		if (depth == 0) {
 			s = masterFile;
 		} else {
-			s = swapDir + File.separator + "buffer[";
+			s = swapDir +  "buffer[";
 			index = Integer.toString(depth + 1) + Integer.toString(i);
 			s = s + index + "].ser";
 		}
@@ -533,7 +545,7 @@ public class ExternalSort implements Operator {
 		}
 //		System.out.println(masterFile + " :: External Sort :: ");
 //		printTuple(tuple);
-		System.out.println();
+//		System.out.println();
 		return tuple;
 	}
 
@@ -583,5 +595,7 @@ public class ExternalSort implements Operator {
 			System.out.println();
 		}
 	}
+	
+	
 
 }

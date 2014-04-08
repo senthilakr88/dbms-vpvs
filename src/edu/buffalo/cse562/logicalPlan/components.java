@@ -16,17 +16,13 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SubJoin;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.BNLJoinOperator;
 import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.ExternalSort;
-import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
 import edu.buffalo.cse562.physicalPlan.HHJoinOperator;
@@ -36,8 +32,6 @@ import edu.buffalo.cse562.physicalPlan.OrderByOperator;
 import edu.buffalo.cse562.physicalPlan.ProjectionOperator;
 import edu.buffalo.cse562.physicalPlan.SelectionOperator;
 import edu.buffalo.cse562.physicalPlan.SortMergeJoinOperator;
-import edu.buffalo.cse562.physicalPlan.Test;
-import edu.buffalo.cse562.physicalPlan.Tuple;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
 import edu.buffalo.cse562.sql.expression.evaluator.AndVisitor;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
@@ -69,7 +63,7 @@ public class components {
 	Long minFileSize;
 	Long fileThreshold;
 	Boolean firstTime;
-	Map<String, String> joinCol;
+//	Map<String, String> joinCol;
 
 	public components() {
 
@@ -81,7 +75,6 @@ public class components {
 
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
-		joinCol = new HashMap<String, String>();
 		this.fileThreshold = Long.valueOf(500000);
 		this.firstTime = true;
 	}
@@ -162,7 +155,7 @@ public class components {
 //		 System.out.println(singleTableMap);
 		// System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
-				tableColTypeMap);
+				tableColTypeMap, swapDir);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
 		addToPlan(fip.getPlan().toString());
@@ -187,13 +180,15 @@ public class components {
 					+ leftWhereClause.toString() + "]");
 		}
 		joinedTables.add(operTable);
-
+//		printPlan();
 		if (tableJoins != null) {
 			TupleStruct.setJoinCondition(true);
 			Iterator joinIte = tableJoins.iterator();
+			Map<String, String> joinCol = new HashMap<String, String>();
+			Map<String, Integer> joinCount = new HashMap<String, Integer>();
 			while (joinIte.hasNext()) {
 				Join joinTable = (Join) joinIte.next();
-				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap);
+				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap, swapDir);
 
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
@@ -240,7 +235,7 @@ public class components {
 				}
 				// System.out.println("Joined tables---"+joinedTables);
 				// System.out.println("join on condition"+onExpression);
-
+//				printPlan();
 				Boolean equalityCheck;
 				if (onExpression != null) {
 					EqualityCheck ec = new EqualityCheck();
@@ -257,9 +252,15 @@ public class components {
 								+ " and " + rightTable + " Expr :: "
 								+ onExpression.toString() + "]");
 					} else {
-						if (minFileSize.compareTo(fileThreshold) > 0 && swapDir != null
+//						System.out.println(this.minFileSize);
+//						System.out.println(this.fileThreshold);
+//						System.out.println(this.minFileSize.compareTo(this.fileThreshold));
+//						System.out.println(swapDir != null);
+//						System.out.println(swapDir.length() > 0);
+						if (this.minFileSize.compareTo(this.fileThreshold) > 0 && swapDir != null
 								&& swapDir.length() > 0) {
 							ArrayList<OrderByElement> obe;
+							
 							ColumnFetcher cf = new ColumnFetcher(rightTable);
 							onExpression.accept(cf);
 							OrderByElement temp = new OrderByElement();
@@ -275,6 +276,13 @@ public class components {
 									.equalsIgnoreCase(joinCol
 											.get(lts))) {
 								joinCol.put(lts, lcs);
+								if(!joinCount.containsKey(lts)) {
+									joinCount.put(lts, 1);
+								} else {
+									int tempCount = joinCount.get(lts);
+									joinCount.put(lts, ++tempCount);
+								}
+								
 								temp.setExpression(lc);
 								obe = new ArrayList<OrderByElement>();
 								obe.add(temp);
@@ -282,13 +290,19 @@ public class components {
 										+ lts + " OrderBy :: "
 										+ obe.toString() + "]");
 								oper = new ExternalSort(oper, lts, obe,
-										swapDir);
+										swapDir, joinCount.get(lts));
 								firstTime = false;
 							}
 							if (!joinCol.containsKey(rts)
 									|| !rcs.equalsIgnoreCase(joinCol
 											.get(rts))) {
 								joinCol.put(rts, rcs);
+								if(!joinCount.containsKey(rts)) {
+									joinCount.put(rts, 1);
+								} else {
+									int tempCount = joinCount.get(rts);
+									joinCount.put(rts, ++tempCount);
+								}
 								temp = new OrderByElement();
 								temp.setExpression(rc);
 								obe = new ArrayList<OrderByElement>();
@@ -297,7 +311,7 @@ public class components {
 										+ rts + " OrderBy :: "
 										+ obe.toString() + "]");
 								rightOper = new ExternalSort(rightOper, rts, obe,
-										swapDir);
+										swapDir,joinCount.get(rts));
 							}
 							addToPlan("[Sort Merge Join on :: " + joinedTables
 									+ " and " + rightTable + " Expr :: "
@@ -320,7 +334,7 @@ public class components {
 				}
 			}
 		}
-
+//		printPlan();
 		Expression fullWhereClause = null;
 		if (onExpressionList != null && onExpressionList.size() != 0) {
 			// System.out.println("Right only selection exists!!!!"+eList);
@@ -356,7 +370,7 @@ public class components {
 			if (e instanceof Function)
 				isFunction = true;
 		}
-
+//		printPlan();
 		if (((PlainSelect) selectBody).getGroupByColumnReferences() != null) {
 			// Groupby computation
 			PlainSelect select = (PlainSelect) selectBody;
@@ -377,14 +391,14 @@ public class components {
 			addToPlan("[Projection on :: " + joinedTables + " Columns :: "
 					+ projectStmt.toString() + "]");
 		}
-
+//		printPlan();
 		if (orderbyElements != null) {
 			// System.out.println("Entering ExternalSort");
 			if (swapDir != null && swapDir.length() > 0) {
 				addToPlan("[External Sort on :: " + joinedTables
 						+ " OrderBy :: " + orderbyElements.toString() + "]");
 				oper = new ExternalSort(oper, "masterExternal",
-						orderbyElements, swapDir);
+						orderbyElements, swapDir,1);
 			} else {
 				List<Datum[]> listDatum = new ArrayList<Datum[]>();
 				Datum[] t = oper.readOneTuple();
@@ -398,7 +412,7 @@ public class components {
 			}
 
 		}
-
+//		printPlan();
 		if (limit != null) {
 			// System.out.println("Entering Limit");
 			oper = new LimitOperator(oper, limit.getRowCount());
@@ -527,7 +541,7 @@ public class components {
 	}
 
 	public void addFileSize(Long fileSizeComp) {
-		//		System.out.println(fileSizeComp);
+//				System.out.println(fileSizeComp);
 		//		11632
 		this.minFileSize = fileSizeComp;
 

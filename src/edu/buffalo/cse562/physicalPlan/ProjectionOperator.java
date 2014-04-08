@@ -128,7 +128,7 @@ public class ProjectionOperator implements Operator {
 					} else {
 						lg.logger.log(Level.INFO, "Wrong Type");
 						try {
-							throw new Exception("Not aware of this data type ");
+							throw new Exception("Not aware of this data type " + ob);
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
