@@ -198,12 +198,12 @@ public class CalcTools extends AbstractExpressionVisitor {
 		accumulatorBoolean = false;
 		equalsTo.getLeftExpression().accept(this);
 		Object leftValue = accumulator;
-		lg.logger.log(Level.INFO, leftValue.getClass().getName());
+//		System.out.println(leftValue.getClass().getName());
 		equalsTo.getRightExpression().accept(this);
 		Object rightValue = accumulator;
-		lg.logger.log(Level.INFO, rightValue.getClass().getName());
+//		System.out.println(rightValue.getClass().getName());
 		if (leftValue instanceof String && rightValue instanceof String) {
-			if (leftValue.equals(rightValue)) {
+			if (leftValue.toString().equals(rightValue.toString())) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -213,8 +213,10 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
+//			System.out.println("Long comparison");
+//			System.out.println((Long)leftValue);
+//			System.out.println((Long)rightValue);
 			if (((Long)leftValue).compareTo((Long)rightValue) == 0) {
-				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
@@ -248,11 +250,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		lg.logger.log(Level.INFO, rightValue.getClass().getName());
 		if (leftValue instanceof String && rightValue instanceof String) {
 			//System.out.println("INSTANCE STRING");
-			String leftStringValue = (String) leftValue;
-//			System.out.println("LEFT"+leftStringValue);
-			String rightStringValue = (String) rightValue;
 //			System.out.println("RIGHT"+rightStringValue);
-			if (!leftStringValue.equalsIgnoreCase(rightStringValue)) {
+			if (!leftValue.toString().equalsIgnoreCase(rightValue.toString())) {
 //				System.out.println("FLAG TRUE");
 //				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
