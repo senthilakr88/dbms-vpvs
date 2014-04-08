@@ -113,6 +113,7 @@ public class components {
 
 	public Operator executePhysicalPlan() {
 		Operator oper = null;
+		Boolean singleTableFlag = false;
 
 		if (whereClause != null) {
 			List<Expression> expList = new ArrayList<Expression>();
@@ -124,28 +125,41 @@ public class components {
 			} catch (UnsupportedOperationException e) {
 				expList.add(whereClause);
 			}
+//			System.out.println(expList);
 			for (Expression e : expList) {
 				ExpressionSplitter split = new ExpressionSplitter();
 				e.accept(split);
-				// System.out.println("Number of columns in this expression is "+split.getColumnCounter());
-				// System.out.println(split.getTableList());
-				if (split.getColumnCounter() == 1) {
-					eList = singleTableMap.get(split.getTableList().get(0));
+//				System.out.println("Number of columns in this expression is "+split.getColumnCounter());
+//				System.out.println(split.getTableList());
+				if(split.getTableList()!=null&&split.getTableList().get(0)!=null){
+					if (split.getColumnCounter() == 1) {
+						eList = singleTableMap.get(split.getTableList().get(0));
+						if (eList == null) {
+							// System.out.println();
+							eList = new ArrayList<Expression>();
+						}
+						eList.add(e);
+						singleTableMap.put(split.getTableList().get(0), eList);
+					} else if (split.getColumnCounter() == 2) {
+						onExpressionList.add(e);
+						onTableLists.add(split.getTableList());
+					} else {
+						otherList.add(e);
+					}
+				} else {
+//					System.out.println("ELSE PART");
+					singleTableFlag = true;
+					eList = singleTableMap.get("__NONE__");
 					if (eList == null) {
 						// System.out.println();
 						eList = new ArrayList<Expression>();
 					}
 					eList.add(e);
-					singleTableMap.put(split.getTableList().get(0), eList);
-				} else if (split.getColumnCounter() == 2) {
-					onExpressionList.add(e);
-					onTableLists.add(split.getTableList());
-				} else {
-					otherList.add(e);
+					singleTableMap.put("__NONE__", eList);					
 				}
 			}
 		}
-		// System.out.println(singleTableMap);
+//		 System.out.println(singleTableMap);
 		// System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
 				tableColTypeMap);
@@ -154,7 +168,12 @@ public class components {
 		addToPlan(fip.getPlan().toString());
 		// System.out.println("First table"+fip.getOperatorTableName());
 		String operTable = fip.getOperatorTableName();
-		eList = singleTableMap.get(operTable);
+		if(singleTableFlag==true){
+			eList = singleTableMap.get("__NONE__");
+		} else {
+			eList = singleTableMap.get(operTable);	
+		}
+//		System.out.println(eList);
 		Expression leftWhereClause = null;
 		if (eList != null) {
 			leftWhereClause = eList.get(0);
@@ -162,7 +181,7 @@ public class components {
 				leftWhereClause = new AndExpression(leftWhereClause,
 						eList.get(i));
 			}
-
+//			System.out.println(leftWhereClause);
 			oper = new SelectionOperator(oper, leftWhereClause);
 			addToPlan("[Selection on :: " + operTable + " Expr :: "
 					+ leftWhereClause.toString() + "]");
@@ -253,11 +272,11 @@ public class components {
 							String lts = lt.getAlias() == null ? lt.getName() : lt.getAlias();
 							String rts = rt.getAlias() == null ? rt.getName() : rt.getAlias();
 							if (!joinCol.containsKey(lts) || !lcs
-											.equalsIgnoreCase(joinCol
-													.get(lts))) {
+									.equalsIgnoreCase(joinCol
+											.get(lts))) {
 								joinCol.put(lts, lcs);
 								temp.setExpression(lc);
-								 obe = new ArrayList<OrderByElement>();
+								obe = new ArrayList<OrderByElement>();
 								obe.add(temp);
 								addToPlan("[External Sort on :: "
 										+ lts + " OrderBy :: "
@@ -386,7 +405,7 @@ public class components {
 			addToPlan("[Limit on :: " + joinedTables + " Rows :: "
 					+ limit.getRowCount() + "]");
 		}
-//		printPlan();
+		//		printPlan();
 		// oper.resetTupleMapping();
 		return oper;
 	}
@@ -508,10 +527,10 @@ public class components {
 	}
 
 	public void addFileSize(Long fileSizeComp) {
-//		System.out.println(fileSizeComp);
-//		11632
+		//		System.out.println(fileSizeComp);
+		//		11632
 		this.minFileSize = fileSizeComp;
-		
+
 	}
 
 }
