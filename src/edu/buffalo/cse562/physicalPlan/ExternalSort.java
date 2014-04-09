@@ -56,7 +56,7 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 40000;
+		this.bufferMaxSize = 50000;
 		this.kWay = 5;
 		this.capacity = 10000;
 		this.first = true;
@@ -137,8 +137,13 @@ public class ExternalSort implements Operator {
 			// System.out.println(out.toString());
 			if (i < 0) {
 				out.writeObject(result);
-			} else
+				out.reset();
+				out.flush();
+			} else {
 				out.writeObject(buffer.get(i));
+				out.reset();
+				out.flush();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
