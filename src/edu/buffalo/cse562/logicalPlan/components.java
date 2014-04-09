@@ -75,7 +75,7 @@ public class components {
 
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
-		this.fileThreshold = Long.valueOf(50000000);
+		this.fileThreshold = Long.valueOf(500000);
 		this.firstTime = true;
 	}
 
