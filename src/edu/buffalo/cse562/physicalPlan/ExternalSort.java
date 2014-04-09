@@ -35,7 +35,7 @@ public class ExternalSort implements Operator {
 	BufferedReader reader, reader1;
 	Map<Integer, ArrayList<Datum[]>> buffer;
 	Integer bufferMaxSize;
-	HashMap<Integer, ArrayList<Datum[]>> hmap;
+	// HashMap<Integer, ArrayList<Datum[]>> hmap;
 	ArrayList<Datum[]> result = null;
 	Integer resultIndex;
 	ArrayList<ObjectInputStream> buffread = null;
@@ -48,7 +48,6 @@ public class ExternalSort implements Operator {
 	Boolean first;
 	Integer kWay;
 	Integer capacity;
-	
 
 	// Constructor of ExternalSort
 	public ExternalSort(Operator oper, String tableName, List elements,
@@ -56,34 +55,36 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 130000;
+		this.bufferMaxSize = 100000;
 		this.kWay = 5;
-		this.capacity = 26000;
+		this.capacity = 10000;
 		this.first = true;
 		this.tableName = tableName;
 		this.resultIndex = 0;
-		this.swapDir = this.swapDir + File.separator + tableName + (countTable == null ? 0 : countTable) + "_" ;
-//		System.out.println(this.swapDir);
+		this.swapDir = this.swapDir + File.separator + tableName
+				+ (countTable == null ? 0 : countTable) + "_";
+		// System.out.println(this.swapDir);
 		if (!(new File(this.swapDir).exists())) {
-			this.swapDir = new File("").getAbsolutePath() + File.separator + this.swapDir;
-		} 
-//			File swapDirObj = new File(this.swapDir);
-//			boolean result = swapDirObj.mkdirs();
-//			if(!result) {
-//				System.out.println("Parent Directories not created");
-//			}
-		
-//		else {
-//			boolean result = new File(this.swapDir).mkdirs();
-//			if(!result) {
-//				System.out.println("Parent Directories not created");
-//				
-//			}
-//		}
-//		System.out.println(this.swapDir);
-		this.masterFile = this.swapDir + tableName+".ser";
+			this.swapDir = new File("").getAbsolutePath() + File.separator
+					+ this.swapDir;
+		}
+		// File swapDirObj = new File(this.swapDir);
+		// boolean result = swapDirObj.mkdirs();
+		// if(!result) {
+		// System.out.println("Parent Directories not created");
+		// }
 
-		hmap = new HashMap<Integer, ArrayList<Datum[]>>();
+		// else {
+		// boolean result = new File(this.swapDir).mkdirs();
+		// if(!result) {
+		// System.out.println("Parent Directories not created");
+		//
+		// }
+		// }
+		// System.out.println(this.swapDir);
+		this.masterFile = this.swapDir + tableName + ".ser";
+
+		// hmap = new HashMap<Integer, ArrayList<Datum[]>>();
 		asc = new ArrayList<Boolean>();
 		buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 		buffread = new ArrayList<ObjectInputStream>();
@@ -112,6 +113,22 @@ public class ExternalSort implements Operator {
 		return false;
 
 	}
+	
+	public boolean createNewFile(String fileName) {
+		try{
+			File file = new File(fileName);
+			if (!file.exists()) {
+				return file.createNewFile();
+			} else {
+				file.delete();
+				return file.createNewFile();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
 
 	// Used to create a writer for an object stream
 	public void writedata(ObjectOutputStream out, int i) {
@@ -123,7 +140,7 @@ public class ExternalSort implements Operator {
 				out.writeObject(buffer.get(i));
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	// used to create a writer object stream
@@ -185,11 +202,16 @@ public class ExternalSort implements Operator {
 				// System.out.println("Entering to sort Data :: ");
 				sortdata(i);
 				oper.resetTupleMapping();
-//				System.out.println(swapDir);
+				// System.out.println(swapDir);
 				s = swapDir + "buffer[";
 				index = Integer.toString(1) + Integer.toString(i);
 				s = s + index + "].ser";
-				ObjectOutputStream out = writeOS(s);
+				ObjectOutputStream out = null;
+				if(createNewFile(s)) {
+					out = writeOS(s);
+				} else {
+					System.out.println("unable to create a file @ "+s);
+				}
 				writedata(out, i);
 				buffer.remove(i);
 				writedata(out, i);
@@ -208,10 +230,10 @@ public class ExternalSort implements Operator {
 		// Initial sort, completed phase 1
 		int runs = readpage();
 		if (runs == 1) {
-//			System.out.println(swapDir);
+			// System.out.println(swapDir);
 			String s = swapDir + "buffer[10].ser";
 			File buffername = new File(s);
-			
+
 			File file2 = new File(masterFile);
 			if (!buffername.renameTo(file2)) {
 				System.out.println("File renaming failed");
@@ -219,7 +241,12 @@ public class ExternalSort implements Operator {
 			return;
 		}
 		if (runs == 0) {
-			ObjectOutputStream out = writeOS(masterFile);
+			ObjectOutputStream out = null;
+			if(createNewFile(masterFile)) {
+				out = writeOS(masterFile);
+			} else {
+				System.out.println("unable to create a file @ "+masterFile);
+			}
 			try {
 				out.writeObject(null);
 				out.close();
@@ -235,8 +262,13 @@ public class ExternalSort implements Operator {
 		int i = 0, k = 0, runcurrent = 0, depth = 1, filenumber = 0;
 		boolean check = true;
 		while (i < runs && check) {
+			// if(depth == 2)
+			// kWay = 2;
 			if (runs - i >= kWay) {
 				k = kWay;
+				if (runs - i - k < 3) {
+					k = runs - i;
+				}
 			} else {
 				k = runs - i;
 			}
@@ -257,7 +289,7 @@ public class ExternalSort implements Operator {
 			}
 
 			runcurrent++;
-
+//			System.out.println("depth :: " + depth + " k :: " + k);
 			if (runcurrent == 1 && i == runs) {
 				secondsort(i - k, k, filenumber, 0);
 			} else {
@@ -298,7 +330,9 @@ public class ExternalSort implements Operator {
 		ArrayList<Integer> indexTraversal = new ArrayList<Integer>();
 		for (k = start; k < (start + count); k++)
 			indexTraversal.add(k);
+		
 		Iterator<Integer> itIndexTrav = indexTraversal.iterator();
+		
 		try {
 			result = new ArrayList<Datum[]>();
 			while (result.size() < capacity && check) {
@@ -330,19 +364,29 @@ public class ExternalSort implements Operator {
 					} else {
 
 						if (readFile(buffread.get(k), k)) {
-
 							k--;
 							continue;
 						} else {
-
+							
+							
 							itIndexTrav.remove();
+							if(buffer.get(k) != null && buffer.get(k).size() >= 0) {
+//								System.out.println("removing buffer");
+								buffer.remove(k);
+							}
 							numberofemptylists++;
 							if (numberofemptylists == (count - 1)) {
 								// System.out.println("writing to list");
+
+								list1 = null;
 								if (counter == 1) {
 									String s = computeFile(depth, filenumber);
 									//
-									out = writeOS(s);
+									if(createNewFile(s)) {
+										out = writeOS(s);
+									} else {
+										System.out.println("unable to create a file @ "+s);
+									}
 									//
 									counter = 0;
 								}
@@ -352,6 +396,9 @@ public class ExternalSort implements Operator {
 									// System.out.println();
 									writedata(out, -2);
 								}
+								
+								result = null;
+								
 								int m = indexTraversal.get(0);
 								if (buffer.get(m).size() > 0) {
 									// System.out.print("buffer last :: ");
@@ -359,21 +406,33 @@ public class ExternalSort implements Operator {
 									// System.out.println();
 									writedata(out, m);
 								}
+
+//								System.out.println("temp buffer :: ");
+//								printTuple(buffer);
+//								System.out.println("temp result :: ");
+//								printTuple(result);
+//								System.out.println("temp buffread :: ");
+//								System.out.println(buffread);
+
 								while (readFile(buffread.get(m), m)) {
 									// System.out.print("buffer last fin :: ");
 									// printTuple(buffer.get(m));
 									// System.out.println();
 									writedata(out, m);
-								}
 
+								}
+								buffer.remove(m);
+								// buffread = new
+								// ArrayList<ObjectInputStream>();
 								// break;
 
 								// }
-								
+
 								check = false;
-//								System.out.println("Changing check value :: " + check);
-								list1 = null;
-								indexTraversal.clear();
+								// System.out.println("Changing check value :: "
+								// + check);
+								// list1 = null;
+								indexTraversal = new ArrayList<Integer>();
 								break;
 
 							}
@@ -382,7 +441,7 @@ public class ExternalSort implements Operator {
 
 					}
 				}
-				
+
 				if (!check)
 					break;
 
@@ -394,8 +453,8 @@ public class ExternalSort implements Operator {
 				// System.out.println(indexTraversal);
 				if (removeindex != -1) {
 					lowest = null;
-					if(buffer!=null && buffer.get(removeindex).size() > 0)
-					buffer.get(removeindex).remove(0);
+					if (buffer != null && buffer.get(removeindex).size() > 0)
+						buffer.get(removeindex).remove(0);
 				} else {
 
 					throw new Exception("Invalid Index in external sort"
@@ -406,9 +465,22 @@ public class ExternalSort implements Operator {
 
 					if (counter == 1) {
 						String s = computeFile(depth, filenumber);
-						out = writeOS(s);
+						if(createNewFile(s)) {
+							out = writeOS(s);
+						} else {
+							System.out.println("unable to create a file @ "+s);
+						}
 						counter = 0;
 					}
+					list1 = null;
+
+//					System.out.println("comp buffer :: ");
+//					printTuple(buffer);
+//					System.out.println("comp result :: ");
+//					printTuple(result);
+//					System.out.println("comp buffread :: ");
+//					System.out.println(buffread);
+
 					writedata(out, -2);
 					result = new ArrayList<Datum[]>();
 				}
@@ -423,6 +495,26 @@ public class ExternalSort implements Operator {
 		}
 
 	}
+	
+	
+	public int binarySearch(ArrayList<Datum[]> searchList, Datum[] searchDatum) {
+		int low=0, high=0, mid=0;
+		if (searchList == null || searchList.size() > 0){
+			low = 0;
+			high = searchList.size()-1;
+			while(compare(searchList.get(low), searchList.get(high)) <= 0) {
+				mid = low+high /2;
+				if(compare(searchList.get(mid), searchDatum) > 0) {
+					high = mid -1;
+				} else if(compare(searchList.get(mid), searchDatum) < 0) {
+					low = mid + 1;
+				} else {
+					return mid;
+				}
+			}
+		}
+		return low-1;
+	}
 
 	String computeFile(int depth, int i) {
 
@@ -430,7 +522,7 @@ public class ExternalSort implements Operator {
 		if (depth == 0) {
 			s = masterFile;
 		} else {
-			s = swapDir +  "buffer[";
+			s = swapDir + "buffer[";
 			index = Integer.toString(depth + 1) + Integer.toString(i);
 			s = s + index + "].ser";
 		}
@@ -528,11 +620,11 @@ public class ExternalSort implements Operator {
 					} else {
 						// System.out.println("No more Tuples");
 						masterBuffer.close();
-//						File f = new File(swapDir);
-//						for(File file: f.listFiles())  {
-////							System.out.println(file.toString());
-//							file.delete();
-//						}
+						// File f = new File(swapDir);
+						// for(File file: f.listFiles()) {
+						// // System.out.println(file.toString());
+						// file.delete();
+						// }
 						tuple = null;
 					}
 				}
@@ -543,9 +635,9 @@ public class ExternalSort implements Operator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		System.out.println(masterFile + " :: External Sort :: ");
-//		printTuple(tuple);
-//		System.out.println();
+		// System.out.println(masterFile + " :: External Sort :: ");
+		// printTuple(tuple);
+		// System.out.println();
 		return tuple;
 	}
 
@@ -573,15 +665,16 @@ public class ExternalSort implements Operator {
 	public void printTuple(Datum[] row) {
 		Boolean first = true;
 		if (row != null && row.length != 0) {
-			for (Datum col : row) {
-				if (!first)
-					System.out.print("|" + col);
-				else {
-					System.out.print(col);
-					first = false;
-				}
-			}
-			// System.out.println();
+//			for (Datum col : row) {
+//				if (!first)
+//					System.out.print("|" + col);
+//				else {
+//					System.out.print(col);
+//					first = false;
+//				}
+//			}
+//			 System.out.println();
+			System.out.print(row[0].toString());
 		}
 	}
 
@@ -595,7 +688,5 @@ public class ExternalSort implements Operator {
 			System.out.println();
 		}
 	}
-	
-	
 
 }
