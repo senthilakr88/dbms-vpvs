@@ -58,13 +58,15 @@ public class SortMergeJoinOperator implements Operator {
 	Boolean readMoreFromLeftFlag = false;
 	GenQueue<Datum []> passedRightQueue ;
 	Boolean dontReadLeft = false;
+	String rightTable;
 
 	public SortMergeJoinOperator(Operator left, 
-			Operator right, Expression expr){
+			Operator right, Expression expr, String rightTable){
 		this.left = left;
 		this.right = right;
 		this.expr = expr;
 		this.passedRightQueue = new GenQueue<Datum []>();
+		this.rightTable = rightTable;
 		parseJoinExpression();
 	}
 
@@ -87,9 +89,11 @@ public class SortMergeJoinOperator implements Operator {
 			//System.out.println("Sort Merge Join working");
 			inputDatum1 = left.readOneTuple();
 			inputDatum2 = right.readOneTuple();
+			
 			leftIndex = getDatumIndex(inputDatum1,leftJoinKey);
 			rightIndex = getDatumIndex(inputDatum2,rightJoinKey);
-			//			System.out.println(rightIndex);
+//			System.out.println(leftJoinKey.getWholeColumnName() + " :: " + leftIndex);
+//			System.out.println(rightJoinKey.getWholeColumnName() + " :: " + rightIndex);
 			initialDatumReadflag = true;
 		}
 		else{
@@ -233,7 +237,7 @@ public class SortMergeJoinOperator implements Operator {
 				//printTuple(inputDatum2);
 			}
 		}	
-		//printTuple(sortMergeJoinedDatum);
+//		printTuple(sortMergeJoinedDatum);
 		//System.out.println("------------------------END--------------------------");
 		return sortMergeJoinedDatum;
 	}
@@ -362,9 +366,23 @@ public class SortMergeJoinOperator implements Operator {
 	 */
 	private int getDatumIndex(Datum[] inputDatum1, Column joinColumn) {
 		int index = -1;
-
+		String tableName;
+		String aliasName;
+		String columnName;
+		String joinColumnName;
+		String joinAliasName;
+		String joinTableName;
+		joinColumnName = joinColumn.getColumnName();
+		joinAliasName = joinColumn.getTable().getAlias();
+		joinTableName = joinAliasName != null ? joinAliasName : joinColumn.getTable().getName().trim();
+//		System.out.println("joinColumnName :: "+ joinColumnName + " joinAliasName :: " + joinAliasName + " joinTableName :: " + joinTableName);
+		
 		for(int i=0;i<inputDatum1.length;i++){
-			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinColumn.getColumnName().trim())){
+			columnName = inputDatum1[i].getColumn().getColumnName();
+			aliasName = inputDatum1[i].getColumn().getTable().getAlias();
+			tableName = aliasName != null ? aliasName : inputDatum1[i].getColumn().getTable().getName();
+//			System.out.println("columnName :: "+ columnName + " aliasName :: " + aliasName + " tableName :: " + tableName);
+			if(tableName.equalsIgnoreCase(joinTableName) && columnName.equalsIgnoreCase(joinColumnName)){
 				index = i;
 				break;
 			}
@@ -379,7 +397,7 @@ public class SortMergeJoinOperator implements Operator {
 	 */
 	private void parseJoinExpression(){
 		//Evaluate the expression to find the join key
-		ColumnFetcher cf = new ColumnFetcher();
+		ColumnFetcher cf = new ColumnFetcher(rightTable);
 		expr.accept(cf);
 		leftJoinKey = cf.getLeftCol();
 		rightJoinKey = cf.getRightCol();
@@ -418,7 +436,6 @@ public class SortMergeJoinOperator implements Operator {
 
 	@Override
 	public void resetTupleMapping() {
-		// TODO Auto-generated method stub
 
 	}
 }

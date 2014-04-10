@@ -28,6 +28,7 @@ public class FileScanOperator implements Operator {
 	Integer bufferPointer;
 	Boolean isEnd;
 	String sqlQuery;
+	boolean first = true;
 
 	public FileScanOperator(Table tableName, String dirName,
 			List<Column> tableMap2,
@@ -150,22 +151,22 @@ public class FileScanOperator implements Operator {
 		
 		int count = 0;
 		k = j;
-		tempCol = tableMap.get(k);
+		
 //		System.out.println(tableMap);
-//		System.out.println(tableMap.get(k));
-		while(i < singleTableElement.length-1) {
+//		System.out.println(tableMap.get(k) + " count :: " + count);
+		while(i < singleTableElement.length) {
+			tempCol = tableMap.get(k);
 			if(!sqlQuery.contains(tempCol.getColumnName())) {
+//				System.out.println(tableMap.get(k) + " not match" +" count :: " + count);
 				k++;
 				i++;
-				tempCol = tableMap.get(k);
-//				System.out.println(tableMap.get(k));
 				continue;
 			}
+			
 			count++;
+//			System.out.println(tableMap.get(k) + " match " +" count :: " + count);
 			k++;
 			i++;
-			tempCol = tableMap.get(k);
-//			System.out.println(tableMap.get(k));
 		}
 		
 //		System.out.println("table Name :: " + tableName + " count :: "+count);
@@ -176,10 +177,13 @@ public class FileScanOperator implements Operator {
 			col = tableMap.get(j);
 			if(!sqlQuery.contains(col.getColumnName())) {
 				i++;
+				
+//				System.out.println("i :: "+ i + " k :: " + k +col.getColumnName() + " :: Not present continuing " );
+				
 				j++;
-//				System.out.println(col.getColumnName() + " :: Not present continuing " );
 				continue;
 			}
+//			System.out.println("i :: "+ i + " k :: "+k + " col ::" + col.getColumnName());
 			value = singleTableElement[i];
 			type = tableColTypeMap
 					.get(tableName.getName().toString().toLowerCase()).get(i)
@@ -218,6 +222,7 @@ public class FileScanOperator implements Operator {
 			i++;
 			j++;
 			k++;
+//			System.out.println("updating i, j, k");
 		}
 		return t;
 

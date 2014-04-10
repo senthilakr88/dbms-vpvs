@@ -318,7 +318,7 @@ public class components {
 									+ " and " + rightTable + " Expr :: "
 									+ onExpression.toString() + "]");
 							oper = new SortMergeJoinOperator(oper, rightOper,
-									onExpression);
+									onExpression, rightTable);
 						} else {
 							addToPlan("[Hybrid Hash Join on :: " + joinedTables
 									+ " and " + rightTable + " Expr :: "

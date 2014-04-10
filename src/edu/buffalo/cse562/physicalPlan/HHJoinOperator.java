@@ -236,7 +236,7 @@ public class HHJoinOperator implements Operator {
 					first = false;
 				}
 			}
-			// System.out.println();
+			 System.out.println();
 		}
 	}
 

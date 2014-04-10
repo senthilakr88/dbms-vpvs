@@ -81,6 +81,7 @@ public class FromItemParser implements FromItemVisitor {
 			comp.addWhereConditions(plainSelect.getWhere());
 			comp.addOrderBy(plainSelect.getOrderByElements());
 			comp.addJoins(plainSelect.getJoins());
+			comp.addLimit(plainSelect.getLimit());
 			comp.setSql(sqlQuery);
 			comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 			TupleStruct.setNestedCondition(true);
