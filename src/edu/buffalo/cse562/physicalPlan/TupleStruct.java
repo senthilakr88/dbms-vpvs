@@ -164,7 +164,7 @@ public class TupleStruct {
 		} else if (t1 instanceof dString) {
 			String value1 = ((dString) t1).getValue();
 			String value2 = ((dString) t2).getValue();
-			System.out.println("value 1 :: " + value1 + " value2 :: " + value2);
+//			System.out.println("value 1 :: " + value1 + " value2 :: " + value2);
 			int comp = value1.compareTo(value2);
 			// System.out.println("compare value :: " +comp);
 			return compHelper(comp, asc);
