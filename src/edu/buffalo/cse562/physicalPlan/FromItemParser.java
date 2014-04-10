@@ -22,21 +22,22 @@ public class FromItemParser implements FromItemVisitor {
 
 	Operator oper = null;
 	String basePath = null;
-	List<Column> tableMap;
+	Map<String, ArrayList<Column>> tableMap;
 	String tableName;
 	String swapDir;
 	Map<String, ArrayList<String>> tableColTypeMap;
 	StringBuffer planPrint;
-	String sqlQuery;
+	Map<String,ArrayList<Integer>> tableRemoveCols;
 
-	public FromItemParser(String basePath, List<Column> tableMap,
-			Map<String, ArrayList<String>> tableColTypeMap, String swapDir, String sqlQuery) {
+	public FromItemParser(String basePath, Map<String, ArrayList<Column>> tableMap,
+			Map<String, ArrayList<String>> tableColTypeMap, String swapDir, 
+			Map<String, ArrayList<Integer>> tableRemoveCols) {
 		this.basePath = basePath;
 		this.tableMap = tableMap;
 		this.tableColTypeMap = tableColTypeMap;
 		this.planPrint = new StringBuffer();
 		this.swapDir = swapDir;
-		this.sqlQuery = sqlQuery;
+		this.tableRemoveCols = tableRemoveCols;
 	}
 
 	public void addToPlan(String s) {
@@ -57,7 +58,7 @@ public class FromItemParser implements FromItemVisitor {
 		} else {
 			tableName = table.getWholeTableName();
 		}		
-		oper = new FileScanOperator(table, basePath, tableMap, tableColTypeMap, sqlQuery);
+		oper = new FileScanOperator(table, basePath, tableMap, tableColTypeMap, tableRemoveCols);
 		addToPlan("[File Scan on :: "+ table+"]");
 	}
 	
@@ -71,8 +72,9 @@ public class FromItemParser implements FromItemVisitor {
 			//System.out.println(plainSelect.toString());
 			components comp = new components();
 			comp.initializeParam();
-			comp.addColsToTable((ArrayList<Column>) tableMap);
-			comp.addColsTypeToTable(tableColTypeMap);
+			comp.addQueryColsToTable(tableMap);
+			comp.addQueryColsTypeToTable(tableColTypeMap);
+			comp.addQueryRemoveCols(tableRemoveCols);
 			comp.setTableDirectory(basePath);
 			comp.setSwapDirectory(swapDir);
 			comp.addProjectStmts(plainSelect.getSelectItems());
@@ -82,7 +84,6 @@ public class FromItemParser implements FromItemVisitor {
 			comp.addOrderBy(plainSelect.getOrderByElements());
 			comp.addJoins(plainSelect.getJoins());
 			comp.addLimit(plainSelect.getLimit());
-			comp.setSql(sqlQuery);
 			comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 			TupleStruct.setNestedCondition(true);
 //			printPlan();

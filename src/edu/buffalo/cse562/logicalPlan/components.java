@@ -42,8 +42,11 @@ import edu.buffalo.cse562.sql.expression.evaluator.ExpressionSplitter;
 public class components {
 
 	logManager lg;
-	List<Column> tableMap;
+	Map<String, ArrayList<Column>> masterTableMap;
+	Map<String, ArrayList<String>> masterTableColTypeMap;
+	Map<String, ArrayList<Column>> tableMap;
 	Map<String, ArrayList<String>> tableColTypeMap;
+	Map<String, ArrayList<Integer>> tableRemoveCols;
 	ArrayList<SelectExpressionItem> projectStmt;
 	ArrayList tableJoins;
 	Expression whereClause;
@@ -67,16 +70,19 @@ public class components {
 	String sqlQuery;
 
 	public components() {
-
-		tableMap = new ArrayList<Column>();
-		tableColTypeMap = new HashMap<String, ArrayList<String>>();
+		masterTableMap = new HashMap<String, ArrayList<Column>>();
+		masterTableColTypeMap = new HashMap<String, ArrayList<String>>();
 		planPrint = new StringBuffer();
 		lg = new logManager();
+		this.fileThreshold = Long.valueOf(500000);
 	}
 
 	public void initializeParam() {
 		projectStmt = new ArrayList<SelectExpressionItem>();
-		this.fileThreshold = Long.valueOf(500000);
+		tableMap = new HashMap<String, ArrayList<Column>>();
+		tableColTypeMap = new HashMap<String, ArrayList<String>>();
+		tableRemoveCols = new HashMap<String, ArrayList<Integer>>();
+		
 		this.firstTime = true;
 	}
 
@@ -109,6 +115,9 @@ public class components {
 		Operator oper = null;
 		Boolean singleTableFlag = false;
 
+		if(!(tableMap!=null && tableMap.size() > 0))
+			columnReducer();
+		
 		if (whereClause != null) {
 			List<Expression> expList = new ArrayList<Expression>();
 			try {
@@ -156,7 +165,7 @@ public class components {
 //		 System.out.println(singleTableMap);
 		// System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
-				tableColTypeMap, swapDir, sqlQuery);
+				tableColTypeMap, swapDir, tableRemoveCols);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
 		addToPlan(fip.getPlan().toString());
@@ -189,7 +198,7 @@ public class components {
 			Map<String, Integer> joinCount = new HashMap<String, Integer>();
 			while (joinIte.hasNext()) {
 				Join joinTable = (Join) joinIte.next();
-				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap, swapDir, sqlQuery);
+				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap, swapDir, tableRemoveCols);
 
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
@@ -436,6 +445,48 @@ public class components {
 	// obp.print();
 	// }
 
+	private void columnReducer() {
+//		System.out.println(masterTableMap);
+//		System.out.println(masterTableColTypeMap);
+//		System.out.println(sqlQuery);
+		int k;
+		String tempTable;
+		ArrayList<Column> tempColList;
+		ArrayList<String> tempColTypeList;
+		ArrayList<Integer> tempRemoveIndex;
+		ArrayList<String> newColTypeList;
+		ArrayList<Column> newColList;
+		Column tempCol;
+		Iterator ite;
+		for (Map.Entry<String,  ArrayList<Column>> entry : masterTableMap.entrySet()) {
+			tempTable = entry.getKey();
+			tempColList = entry.getValue();
+			tempColTypeList = masterTableColTypeMap.get(tempTable);
+			k=0;
+			newColList = new ArrayList<Column>();
+			newColTypeList = new ArrayList<String>();
+			tempRemoveIndex = new ArrayList<Integer>();
+			ite = tempColList.iterator();
+			while(ite.hasNext()) {
+				tempCol = (Column) ite.next();
+				if(sqlQuery !=null & sqlQuery.contains(tempCol.getColumnName())) {
+					newColList.add(tempCol);
+					newColTypeList.add(tempColTypeList.get(k));
+				} else {
+					tempRemoveIndex.add(k);
+				}
+				k++;
+			}
+			tableMap.put(tempTable, newColList);
+			tableColTypeMap.put(tempTable, newColTypeList);	
+			tableRemoveCols.put(tempTable, tempRemoveIndex);
+		}
+//		System.out.println(tableMap);
+//		System.out.println(tableColTypeMap);
+//		System.out.println(tableRemoveCols);
+		
+	}
+
 	public void processTuples(Operator oper) {
 		// OrderByOperator obp = new OrderByOperator(orderbyElements);
 		Datum[] t = oper.readOneTuple();
@@ -489,23 +540,23 @@ public class components {
 
 	public void addColsTypeToTable(String table,
 			ArrayList<String> columnTypeList) {
-		if (tableColTypeMap.containsKey(table)) {
-			tableColTypeMap.remove(table);
-			tableColTypeMap.put(table, columnTypeList);
+		if (masterTableColTypeMap.containsKey(table)) {
+			masterTableColTypeMap.remove(table);
+			masterTableColTypeMap.put(table, columnTypeList);
 		} else {
-			tableColTypeMap.put(table, columnTypeList);
+			masterTableColTypeMap.put(table, columnTypeList);
 		}
 
 	}
 
 	public void addColsTypeToTable(
 			Map<String, ArrayList<String>> tableColTypeMap) {
-		this.tableColTypeMap = tableColTypeMap;
+		this.masterTableColTypeMap = tableColTypeMap;
 
 	}
 
-	public void addColsToTable(ArrayList<Column> columnNameList) {
-		tableMap.addAll(columnNameList);
+	public void addColsToTable(Table table, ArrayList<Column> columnNameList) {
+		masterTableMap.put(table.getName().toLowerCase(), columnNameList);
 
 	}
 
@@ -537,7 +588,9 @@ public class components {
 		planPrint = new StringBuffer();
 		orderbyElements = null;
 		limit = null;
-		tableJoins = null;
+		tableColTypeMap = null;
+		tableRemoveCols = null;
+		tableMap = null;
 		firstTime = true;
 	}
 
@@ -550,6 +603,28 @@ public class components {
 
 	public void setSql(String sql) {
 		this.sqlQuery = sql;
+		
+	}
+
+	public void addColsToTable(Map<String, ArrayList<Column>> tableMap2) {
+		masterTableMap = tableMap2;
+		
+	}
+
+	public void addQueryColsTypeToTable(
+			Map<String, ArrayList<String>> tableColTypeMap2) {
+		this.tableColTypeMap =  tableColTypeMap2;
+		
+	}
+
+	public void addQueryColsToTable(Map<String, ArrayList<Column>> tableMap2) {
+		this.tableMap = tableMap2;
+		
+	}
+
+	public void addQueryRemoveCols(
+			Map<String, ArrayList<Integer>> tableRemoveCols2) {
+		this.tableRemoveCols = tableRemoveCols2; 
 		
 	}
 

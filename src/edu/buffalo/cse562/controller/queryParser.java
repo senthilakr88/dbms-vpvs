@@ -93,7 +93,7 @@ public class queryParser {
 						columnTypeList.add(s.getColDataType().toString());
 					}
 					// Adding table name and column names to the map
-					comp.addColsToTable(columnNameList);
+					comp.addColsToTable(table, columnNameList);
 					comp.addColsTypeToTable(tableName, columnTypeList);
 					comp.setTableDirectory(tableDir);
 					comp.setSwapDirectory(swapDir);

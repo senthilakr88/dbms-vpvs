@@ -18,7 +18,7 @@ import net.sf.jsqlparser.schema.Table;
 
 public class FileScanOperator implements Operator {
 	private String dirName;
-	private List<Column> tableMap;
+	private Map<String, ArrayList<Column>> tableMap;
 	private Map<String, ArrayList<String>> tableColTypeMap;
 	BufferedReader reader;
 	Table tableName;
@@ -27,12 +27,17 @@ public class FileScanOperator implements Operator {
 	Integer bufferMaxSize;
 	Integer bufferPointer;
 	Boolean isEnd;
-	String sqlQuery;
-	boolean first = true;
+	int count;
+	int ColStartIndex;
+	Map<String, ArrayList<Integer>> tableRemoveCols;
+	String tempTableName;
+	ArrayList<String> colType;
+	ArrayList<Column> colList;
+	ArrayList<Integer> removeCols;
 
 	public FileScanOperator(Table tableName, String dirName,
-			List<Column> tableMap2,
-			Map<String, ArrayList<String>> tableColTypeMap, String sqlQuery) {
+			Map<String, ArrayList<Column>> tableMap2,
+			Map<String, ArrayList<String>> tableColTypeMap, Map<String, ArrayList<Integer>> tableRemoveCols) {
 		this.dirName = dirName;
 		this.tableMap = tableMap2;
 		this.tableName = tableName;
@@ -46,11 +51,16 @@ public class FileScanOperator implements Operator {
 			tablefile = basePath;
 		}
 		resetStream();
+		this.tableRemoveCols = tableRemoveCols;
 		this.bufferMaxSize = 1000;
 		this.bufferPointer = -1;
 		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
 		this.isEnd = false;
-		this.sqlQuery = sqlQuery;
+		this.ColStartIndex = 0;
+		tempTableName = tableName.getName().toLowerCase();
+		colType = tableColTypeMap.get(tempTableName);
+		colList = tableMap.get(tempTableName);
+		removeCols = tableRemoveCols.get(tempTableName);
 	}
 
 	/*
@@ -138,73 +148,40 @@ public class FileScanOperator implements Operator {
 	public Datum[] convertType(String[] singleTableElement) {
 		// Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
-		Column col = null;
-		Column tempCol = null;
+		Column col;		
 		Datum[] t;
-		int i = 0;
-		int j = 0, k= 0;
-		while (tableMap.size() != j
-				&& !tableMap.get(j).getTable().toString()
-						.equalsIgnoreCase(tableName.getName().toString())) {
-			j++;
-		}
-		
-		int count = 0;
-		k = j;
-		
-//		System.out.println(tableMap);
-//		System.out.println(tableMap.get(k) + " count :: " + count);
-		while(i < singleTableElement.length) {
-			tempCol = tableMap.get(k);
-			if(!sqlQuery.contains(tempCol.getColumnName())) {
-//				System.out.println(tableMap.get(k) + " not match" +" count :: " + count);
-				k++;
-				i++;
-				continue;
-			}
-			
-			count++;
-//			System.out.println(tableMap.get(k) + " match " +" count :: " + count);
-			k++;
-			i++;
-		}
-		
-//		System.out.println("table Name :: " + tableName + " count :: "+count);
-		i=0;
-		k=0;
+		int i = 0, k=0;
+		int count = colList.size();
+					
 		t = new Datum[count];
 		while (i < singleTableElement.length) {
-			col = tableMap.get(j);
-			if(!sqlQuery.contains(col.getColumnName())) {
+			
+			if(removeCols.contains(i)) {
 				i++;
-				
 //				System.out.println("i :: "+ i + " k :: " + k +col.getColumnName() + " :: Not present continuing " );
-				
-				j++;
 				continue;
 			}
 //			System.out.println("i :: "+ i + " k :: "+k + " col ::" + col.getColumnName());
 			value = singleTableElement[i];
-			type = tableColTypeMap
-					.get(tableName.getName().toString().toLowerCase()).get(i)
-					.toLowerCase();
-			if (type.equalsIgnoreCase("int")) {
+			col = colList.get(k);
+			type = colType.get(k).toLowerCase();
+			if (type.equals("int")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
 				t[k] = new Datum.dLong(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
 				// System.out.print(t[i].toComString());
-			} else if (type.equalsIgnoreCase("decimal")) {
+			} else if (type.equals("decimal")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
 				t[k] = new Datum.dDecimal(singleTableElement[i], new Column(
 						tableName, col.getColumnName()),4);
 				// System.out.print(t[i].toComString());
-			} else if (type.equalsIgnoreCase("String")
+			} else if (type.equals("string")
 					|| type.startsWith("char") || type.startsWith("varchar")) {
 				// tupleKeyValueMap.put(key, value);
 				t[k] = new Datum.dString(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
 				// System.out.print(t[i].toComString());
-			} else if (type.equalsIgnoreCase("date")) {
+			} else if (type.equals("date")) {
 				// tupleKeyValueMap.put(key, (new SimpleDateFormat(
 				// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
 				t[k] = new Datum.dDate(singleTableElement[i], new Column(
@@ -220,7 +197,6 @@ public class FileScanOperator implements Operator {
 				}
 			}
 			i++;
-			j++;
 			k++;
 //			System.out.println("updating i, j, k");
 		}
