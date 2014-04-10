@@ -123,13 +123,13 @@ public class queryParser {
 						// lg.logger.log(Level.INFO,plainSelect.getLimit().toString());
 						// lg.logger.log(Level.INFO,plainSelect.getJoins().toString());
 						comp.addOrderBy(plainSelect.getOrderByElements());
-
 						comp.addJoins(plainSelect.getJoins());
-
 						comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 						comp.addLimit(plainSelect.getLimit());
+						comp.setSql(plainSelect.toString());
 						// lg.logger.log(Level.INFO,plainSelect.getTop().toString());
 						lg.logger.log(Level.INFO, comp.toString());
+						
 						Operator oper = comp.executePhysicalPlan();
 						if(oper!=null)
 							comp.processTuples(oper);

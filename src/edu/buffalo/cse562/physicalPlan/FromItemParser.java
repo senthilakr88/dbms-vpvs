@@ -27,14 +27,16 @@ public class FromItemParser implements FromItemVisitor {
 	String swapDir;
 	Map<String, ArrayList<String>> tableColTypeMap;
 	StringBuffer planPrint;
+	String sqlQuery;
 
 	public FromItemParser(String basePath, List<Column> tableMap,
-			Map<String, ArrayList<String>> tableColTypeMap, String swapDir) {
+			Map<String, ArrayList<String>> tableColTypeMap, String swapDir, String sqlQuery) {
 		this.basePath = basePath;
 		this.tableMap = tableMap;
 		this.tableColTypeMap = tableColTypeMap;
 		this.planPrint = new StringBuffer();
 		this.swapDir = swapDir;
+		this.sqlQuery = sqlQuery;
 	}
 
 	public void addToPlan(String s) {
@@ -55,7 +57,7 @@ public class FromItemParser implements FromItemVisitor {
 		} else {
 			tableName = table.getWholeTableName();
 		}		
-		oper = new FileScanOperator(table, basePath, tableMap, tableColTypeMap);
+		oper = new FileScanOperator(table, basePath, tableMap, tableColTypeMap, sqlQuery);
 		addToPlan("[File Scan on :: "+ table+"]");
 	}
 	
@@ -79,6 +81,7 @@ public class FromItemParser implements FromItemVisitor {
 			comp.addWhereConditions(plainSelect.getWhere());
 			comp.addOrderBy(plainSelect.getOrderByElements());
 			comp.addJoins(plainSelect.getJoins());
+			comp.setSql(sqlQuery);
 			comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
 			TupleStruct.setNestedCondition(true);
 //			printPlan();

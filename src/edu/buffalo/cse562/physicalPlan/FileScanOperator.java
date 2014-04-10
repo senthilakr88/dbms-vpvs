@@ -27,10 +27,11 @@ public class FileScanOperator implements Operator {
 	Integer bufferMaxSize;
 	Integer bufferPointer;
 	Boolean isEnd;
+	String sqlQuery;
 
 	public FileScanOperator(Table tableName, String dirName,
 			List<Column> tableMap2,
-			Map<String, ArrayList<String>> tableColTypeMap) {
+			Map<String, ArrayList<String>> tableColTypeMap, String sqlQuery) {
 		this.dirName = dirName;
 		this.tableMap = tableMap2;
 		this.tableName = tableName;
@@ -48,6 +49,7 @@ public class FileScanOperator implements Operator {
 		this.bufferPointer = -1;
 		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
 		this.isEnd = false;
+		this.sqlQuery = sqlQuery;
 	}
 
 	/*
@@ -136,40 +138,72 @@ public class FileScanOperator implements Operator {
 		// Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
 		Column col = null;
-		Datum[] t = new Datum[singleTableElement.length];
+		Column tempCol = null;
+		Datum[] t;
 		int i = 0;
-		int j = 0;
+		int j = 0, k= 0;
 		while (tableMap.size() != j
 				&& !tableMap.get(j).getTable().toString()
 						.equalsIgnoreCase(tableName.getName().toString())) {
 			j++;
 		}
+		
+		int count = 0;
+		k = j;
+		tempCol = tableMap.get(k);
+//		System.out.println(tableMap);
+//		System.out.println(tableMap.get(k));
+		while(i < singleTableElement.length-1) {
+			if(!sqlQuery.contains(tempCol.getColumnName())) {
+				k++;
+				i++;
+				tempCol = tableMap.get(k);
+//				System.out.println(tableMap.get(k));
+				continue;
+			}
+			count++;
+			k++;
+			i++;
+			tempCol = tableMap.get(k);
+//			System.out.println(tableMap.get(k));
+		}
+		
+//		System.out.println("table Name :: " + tableName + " count :: "+count);
+		i=0;
+		k=0;
+		t = new Datum[count];
 		while (i < singleTableElement.length) {
 			col = tableMap.get(j);
+			if(!sqlQuery.contains(col.getColumnName())) {
+				i++;
+				j++;
+//				System.out.println(col.getColumnName() + " :: Not present continuing " );
+				continue;
+			}
 			value = singleTableElement[i];
 			type = tableColTypeMap
 					.get(tableName.getName().toString().toLowerCase()).get(i)
 					.toLowerCase();
 			if (type.equalsIgnoreCase("int")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dLong(singleTableElement[i], new Column(
+				t[k] = new Datum.dLong(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
 				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("decimal")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
-				t[i] = new Datum.dDecimal(singleTableElement[i], new Column(
+				t[k] = new Datum.dDecimal(singleTableElement[i], new Column(
 						tableName, col.getColumnName()),4);
 				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("String")
 					|| type.startsWith("char") || type.startsWith("varchar")) {
 				// tupleKeyValueMap.put(key, value);
-				t[i] = new Datum.dString(singleTableElement[i], new Column(
+				t[k] = new Datum.dString(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
 				// System.out.print(t[i].toComString());
 			} else if (type.equalsIgnoreCase("date")) {
 				// tupleKeyValueMap.put(key, (new SimpleDateFormat(
 				// "YYYY-MM-DD", Locale.ENGLISH).parse(value)));
-				t[i] = new Datum.dDate(singleTableElement[i], new Column(
+				t[k] = new Datum.dDate(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
 				// System.out.print(t[i].toComString());
 			} else {
@@ -183,6 +217,7 @@ public class FileScanOperator implements Operator {
 			}
 			i++;
 			j++;
+			k++;
 		}
 		return t;
 

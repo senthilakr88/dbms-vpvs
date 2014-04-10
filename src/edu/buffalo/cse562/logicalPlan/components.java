@@ -64,6 +64,7 @@ public class components {
 	Long fileThreshold;
 	Boolean firstTime;
 //	Map<String, String> joinCol;
+	String sqlQuery;
 
 	public components() {
 
@@ -155,7 +156,7 @@ public class components {
 //		 System.out.println(singleTableMap);
 		// System.out.println("TableDir----->"+tableDir);
 		FromItemParser fip = new FromItemParser(tableDir, tableMap,
-				tableColTypeMap, swapDir);
+				tableColTypeMap, swapDir, sqlQuery);
 		fromItem.accept(fip);
 		oper = fip.getOperator();
 		addToPlan(fip.getPlan().toString());
@@ -188,7 +189,7 @@ public class components {
 			Map<String, Integer> joinCount = new HashMap<String, Integer>();
 			while (joinIte.hasNext()) {
 				Join joinTable = (Join) joinIte.next();
-				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap, swapDir);
+				fip = new FromItemParser(tableDir, tableMap, tableColTypeMap, swapDir, sqlQuery);
 
 				joinTable.getRightItem().accept(fip);
 				Operator rightOper = fip.getOperator();
@@ -545,6 +546,11 @@ public class components {
 		//		11632
 		this.minFileSize = fileSizeComp;
 
+	}
+
+	public void setSql(String sql) {
+		this.sqlQuery = sql;
+		
 	}
 
 }
