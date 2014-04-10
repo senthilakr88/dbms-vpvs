@@ -339,10 +339,12 @@ public class ExternalSort implements Operator {
 
 		Iterator<Integer> itIndexTrav = indexTraversal.iterator();
 
+		k =0;
 		try {
 			result = new ArrayList<Datum[]>();
 			while (result.size() < capacity && check) {
 				while (itIndexTrav.hasNext()) {
+					
 					k = itIndexTrav.next();
 					// System.out.println("start :: "+start+" :: "+count);
 					// System.out.println("k :: " + k);
@@ -362,15 +364,22 @@ public class ExternalSort implements Operator {
 							lowest = element;
 							removeindex = k;
 
-						} else if (compare(list1.get(0), lowest) <= 0) {
+						} else if (compare(element, lowest) <= 0) {
 							lowest = element;
 							removeindex = k;
 
 						}
+						
+//						System.out.println("lowest selected :: ");
+//						printTuple(lowest);
+//						System.out.println("element compared :: ");
+//						printTuple(element);
+//						System.out.println(" removeindex :: "+ removeindex);
+						
 					} else {
 
 						if (readFile(buffread.get(k), k)) {
-							k--;
+							itIndexTrav = indexTraversal.iterator();							
 							continue;
 						} else {
 
@@ -452,11 +461,11 @@ public class ExternalSort implements Operator {
 					break;
 
 				result.add(lowest);
-				// System.out.println();
-				// System.out.print("result :: ");
-				// printTuple(result);
-				// System.out.println();
-				// System.out.println(indexTraversal);
+//				 System.out.println();
+//				 System.out.print("lowest added :: ");
+//				 printTuple(lowest);
+//				 System.out.println();
+//				 System.out.println(indexTraversal);
 				if (removeindex != -1) {
 					lowest = null;
 					if (buffer != null && buffer.get(removeindex).size() > 0)
@@ -479,7 +488,7 @@ public class ExternalSort implements Operator {
 						counter = 0;
 					}
 					list1 = null;
-
+					removeindex = -1;
 //					System.out.println("comp buffer :: ");
 //					printTuple(buffer);
 //					System.out.println("comp result :: ");
