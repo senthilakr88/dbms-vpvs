@@ -61,9 +61,9 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 100000;
+		this.bufferMaxSize = 120000;
 		this.kWay = 5;
-		this.capacity = 20000;
+		this.capacity = 25000;
 		this.first = true;
 		this.preSet = true;
 		this.tableName = tableName;
@@ -90,19 +90,25 @@ public class ExternalSort implements Operator {
 
 			// System.out.println("br.available :: "+br.available());
 			ArrayList<Datum[]> datum = new ArrayList<Datum[]>();
-			Datum[] tempDatum;
+			Datum[] tempDatum = null;
 			int k = 0;
 			String fileEntry = br.readLine();
+//			System.out.println(tableName + " outside k :: "+ k + " capacity :: " + capacity + " :: "+ " fileEntry ::"+fileEntry);
 			if (fileEntry != null) {
-				while (k < capacity) {
+				while (k < capacity-1) {
 					tempDatum = convertStrToDatum(fileEntry);
 					datum.add(tempDatum);
 					k++;
 					fileEntry = br.readLine();
+//					System.out.println(tableName + " inside k :: "+ k + " capacity :: " + capacity + " :: "+ " fileEntry ::"+fileEntry);
 					if (fileEntry == null) {
 						buffer.put(i, datum);
 						return true;
 					}
+				}
+				if(fileEntry!=null) {
+					tempDatum = convertStrToDatum(fileEntry);
+					datum.add(tempDatum);
 				}
 				buffer.put(i, datum);
 				return true;
@@ -121,30 +127,37 @@ public class ExternalSort implements Operator {
 		String[] newLineSplit;
 		String[] datumfield;
 		Datum[] tempDatum;
-//		System.out.println("colList :: " + Arrays.asList(colList));
-//		System.out.println("colType :: " + Arrays.asList(colType));
-//		System.out.println(" datumStr :: " + datumStr);
+		
+//		System.out.println("-------------------------------------------------------------------");
+//		System.out.println(tableName + " ::  datumStr :: " + datumStr + " colList :: "+colList+" colType :: "+colType);		
+//		System.out.println(tableName + " ::  colList :: " + Arrays.asList(colList));
+//		System.out.println(tableName + " ::  colType :: " + Arrays.asList(colType));
+		
 		if (datumStr != null) {
 			tempDatum = new Datum[colCount];
 			datumfield = datumStr.split("\\|");
 //			System.out.println(" datumfield :: " + Arrays.asList(datumfield));
 			for (int i = 0; i < datumfield.length; i++) {
-//				System.out.println("datumfield :: "+ datumfield[i] + "colType[i] :: "+ colType[i]);
+//				System.out.println("datumfield :: "+ datumfield[i] + " colType[i] :: "+ colType[i]);
 				if (colType[i] == 0) {
 					tempDatum[i] = new Datum.dLong(datumfield[i], colList[i]);
 				} else if (colType[i] == 1) {
+//					System.out.println("Decimal Field Length :: " +datumfield[i].length());
+//					System.out.println("Decimal Dot position :: " + datumfield[i].indexOf("."));
 					tempDatum[i] = new Datum.dDecimal(datumfield[i],
-							colList[i], 4);
+							colList[i], datumfield[i].length() - datumfield[i].indexOf(".")-1);
 				} else if (colType[i] == 2) {
 					tempDatum[i] = new Datum.dString(datumfield[i], colList[i]);
 				} else if (colType[i] == 3) {
 					tempDatum[i] = new Datum.dDate(datumfield[i], colList[i]);
 				}
 			}
+//			System.out.println("-------------------------------------------------------------------");
 			return tempDatum;
 		} else {
 			return null;
 		}
+		
 
 	}
 
@@ -238,6 +251,20 @@ public class ExternalSort implements Operator {
 		ArrayList<Datum[]> tempDatumList = new ArrayList<Datum[]>();
 		int count = 0;
 		oneTupleFromDat = oper.readOneTuple();
+//		System.out.println(tableName + " :: Entering :: " + preSet + " :: "+ oneTupleFromDat);
+		if (oneTupleFromDat != null && preSet) {
+			
+//			printTuple(oneTupleFromDat);
+			TupleStruct.setTupleTableColMap(oneTupleFromDat);
+			colList = TupleStruct.getTupleTableColMap();
+			colType = TupleStruct.getTupleTableColTypeMap();
+			colCount = colList.length;
+//			System.out.println("----------------------------------------------");
+//			System.out.println(tableName + " ::  set col :: "+ Arrays.asList(colList));
+//			System.out.println(tableName + " ::  set type :: "+Arrays.asList(colType));
+//			System.out.println("----------------------------------------------");
+			preSet = false;
+		}
 		// buffer = new ArrayList<Datum[]>();
 		while (oneTupleFromDat != null) {
 //			System.out.println("Reading tuples from main stream ");
@@ -246,15 +273,9 @@ public class ExternalSort implements Operator {
 			count++;
 			if (count < bufferMaxSize) {
 				oneTupleFromDat = oper.readOneTuple();
-				if (oneTupleFromDat != null && preSet) {
-//					System.out.println("Entering :: " + preSet);
-//					printTuple(oneTupleFromDat);
-					TupleStruct.setTupleTableColMap(oneTupleFromDat);
-					colList = TupleStruct.getTupleTableColMap();
-					colType = TupleStruct.getTupleTableColTypeMap();
-					colCount = colList.length;
-					preSet = false;
-				}
+				
+				
+				
 			} else {
 				break;
 			}
@@ -284,7 +305,7 @@ public class ExternalSort implements Operator {
 //				 System.out.println("Entering to sort Data :: ");
 //				 printTuple(buffer);
 				sortdata(i);
-				//oper.resetTupleMapping();
+//				oper.resetTupleMapping();
 				// System.out.println(swapDir);
 				s = swapDir + "buffer[";
 				index = Integer.toString(1) + Integer.toString(i);
@@ -439,6 +460,12 @@ public class ExternalSort implements Operator {
 							computeIndex(element);
 							colList = TupleStruct.getTupleTableColMap();
 							colType = TupleStruct.getTupleTableColTypeMap();
+							colCount = colList.length;
+//							System.out.println("----------------------------------------------");
+//							System.out.println(tableName + " ::  first :: "+ first);
+//							System.out.println(tableName + " ::  set col :: "+ Arrays.asList(colList));
+//							System.out.println(tableName + " ::  set type :: "+Arrays.asList(colType));
+//							System.out.println("----------------------------------------------");
 							first = false;
 						}
 
