@@ -303,6 +303,7 @@ public class components {
 										swapDir, joinCount.get(lts));
 								firstTime = false;
 							}
+//							printPlan();
 							if (!joinCol.containsKey(rts)
 									|| !rcs.equalsIgnoreCase(joinCol
 											.get(rts))) {
@@ -317,17 +318,20 @@ public class components {
 								temp.setExpression(rc);
 								obe = new ArrayList<OrderByElement>();
 								obe.add(temp);
+//								System.out.println("Entering for right external sort");
 								addToPlan("[External Sort on :: "
 										+ rts + " OrderBy :: "
 										+ obe.toString() + "]");
 								rightOper = new ExternalSort(rightOper, rts, obe,
 										swapDir,joinCount.get(rts));
 							}
+//							printPlan();
 							addToPlan("[Sort Merge Join on :: " + joinedTables
 									+ " and " + rightTable + " Expr :: "
 									+ onExpression.toString() + "]");
 							oper = new SortMergeJoinOperator(oper, rightOper,
 									onExpression, rightTable);
+//							printPlan();
 						} else {
 							addToPlan("[Hybrid Hash Join on :: " + joinedTables
 									+ " and " + rightTable + " Expr :: "

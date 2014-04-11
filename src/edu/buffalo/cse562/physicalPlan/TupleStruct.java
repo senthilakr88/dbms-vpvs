@@ -14,6 +14,8 @@ import net.sf.jsqlparser.schema.Table;
 public class TupleStruct {
 
 	static List<String> tupleTableMap;
+	static Column[] tupleTableColMap;
+	static Integer[] tuplecolTypeMap;
 	static boolean joinCondition;
 	static boolean nestedCondition = false;
 
@@ -31,6 +33,36 @@ public class TupleStruct {
 
 	public static void setJoinCondition(Boolean joinCondition) {
 		TupleStruct.joinCondition = joinCondition;
+	}
+	
+	public static Column[] getTupleTableColMap() {
+		return tupleTableColMap;
+	}
+
+	public static Integer[] getTupleTableColTypeMap() {
+		return tuplecolTypeMap;
+	}
+	
+	public static void setTupleTableColMap(Datum[] element) {
+		int index;
+		tupleTableColMap = new Column[element.length];
+		tuplecolTypeMap = new Integer[element.length];
+		for (index = 0; index < element.length; index++) {
+//			System.out.println("Tuple Struct Building on index :: " + index);
+			Datum row = (Datum) element[index];
+			if (row instanceof dLong) {
+				tuplecolTypeMap[index] = 0;
+			} else if (row instanceof dDecimal) {
+				tuplecolTypeMap[index] = 1;
+			} else if (row instanceof dString) {
+				tuplecolTypeMap[index] = 2;
+			} else if (row instanceof dDate) {
+				tuplecolTypeMap[index] = 3;
+			}
+			tupleTableColMap[index] = row.getColumn();
+		}
+//		System.out.println("Tuple Struct moving out of tuple col map :: " + index);
+		
 	}
 
 	public static void setTupleTableMap(Datum[] t) {
@@ -191,5 +223,7 @@ public class TupleStruct {
 				return -1;
 		}
 	}
+
+
 
 }
