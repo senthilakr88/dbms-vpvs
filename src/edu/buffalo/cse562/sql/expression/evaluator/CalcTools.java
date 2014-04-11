@@ -74,16 +74,16 @@ public class CalcTools extends AbstractExpressionVisitor {
 		Object rightValue = accumulator;
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = (Double)leftValue	+ (Double)rightValue;
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = (Long)leftValue + (Long)rightValue;
 		} else if (leftValue instanceof Double && rightValue instanceof Long) {
 			accumulator = (Double)leftValue	+ ((Long)rightValue).doubleValue();
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		} else if (leftValue instanceof Long && rightValue instanceof Double) {
 			accumulator = ((Long)leftValue).doubleValue()	+ (Double)rightValue;
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		}
 	}
 	
@@ -119,6 +119,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //		System.out.println(columnName);
 		
 		Datum row = t[index];
+		
 //		lg.logger.log(Level.INFO, index + ":" + row.toComString() + " : "
 //				+ column.getTable().getName() + ":" + column.getColumnName()
 //				+ ":" + row.equals(column));
@@ -142,7 +143,8 @@ public class CalcTools extends AbstractExpressionVisitor {
 			{
 //				System.out.println("IS Column Only"+columnName);
 				isColumnOnly = true;
-				accumulator = (double)Math.round((double)accumulator * 100) / 100;
+//				accumulator = (double)Math.round((double)accumulator * 100) / 100;
+				accumulator = (Double)accumulator*10000/10000;
 //				System.out.println(accumulator);
 //				accumulator = accumulator;
 			}
@@ -151,7 +153,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //					+ ":" + row.equals(column));
 //			System.out.println(accumulator);
 		}
-		lg.logger.log(Level.INFO, accumulator.toString());
+//		lg.logger.log(Level.INFO, accumulator.toString());
 	}
 
 	@Override
@@ -198,16 +200,16 @@ public class CalcTools extends AbstractExpressionVisitor {
 		Object rightValue = accumulator;
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = (Double)leftValue / (Double)rightValue;
-			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+			accumulator = Double.parseDouble(accumulator.toString())*10000/10000;
 
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = (Long)leftValue / (Long)rightValue;
 		} else if (leftValue instanceof Double && rightValue instanceof Long) {
 			accumulator = (Double)leftValue	/ ((Long)rightValue).doubleValue();
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		} else if (leftValue instanceof Long && rightValue instanceof Double) {
 			accumulator = ((Long)leftValue).doubleValue()	/ (Double)rightValue;
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		}
 		// lg.logger.log(Level.INFO,
 		// "Division result is"+accumulator.toString());
@@ -215,7 +217,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 
 	@Override
 	public void visit(DoubleValue doubleValue) {
-		accumulator = doubleValue.getValue()*100/100;
+		accumulator = doubleValue.getValue()*10000/10000;
 	}
 
 	@Override
@@ -234,6 +236,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 			if (((String)leftValue).compareTo((String)rightValue) == 0) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
+//				accumulatorBoolean = ((String)leftValue).equals((String)rightValue);
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
 			if (((Double)leftValue).compareTo((Double)rightValue) == 0) {
@@ -248,7 +251,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 				accumulatorBoolean = true;
 			}
 		} else if (leftValue instanceof Date && rightValue instanceof Date) {
-			if (((Date) leftValue).equals((Date) rightValue)) {
+			if (((Date) leftValue).compareTo((Date) rightValue) == 0) {
 				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
 			}
@@ -282,6 +285,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 //				System.out.println("FLAG TRUE");
 //				lg.logger.log(Level.INFO, "GREATER GREATER");
 				accumulatorBoolean = true;
+//			accumulatorBoolean = ((String)leftValue).equals((String)rightValue);
 			}
 		} else if (leftValue instanceof Double && rightValue instanceof Double) {
 //			System.out.println("INSTANCE DOUBLE");
@@ -317,7 +321,7 @@ public class CalcTools extends AbstractExpressionVisitor {
     	List expressionList = null;
         if(parameters!=null){
         	expressionList = parameters.getExpressions();
-            lg.logger.log(Level.INFO, expressionList.toString());
+//            lg.logger.log(Level.INFO, expressionList.toString());
         }
         java.lang.reflect.Method method=null;
         try {
@@ -350,7 +354,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         this.accumulator = ct.getResult();
         
-        lg.logger.log(Level.INFO, "SUM->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "SUM->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
     public void avg(List eList) {
@@ -368,7 +372,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         this.accumulator = ct.getResult();
         
-        lg.logger.log(Level.INFO, "AVG->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "AVG->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
     public void count(List eList) {
@@ -385,7 +389,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         this.accCount = ct.getResult();
 //        System.out.println("Setting accum");
         this.accumulator = Long.parseLong(String.valueOf(1));
-        lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "COUNT->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
     public void min(List eList) {
@@ -403,7 +407,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         this.accumulator = ct.getResult();
         
-        lg.logger.log(Level.INFO, "MIN->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "MIN->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
     public void max(List eList) {
@@ -421,7 +425,7 @@ public class CalcTools extends AbstractExpressionVisitor {
         lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
         this.accumulator = ct.getResult();
         
-        lg.logger.log(Level.INFO, "MAX->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "MAX->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
     
     public void date(List eList) {
@@ -446,7 +450,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 			e1.printStackTrace();
 		}
 		this.accumulator = date;
-        lg.logger.log(Level.INFO, "DATE->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
+//        lg.logger.log(Level.INFO, "DATE->>> "+this.accumulator.getClass().getName()+this.accumulator.toString());
     }
 
 	@Override
@@ -740,7 +744,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if (leftValue instanceof Double && rightValue instanceof Double) {
 			accumulator = (Double)leftValue
 					* (Double)rightValue;
-			accumulator = Double.parseDouble(accumulator.toString())*100/100;
+			accumulator = Double.parseDouble(accumulator.toString())*10000/10000;
 
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = (Long)leftValue
@@ -748,11 +752,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Double && rightValue instanceof Long) {
 			accumulator = (Double)leftValue
 					* ((Long)rightValue).doubleValue();
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		} else if (leftValue instanceof Long && rightValue instanceof Double) {
 			accumulator = ((Long)leftValue).doubleValue()
 					* (Double)rightValue;
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		}
 	}
 
@@ -820,7 +824,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 			accumulator = (Double)leftValue
 					- (Double)rightValue;
 //			System.out.println("subtract result 1"+accumulator.getClass().getName());
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 //			System.out.println("subtract result 2"+accumulator.getClass().getName());
 		} else if (leftValue instanceof Long && rightValue instanceof Long) {
 			accumulator = (Long)leftValue
@@ -828,11 +832,11 @@ public class CalcTools extends AbstractExpressionVisitor {
 		} else if (leftValue instanceof Double && rightValue instanceof Long) {
 			accumulator = (Double)leftValue
 					- ((Long)rightValue).doubleValue();
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		} else if (leftValue instanceof Long && rightValue instanceof Double) {
 			accumulator = ((Long)leftValue).doubleValue()
 					- (Double)rightValue;
-			accumulator = (Double)accumulator*100/100;
+			accumulator = (Double)accumulator*10000/10000;
 		}
 	}
 

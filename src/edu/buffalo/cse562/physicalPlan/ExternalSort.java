@@ -61,9 +61,9 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 25000;
-		this.kWay = 7;
-		this.capacity = 5000;
+		this.bufferMaxSize = 50000;
+		this.kWay = 5;
+		this.capacity = 500;
 		this.first = true;
 		this.preSet = true;
 		this.tableName = tableName;
@@ -318,7 +318,7 @@ public class ExternalSort implements Operator {
 				}
 				writedata(out, i);
 				buffer.remove(i);
-				writedata(out, i);
+//				writedata(out, i);
 				out.close();
 				i++;
 			}

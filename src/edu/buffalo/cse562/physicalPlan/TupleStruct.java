@@ -68,21 +68,23 @@ public class TupleStruct {
 	public static void setTupleTableMap(Datum[] t) {
 		int index;
 		tupleTableMap = new ArrayList<String>(t.length);
+		
 		for (index = 0; index < t.length; index++) {
 			Datum row = (Datum) t[index];
 			if (row.getColumn().getColumnName() != null) {
 				Table tableName = row.getColumn().getTable();
-
+				
 				String datumColumn = row.getColumn().getColumnName()
 						.toLowerCase();
 				// System.out.println(row.getColumn().getColumnName());
 				if (tableName != null) {
 					String alias = tableName.getAlias();
+					String tableNameStr = tableName.getName();
 					if (alias != null) {
 						tupleTableMap.add(alias.toLowerCase() + "."
 								+ datumColumn);
-					} else if (joinCondition && tableName.getName() != null) {
-						tupleTableMap.add(tableName.getName() + "."
+					} else if (joinCondition &&  tableNameStr!= null) {
+						tupleTableMap.add(tableNameStr + "."
 								+ datumColumn);
 					} else {
 						// System.out.println(tableName + " :: " + datumColumn);
