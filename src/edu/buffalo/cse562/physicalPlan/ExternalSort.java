@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.ColumnFetcher;
 import net.sf.jsqlparser.expression.Expression;
