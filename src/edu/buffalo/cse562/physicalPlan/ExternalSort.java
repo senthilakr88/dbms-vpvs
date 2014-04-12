@@ -62,7 +62,7 @@ public class ExternalSort implements Operator {
 		this.elements = elements;
 		this.swapDir = swapDir;
 		this.bufferMaxSize = 50000;
-		this.kWay = 5;
+		this.kWay = 7;
 		this.capacity = 500;
 		this.first = true;
 		this.preSet = true;
