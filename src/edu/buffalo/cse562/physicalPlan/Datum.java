@@ -16,27 +16,24 @@ import java.util.Locale;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
-public interface Datum {
+public interface Datum{
 
 	public String toString();
-
 	// public String toComString();
-
 	public Column getColumn();
-
+	public void setColumn(Column col);
 	// public void setColumn(Column column);
-
 	public boolean equals(Column col);
-
 	public String getStringValue();
-
-	public int compareTo(Datum[] tuple);
-
-	// void writeObject(final ObjectOutputStream out);
-
-	// void readObject(final ObjectInputStream in);
-
-	public class dLong implements Datum, Serializable {
+//	public int compareTo(Datum[] tuple);
+	public Datum add(Datum rightValue);
+	public Datum multiply(Datum rightValue);
+	public Datum subtract(Datum rightValue);
+	public Datum divide(Datum rightValue);
+	public int compareTo(Datum rightValue);
+	
+	
+	public class dLong implements Datum, Serializable, Comparable<Datum> {
 
 		Long value;
 		String columnName;
@@ -45,15 +42,18 @@ public interface Datum {
 		String aliasName;
 
 		public Column getColumn() {
-			if(aliasName == null)
-				return new Column(new Table(schemaName, tableName), columnName);
-			else
-				return new Column(new Table(schemaName, aliasName), columnName);
+			Table tab = new Table(schemaName, tableName);
+			tab.setAlias(aliasName);
+			return new Column(tab, columnName);			
 		}
 
 		// public void setColumn(Column column) {
 		// this.column = column;
 		// }
+		
+		public dLong(dLong d) {
+			this(d.value, d.getColumn());
+		}
 
 		public dLong(String s, Column col) {
 			value = Long.parseLong(s);
@@ -66,7 +66,7 @@ public interface Datum {
 				}
 			}
 		}
-
+		
 		public dLong(Long s, Column col) {
 			value = s;
 			if (col != null) {
@@ -77,6 +77,30 @@ public interface Datum {
 					this.aliasName = col.getTable().getAlias();
 				}
 			}
+		}
+		
+		@Override
+		public void setColumn(Column col) {
+//			System.out.println("---------------------------------------------------------");
+//			System.out.println("in set method");
+			if (col != null) {
+				this.columnName = col.getColumnName();
+//				System.out.println("columnName :: " + columnName);
+				if (col.getTable() != null) {
+					this.schemaName = col.getTable().getSchemaName();
+					this.tableName = col.getTable().getName();
+					this.aliasName = col.getTable().getAlias();
+				} else {
+					this.schemaName = null;
+					this.tableName = null;
+					this.aliasName = null;
+				}
+//				System.out.println("columnName :: "+columnName);
+//				System.out.println("schemaName :: "+schemaName);
+//				System.out.println("tableName :: "+tableName);
+//				System.out.println("aliasName :: "+aliasName);
+			}
+//			System.out.println("---------------------------------------------------------");
 		}
 
 		public long getValue() {
@@ -152,38 +176,83 @@ public interface Datum {
 
 		}
 
+//		@Override
+//		public int compareTo(Datum[] tuple) {
+//			int index = TupleStruct.getColIndex(tuple, getColumn());
+//			Object key = TupleStruct.getKey(tuple, index);
+//			return value.compareTo((Long) key);
+//		}
+		
 		@Override
-		public int compareTo(Datum[] tuple) {
-			int index = TupleStruct.getColIndex(tuple, getColumn());
-			Object key = TupleStruct.getKey(tuple, index);
-			return value.compareTo((Long) key);
+		public Datum add(Datum rightValue) {
+			if(rightValue instanceof dDecimal){
+				Double value = this.value+((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value, null,4);
+				
+			} else {
+				return new dLong((this.value+ ((dLong)rightValue).getValue()), null);
+			}
+			
 		}
 
-		// @Override
-		// public void writeObject(ObjectOutputStream out) {
-		// try {
-		// out.writeLong(this.value);
-		// out.writeUTF(column.getTable().getSchemaName());
-		// out.writeUTF(column.getTable().getName());
-		// out.writeUTF(column.getColumnName());
-		// } catch (IOException e) {
-		//
-		// e.printStackTrace();
-		// }
-		//
-		// }
-		//
-		// @Override
-		// public void readObject(ObjectInputStream in) {
-		// try {
-		// this.value = in.readLong();
-		// this.column = new Column(new Table(in.readUTF(), in.readUTF()),
-		// in.readUTF());
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// }
+		@Override
+		public Datum divide(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value/((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+				
+			} else {
+				return new dLong((this.value/ ((dLong)rightValue).getValue()), null);
+			}
+		}
+
+		@Override
+		public int compareTo(Datum rightValue) {
+			return this.value.compareTo(((dLong)rightValue).getValue());
+		}
+
+		@Override
+		public Datum multiply(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value*((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value, null,4);
+				
+			} else {
+				return new dLong((this.value * ((dLong)rightValue).getValue()), null);
+			}
+		}
+		
+		public Column compCol(Column rightCol) {
+			if(rightCol != null) {
+				return rightCol;
+			} else if(this.columnName != null) {
+				return getColumn();
+			} else {
+				return null;
+			}
+		}
+		
+
+		@Override
+		public Datum subtract(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value-((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value, null,4);
+				
+			} else {
+				return new dLong((this.value - ((dLong)rightValue).getValue()), null);
+			}
+		}
+
+//		@Override
+//		public int compareTo(Datum[] tuple) {
+//			// TODO Auto-generated method stub
+//			return 0;
+//		}
 
 	}
 
@@ -197,16 +266,46 @@ public interface Datum {
 		int precision;
 
 		public Column getColumn() {
-			if(aliasName == null)
-				return new Column(new Table(schemaName, tableName), columnName);
-			else
-				return new Column(new Table(schemaName, aliasName), columnName);
+			Table tab = new Table(schemaName, tableName);
+			tab.setAlias(aliasName);
+			return new Column(tab, columnName);		
+		}
+		
+
+		
+		@Override
+		public void setColumn(Column col) {
+//			System.out.println("---------------------------------------------------------");
+//			System.out.println("in set method");
+			if (col != null) {
+				this.columnName = col.getColumnName();
+//				System.out.println("columnName :: " + columnName);
+				if (col.getTable() != null) {
+					this.schemaName = col.getTable().getSchemaName();
+					this.tableName = col.getTable().getName();
+					this.aliasName = col.getTable().getAlias();
+				} else {
+					this.schemaName = null;
+					this.tableName = null;
+					this.aliasName = null;
+				}
+//				System.out.println("columnName :: "+columnName);
+//				System.out.println("schemaName :: "+schemaName);
+//				System.out.println("tableName :: "+tableName);
+//				System.out.println("aliasName :: "+aliasName);
+			}
+//			System.out.println("---------------------------------------------------------");
+			
 		}
 
 		// public void setColumn(Column column) {
 		// this.column = column;
 		// }
 
+		public dDecimal(dDecimal d) {
+			this(d.value, d.getColumn(), d.precision);
+		}
+		
 		public dDecimal(String s, Column col, int prec) {
 			value = Double.parseDouble(s);
 			precision = prec;
@@ -303,38 +402,89 @@ public interface Datum {
 			return value.toString();
 		}
 
+//		@Override
+//		public int compareTo(Datum[] tuple) {
+//			int index = TupleStruct.getColIndex(tuple, getColumn());
+//			Object key = TupleStruct.getKey(tuple, index);
+//			return value.compareTo((Double) key);
+//		}
+
 		@Override
-		public int compareTo(Datum[] tuple) {
-			int index = TupleStruct.getColIndex(tuple, getColumn());
-			Object key = TupleStruct.getKey(tuple, index);
-			return value.compareTo((Double) key);
+		public Datum add(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value+((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+				
+			} else {
+				Double value = this.value+((dLong)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+			}
 		}
 
-		// @Override
-		// public void writeObject(ObjectOutputStream out) {
-		// try {
-		// out.writeDouble(this.value);
-		// out.writeUTF(column.getTable().getSchemaName());
-		// out.writeUTF(column.getTable().getName());
-		// out.writeUTF(column.getColumnName());
-		// } catch (IOException e) {
-		//
-		// e.printStackTrace();
-		// }
-		//
-		// }
-		//
-		// @Override
-		// public void readObject(ObjectInputStream in) {
-		// try {
-		// this.value = in.readDouble();
-		// this.column = new Column(new Table(in.readUTF(), in.readUTF()),
-		// in.readUTF());
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// }
+		@Override
+		public Datum divide(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value/((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+				
+			} else {
+				Double value = this.value/((dLong)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+			}
+		}
+
+		@Override
+		public int compareTo(Datum rightValue) {
+			return this.value.compareTo(((dDecimal)rightValue).getValue());
+		}
+		
+		public Column compCol(Column rightCol) {
+			if(rightCol != null) {
+				return rightCol;
+			} else if(this.columnName != null) {
+				return getColumn();
+			} else {
+				return null;
+			}
+		}
+		
+
+		@Override
+		public Datum subtract(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value-((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+				
+			} else {
+				Double value = this.value-((dLong)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+			}
+		}
+
+		@Override
+		public Datum multiply(Datum rightValue) {
+			if(rightValue.getClass() == dDecimal.class){
+				Double value = this.value*((dDecimal)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+				
+			} else {
+				Double value = this.value*((dLong)rightValue).getValue();
+				value = (value * 1000)/1000;
+				return new dDecimal(value,null,4);
+			}
+		}
+
+		public void setPrecision(int i) {
+			this.precision = i;
+			
+		}
 
 	}
 
@@ -357,17 +507,40 @@ public interface Datum {
 				}
 			}
 		}
-
-		public Column getColumn() {
-			if(aliasName == null)
-				return new Column(new Table(schemaName, tableName), columnName);
-			else
-				return new Column(new Table(schemaName, aliasName), columnName);
+		
+		public dString(dString d) {
+			this(d.value, d.getColumn());
 		}
-
-		// public void setColumn(Column column) {
-		// this.column = column;
-		// }
+		
+		public Column getColumn() {
+			Table tab = new Table(schemaName, tableName);
+			tab.setAlias(aliasName);
+			return new Column(tab, columnName);		
+		}
+		
+		@Override
+		public void setColumn(Column col) {
+//			System.out.println("---------------------------------------------------------");
+//			System.out.println("in set method");
+			if (col != null) {
+				this.columnName = col.getColumnName();
+//				System.out.println("columnName :: " + columnName);
+				if (col.getTable() != null) {
+					this.schemaName = col.getTable().getSchemaName();
+					this.tableName = col.getTable().getName();
+					this.aliasName = col.getTable().getAlias();
+				} else {
+					this.schemaName = null;
+					this.tableName = null;
+					this.aliasName = null;
+				}
+//				System.out.println("columnName :: "+columnName);
+//				System.out.println("schemaName :: "+schemaName);
+//				System.out.println("tableName :: "+tableName);
+//				System.out.println("aliasName :: "+aliasName);
+			}
+//			System.out.println("---------------------------------------------------------");
+		}
 
 		public String getValue() {
 			return value;
@@ -422,42 +595,46 @@ public interface Datum {
 			return value.toString();
 		}
 
-		@Override
-		public int compareTo(Datum[] tuple) {
-			int index = TupleStruct.getColIndex(tuple, getColumn());
-			Object key = TupleStruct.getKey(tuple, index);
-			return value.compareTo((String) key);
-		}
-
-		// @Override
-		// public void writeObject(ObjectOutputStream out) {
-		// try {
-		// out.writeUTF(this.value);
-		// out.writeUTF(column.getTable().getSchemaName());
-		// out.writeUTF(column.getTable().getName());
-		// out.writeUTF(column.getColumnName());
-		// } catch (IOException e) {
-		//
-		// e.printStackTrace();
-		// }
-		//
-		// }
-		//
-		//
-		// public void readObject(ObjectInputStream in) {
-		// try {
-		// this.value = in.readUTF();
-		// this.column = new Column(new Table(in.readUTF(), in.readUTF()),
-		// in.readUTF());
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// }
+//		@Override
+//		public int compareTo(Datum[] tuple) {
+//			int index = TupleStruct.getColIndex(tuple, getColumn());
+//			Object key = TupleStruct.getKey(tuple, index);
+//			return value.compareTo((String) key);
+//		}
 
 		void readObjectNoData() throws ObjectStreamException {
 			throw new InvalidObjectException("Stream data required");
 		}
+
+		@Override
+		public Datum add(Datum rightValue) {
+			return new dString(this.value+rightValue.getStringValue(),null);
+		}
+
+		@Override
+		public Datum divide(Datum rightValue) {
+			System.out.println("Divide not implemented for String :: Datum Class");
+			return null;
+		}
+
+		@Override
+		public int compareTo(Datum rightValue) {
+			return this.value.compareTo(((dString)rightValue).getValue());
+		}
+
+		@Override
+		public Datum multiply(Datum rightValue) {
+			System.out.println("Multiply not implemented for String :: Datum Class");
+			return null;
+		}
+
+		@Override
+		public Datum subtract(Datum rightValue) {
+			System.out.println("Subtract not implemented for String :: Datum Class");
+			return null;
+		}
+		
+		
 	}
 
 	public class dDate implements Datum, Serializable {
@@ -505,6 +682,10 @@ public interface Datum {
 			}
 		}
 
+		public dDate(dDate d) {
+			this(d.value, d.getColumn());
+		}
+		
 		public dDate(Date s, Column col) {
 			value = s;
 			if (col != null) {
@@ -517,6 +698,30 @@ public interface Datum {
 			}
 		}
 
+		@Override
+		public void setColumn(Column col) {
+//			System.out.println("---------------------------------------------------------");
+//			System.out.println("in set method");
+			if (col != null) {
+				this.columnName = col.getColumnName();
+//				System.out.println("columnName :: " + columnName);
+				if (col.getTable() != null) {
+					this.schemaName = col.getTable().getSchemaName();
+					this.tableName = col.getTable().getName();
+					this.aliasName = col.getTable().getAlias();
+				} else {
+					this.schemaName = null;
+					this.tableName = null;
+					this.aliasName = null;
+				}
+//				System.out.println("columnName :: "+columnName);
+//				System.out.println("schemaName :: "+schemaName);
+//				System.out.println("tableName :: "+tableName);
+//				System.out.println("aliasName :: "+aliasName);
+			}
+//			System.out.println("---------------------------------------------------------");			
+		}
+		
 		public Date getValue() {
 			return value;
 		}
@@ -538,17 +743,10 @@ public interface Datum {
 
 		@Override
 		public Column getColumn() {
-			if(aliasName == null)
-				return new Column(new Table(schemaName, tableName), columnName);
-			else
-				return new Column(new Table(schemaName, aliasName), columnName);
+			Table tab = new Table(schemaName, tableName);
+			tab.setAlias(aliasName);
+			return new Column(tab, columnName);		
 		}
-
-		// @Override
-		// public void setColumn(Column column) {
-		// this.column = column;
-		//
-		// }
 
 		@Override
 		public boolean equals(Column col) {
@@ -569,38 +767,47 @@ public interface Datum {
 			return null;
 		}
 
+//		@Override
+//		public int compareTo(Datum[] tuple) {
+//			int index = TupleStruct.getColIndex(tuple, getColumn());
+//			Object key = TupleStruct.getKey(tuple, index);
+//			return value.compareTo((Date) key);
+//		}
+
 		@Override
-		public int compareTo(Datum[] tuple) {
-			int index = TupleStruct.getColIndex(tuple, getColumn());
-			Object key = TupleStruct.getKey(tuple, index);
-			return value.compareTo((Date) key);
+		public Datum add(Datum rightValue) {
+			System.out.println("Add not implemented for Date :: Datum Class");
+			return null;
+		}
+		
+		@Override
+		public Datum divide(Datum rightValue) {
+			System.out.println("Divide not implemented for Date :: Datum Class");
+			return null;
 		}
 
-		// @Override
-		// public void writeObject(ObjectOutputStream out) {
-		// try {
-		// out.writeObject(this.value);
-		// out.writeUTF(column.getTable().getSchemaName());
-		// out.writeUTF(column.getTable().getName());
-		// out.writeUTF(column.getColumnName());
-		// } catch (IOException e) {
-		//
-		// e.printStackTrace();
-		// }
-		//
-		// }
+		@Override
+		public int compareTo(Datum rightValue) {
+//			System.out.println(this.value + " :: " + rightValue.getStringValue());
+			if(rightValue instanceof dString) {
+				return this.value.compareTo(new dDate(((dString)rightValue).getValue(),null).getValue());
+			} else {
+				return this.value.compareTo(((dDate)rightValue).getValue());
+			}
+			
+		}
 
-		// @Override
-		// public void readObject(ObjectInputStream in) {
-		// try {
-		// this.value = (Date) in.readObject();
-		// this.column = new Column(new Table(in.readUTF(), in.readUTF()),
-		// in.readUTF());
-		// } catch (IOException | ClassNotFoundException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// }
+		@Override
+		public Datum multiply(Datum rightValue) {
+			System.out.println("Multiply not implemented for Date :: Datum Class");
+			return null;
+		}
+
+		@Override
+		public Datum subtract(Datum rightValue) {
+			System.out.println("Subtract not implemented for Date :: Datum Class");
+			return null;
+		}
 
 	}
 

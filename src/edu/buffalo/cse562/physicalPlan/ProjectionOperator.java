@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -20,6 +21,7 @@ import net.sf.jsqlparser.statement.select.*;
 //import net.sf.jsqlparser.statement.select.SelectItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Operator;
+import edu.buffalo.cse562.physicalPlan.Datum.*;
 import edu.buffalo.cse562.physicalPlan.Tuple;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.SelectItemTools;
@@ -31,7 +33,6 @@ public class ProjectionOperator implements Operator {
 	String temp = null;
 	List<SelectExpressionItem> selectcolumns;
 	boolean isTupleMapPresent;
-
 
 	public ProjectionOperator(Operator input,
 			List<SelectExpressionItem> selectcolumns) {
@@ -47,9 +48,8 @@ public class ProjectionOperator implements Operator {
 	}
 
 	public Datum[] readOneTuple() {
-		logManager lg = new logManager();
 		Datum[] t = null;
-		Datum[] listDatum = new Datum [] {};
+		Datum[] listDatum;
 		ArrayList<Datum> arrayListDatum = new ArrayList<Datum> ();
 		
 		t = input.readOneTuple();
@@ -63,6 +63,9 @@ public class ProjectionOperator implements Operator {
 //				System.out.println("_____"+TupleStruct.getTupleTableMap());
 			}
 			Iterator<SelectExpressionItem> iter=selectcolumns.iterator();
+			//to compute col type index
+			int k = 0;
+			listDatum = new Datum[selectcolumns.size()];
 			while(iter.hasNext()){
 				SelectItem newItem = iter.next();
 				SelectItemTools st = new SelectItemTools();
@@ -98,49 +101,51 @@ public class ProjectionOperator implements Operator {
 //					System.out.println(TupleStruct.getTupleTableMap());
 					CalcTools calc = new CalcTools(t); 
 					e.accept(calc);
-					lg.logger.log(Level.INFO, calc.getResult().toString());
 					//                System.out.println("PRinting column name--->"+calc.getColumn().getColumnName());
 					Column newCol = null;
 					//                Table result = new Table("", "ResultTable");
+//					System.out.println("In Projection Statement " + ((SelectExpressionItem) newItem).getExpression().toString());
 					if (((SelectExpressionItem) newItem).getAlias()!=null){
+//						System.out.println("In Projection Statement " + ((SelectExpressionItem) newItem).getAlias());
 						newCol = new Column(null, ((SelectExpressionItem) newItem).getAlias());
 					}
 					else {
+//						System.out.println("Entering to get column in projection :: ");
 						newCol = calc.getColumn();
 						//                    newCol = new Column(result, newItem.toString());
 					}
-					//                System.out.println(newCol.getWholeColumnName());
-
-					Object ob = calc.getResult();
+//					System.out.println("In projection operator:: "+newCol.getWholeColumnName());
+					
+   				    Datum ob = calc.getResult();
 					Boolean isColumn = calc.isColumn();
 					Datum tempDatum = null;
-					if (ob instanceof Long) {
-						lg.logger.log(Level.INFO, "========Long");
-						tempDatum = new Datum.dLong(ob.toString(), newCol);
-					} else if (ob instanceof Double) {
+					if (ob instanceof dLong) {
+						tempDatum = new dLong((dLong)ob);
+						tempDatum.setColumn(newCol);
+					} else if (ob instanceof dDecimal) {
+						tempDatum = new dDecimal((dDecimal)ob);
+						tempDatum.setColumn(newCol);
 						if(isColumn!=null&&isColumn==true){
-							tempDatum = new Datum.dDecimal(ob.toString(), newCol, 2);
+							((dDecimal)tempDatum).setPrecision(2);
 						} else {
-							tempDatum = new Datum.dDecimal(ob.toString(), newCol, 4);
+							((dDecimal)tempDatum).setPrecision(4);
 						}
 
-					} else if (ob instanceof String) {
-						lg.logger.log(Level.INFO, "========String");
-						tempDatum = new Datum.dString((String) ob, newCol);
-					} else if (ob instanceof java.util.Date) {
-						lg.logger.log(Level.INFO, "=========Date");
-						DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-						tempDatum = new Datum.dDate(df.format(ob), newCol);
+					} else if (ob instanceof dString) {
+						tempDatum = new dString((dString)ob);
+						tempDatum.setColumn(newCol);
+					} else if (ob instanceof dDate) {
+						tempDatum = new dDate((dDate)ob);
+						tempDatum.setColumn(newCol);
 					} else {
-						lg.logger.log(Level.INFO, "Wrong Type");
 						try {
-							throw new Exception("Not aware of this data type " + ob);
+							throw new Exception("Projection Not aware of this data type " + ob.getStringValue() + ob.getColumn());
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 					}
-					//                lg.logger.log(Level.INFO, "(((()))))"+tempDatum.toComString());
-					arrayListDatum.add(tempDatum);
+					listDatum[k] = tempDatum;
+					k++;
 					i++;
 
 				}
@@ -151,12 +156,10 @@ public class ProjectionOperator implements Operator {
 			//			System.out.println(listDatum.toString());
 
 
-		}
-
-		else {
+		} else {
 			return null;
 		}
-		listDatum = arrayListDatum.toArray(listDatum);
+//		listDatum = arrayListDatum.toArray(listDatum);
 //		System.out.println(arrayListDatum.toString());
 //		System.out.println("Reporting from projection");
 //		printTuple(listDatum);

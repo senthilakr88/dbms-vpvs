@@ -68,7 +68,7 @@ public class TupleStruct {
 	public static void setTupleTableMap(Datum[] t) {
 		int index;
 		tupleTableMap = new ArrayList<String>(t.length);
-		
+//		System.out.println("---------------------------------------------------------");
 		for (index = 0; index < t.length; index++) {
 			Datum row = (Datum) t[index];
 			if (row.getColumn().getColumnName() != null) {
@@ -81,9 +81,11 @@ public class TupleStruct {
 					String alias = tableName.getAlias();
 					String tableNameStr = tableName.getName();
 					if (alias != null) {
+//						System.out.println("alias "+ " :: "+ alias+" datumColumn :: "+datumColumn);
 						tupleTableMap.add(alias.toLowerCase() + "."
 								+ datumColumn);
 					} else if (joinCondition &&  tableNameStr!= null) {
+//						System.out.println("tableNameStr "+ " :: "+ tableNameStr+" datumColumn :: "+datumColumn);
 						tupleTableMap.add(tableNameStr + "."
 								+ datumColumn);
 					} else {
@@ -99,6 +101,8 @@ public class TupleStruct {
 			}
 
 		}
+//		System.out.println("TupleStruct" + tupleTableMap);
+//		System.out.println("---------------------------------------------------------");
 	}
 
 	public static List<String> getTupleTableMap() {
@@ -211,6 +215,12 @@ public class TupleStruct {
 			return -2;
 		}
 
+	}
+	
+	public static int getCompareValue(Datum t1, Datum t2, boolean asc) {
+			int comp = t1.compareTo(t2);
+			// System.out.println(comp);
+			return compHelper(comp, asc);
 	}
 
 	private static int compHelper(int comp, boolean asc) {

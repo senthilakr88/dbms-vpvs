@@ -104,7 +104,7 @@ public class GroupbyOperator implements Operator {
 			// System.out.println("NEW TUPLE READ");
 			if (isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(readOneTupleFromOper);
-				// System.out.println(TupleStruct.getTupleTableMap());
+//				System.out.println(TupleStruct.getTupleTableMap());
 				datumColumnName = (ArrayList<String>) TupleStruct
 						.getTupleTableMap();
 				if (!TupleStruct.isNestedCondition() && !TupleStruct.getJoinCondition())
@@ -163,7 +163,7 @@ public class GroupbyOperator implements Operator {
 //				printTuple(tempDatum);
 				
 				if ("count".equalsIgnoreCase(funcName)) {
-					countValue = String.valueOf((Long)calc.getCountResult());
+					countValue = String.valueOf(((dLong)calc.getCountResult()).getValue());
 					//System.out.println("PRINT COUNT VALUE"+ countValue);
 				}
 				newSelectItemsArray[itr] = tempDatum;
@@ -390,11 +390,11 @@ public class GroupbyOperator implements Operator {
 
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
-		Object calcOut = calc.getResult();
+//		Object calcOut = calc.getResult();
 //		System.out.println(newItem.toString());
 //		System.out.println(calcOut.toString());
 		if (newItem.getAlias() != null) {
-			// System.out.println("Alias :: "+ newItem.getAlias());
+//			 System.out.println("Alias :: "+ newItem.getAlias());
 			newCol = new Column(null, newItem.getAlias());
 		} else {
 			// System.out.println("Exp");
@@ -403,34 +403,32 @@ public class GroupbyOperator implements Operator {
 		}
 //		System.out.println(calcOut);
 		Datum tempDatum = null;
-		if (calcOut instanceof Long) {
-			String value = calcOut.toString();
-			// String valueWithFuncName = funcName.concat("("+value+")");
-			tempDatum = new Datum.dLong(calcOut.toString(), newCol);
-			// System.out.println("CALC OUTPUT FOR dLONG: "+calcOut.toString());
-			// System.out.println("CALC OUTPUT FOR dLONG: "+newCol);
-			// System.out.println("NEW FUNC VALUE: "+valueWithFuncName);
-			// System.out.println("tempDatum: "+tempDatum.getStringValue());
-		} else if (calcOut instanceof String) {
-			tempDatum = new Datum.dString((String) calcOut, newCol);
-			// System.out.println("CALC OUTPUT FOR DSTRING: "+(String) calcOut);
-			// System.out.println("tempDatum"+tempDatum.getStringValue());
-		} else if (calcOut instanceof Date) {
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			tempDatum = new Datum.dDate(df.format(calcOut), newCol);
-			// System.out.println("tempDatum"+tempDatum.getStringValue());
-
-		} else if (calcOut instanceof Double) {
-			Double value = (Double) calcOut;
+		Datum calcOut = calc.getResult();
+		if (calcOut instanceof dLong) {
+			tempDatum = new dLong((dLong)calcOut);
+			tempDatum.setColumn(newCol);
+		} else if (calcOut instanceof dDecimal) {
 			Boolean isColumn = calc.isColumn();
-//			System.out.println("GROUPPPP");
-			if(isColumn!=null&&isColumn==true){
-				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 2);
+			tempDatum = new dDecimal((dDecimal)calcOut);
+			tempDatum.setColumn(newCol);
+			if(isColumn != null && isColumn){
+				((dDecimal)tempDatum).setPrecision(2);
 			} else {
-				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 4);
+				((dDecimal)tempDatum).setPrecision(4);
 			}
-//			tempDatum = new Datum.dDecimal((Double) (calcOut), newCol);
 
+		} else if (calcOut instanceof dString) {
+			tempDatum = new dString((dString)calcOut);
+			tempDatum.setColumn(newCol);
+		} else if (calcOut instanceof dDate) {
+			tempDatum = new dDate((dDate)calcOut);
+			tempDatum.setColumn(newCol);
+		} else {
+			try {
+				throw new Exception("GroupBy Not aware of this data type " + calcOut.getStringValue() + calcOut.getColumn());
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 		
 		return tempDatum;

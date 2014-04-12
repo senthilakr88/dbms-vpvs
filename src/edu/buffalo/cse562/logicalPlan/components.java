@@ -41,7 +41,6 @@ import edu.buffalo.cse562.sql.expression.evaluator.ExpressionSplitter;
 
 public class components {
 
-	logManager lg;
 	Map<String, ArrayList<Column>> masterTableMap;
 	Map<String, ArrayList<String>> masterTableColTypeMap;
 	Map<String, ArrayList<Column>> tableMap;
@@ -73,8 +72,7 @@ public class components {
 		masterTableMap = new HashMap<String, ArrayList<Column>>();
 		masterTableColTypeMap = new HashMap<String, ArrayList<String>>();
 		planPrint = new StringBuffer();
-		lg = new logManager();
-		this.fileThreshold = Long.valueOf(500000);
+		this.fileThreshold = Long.valueOf(5000);
 	}
 
 	public void initializeParam() {

@@ -16,11 +16,9 @@ public class fileReader {
 	String fileName;
 	File file;
 	List<String> contents;
-	logManager lg;
 
 	public fileReader(String fileName) {
 		this.fileName = fileName;
-		lg = new logManager();
 
 		if (new File(fileName).exists()) {
 			this.file = new File(fileName);
@@ -28,8 +26,6 @@ public class fileReader {
 			String basePath = new File("").getAbsolutePath();
 			this.file = new File(basePath + File.separator + fileName);
 		}
-		// lg.logger.log(Level.INFO, basePath);
-		lg.logger.log(Level.INFO, fileName);
 	}
 
 	public fileReader(File fileName) {
@@ -82,7 +78,6 @@ public class fileReader {
 
 			buf.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return contents;
