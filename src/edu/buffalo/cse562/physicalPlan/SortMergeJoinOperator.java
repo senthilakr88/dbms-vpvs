@@ -270,77 +270,80 @@ public class SortMergeJoinOperator implements Operator {
 	 * 			+1 - right>left
 	 */
 	private Integer compareDatum(Datum leftValue, Datum rightValue){
-		if(leftValue==null||rightValue==null) return null;
-		Object leftDatumValue = findDatumValue(leftValue);
-		Object rightDatumValue = findDatumValue(rightValue);
-		//		System.out.println("LEFT-"+leftDatumValue.getClass().getName());
-		//		System.out.println("RIGHT-"+rightDatumValue.getClass().getName());
-		//perform comparisons after finding the object types as Double/Long/String/Date
-		if(leftDatumValue instanceof Double){
-			Double left = (Double) leftDatumValue;
-			Double right = (Double) rightDatumValue;
-			//			if(left==right){
-			//				output = 0;
-			//			}
-			//			else if(left>right){
-			//				output = -1;
-			//			}
-			//			else{
-			//				output = 1;
-			//			}
-			//			return output;
-			return left.compareTo(right);
-		}
-		else if(leftDatumValue instanceof Long){
-			Long left = (Long) leftDatumValue;
-			Long right = (Long) rightDatumValue;
-
-
-			//			if(left==right){
-			//				output = 0;
-			//			}
-			//			else if(left>right){
-			//				output = -1;
-			//			}
-			//			else{
-			//				output = 1;
-			//			}
-			return left.compareTo(right);
-		}
-		else if(leftDatumValue instanceof Date){
-			Date left = (Date) leftDatumValue;
-			Date right = (Date) rightDatumValue;
-			//			if(left==right){
-			//				output = 0;
-			//			}
-			//			else if(left.after(right)){
-			//				output = -1;
-			//			}
-			//			else{
-			//				output = 1;
-			//			}
-			return left.compareTo(right);
-		}
-		else if (leftDatumValue instanceof String){
-			String left = (String) leftDatumValue;
-			String right = (String) rightDatumValue;
-			//			int compValue = left.compareToIgnoreCase(right);
-			//			
-			//			if(compValue==0){
-			//				output = 0;
-			//			}
-			//			else if(compValue<0){
-			//				output = 1;
-			//			}
-			//			else{
-			//				output = -1;
-			//			}
-			return left.compareToIgnoreCase(right);
-		}
-		else{
-			System.out.println("Error: Tuple not instance of Long/Double/Date/String");
+		if(leftValue==null||rightValue==null) 
 			return null;
-		}
+		else
+			return leftValue.compareTo(rightValue);
+//		Object leftDatumValue = findDatumValue(leftValue);
+//		Object rightDatumValue = findDatumValue(rightValue);
+//		//		System.out.println("LEFT-"+leftDatumValue.getClass().getName());
+//		//		System.out.println("RIGHT-"+rightDatumValue.getClass().getName());
+//		//perform comparisons after finding the object types as Double/Long/String/Date
+//		if(leftDatumValue instanceof Double){
+//			Double left = (Double) leftDatumValue;
+//			Double right = (Double) rightDatumValue;
+//			//			if(left==right){
+//			//				output = 0;
+//			//			}
+//			//			else if(left>right){
+//			//				output = -1;
+//			//			}
+//			//			else{
+//			//				output = 1;
+//			//			}
+//			//			return output;
+//			return left.compareTo(right);
+//		}
+//		else if(leftDatumValue instanceof Long){
+//			Long left = (Long) leftDatumValue;
+//			Long right = (Long) rightDatumValue;
+//
+//
+//			//			if(left==right){
+//			//				output = 0;
+//			//			}
+//			//			else if(left>right){
+//			//				output = -1;
+//			//			}
+//			//			else{
+//			//				output = 1;
+//			//			}
+//			return left.compareTo(right);
+//		}
+//		else if(leftDatumValue instanceof Date){
+//			Date left = (Date) leftDatumValue;
+//			Date right = (Date) rightDatumValue;
+//			//			if(left==right){
+//			//				output = 0;
+//			//			}
+//			//			else if(left.after(right)){
+//			//				output = -1;
+//			//			}
+//			//			else{
+//			//				output = 1;
+//			//			}
+//			return left.compareTo(right);
+//		}
+//		else if (leftDatumValue instanceof String){
+//			String left = (String) leftDatumValue;
+//			String right = (String) rightDatumValue;
+//			//			int compValue = left.compareToIgnoreCase(right);
+//			//			
+//			//			if(compValue==0){
+//			//				output = 0;
+//			//			}
+//			//			else if(compValue<0){
+//			//				output = 1;
+//			//			}
+//			//			else{
+//			//				output = -1;
+//			//			}
+//			return left.compareToIgnoreCase(right);
+//		}
+//		else{
+//			System.out.println("Error: Tuple not instance of Long/Double/Date/String");
+//			return null;
+//		}
 
 	}
 
