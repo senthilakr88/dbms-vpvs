@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
@@ -62,12 +65,14 @@ public class ExternalSort implements Operator {
 		this.elements = elements;
 		this.swapDir = swapDir;
 		if(countTable >= 2) {
-			this.bufferMaxSize = 40000;
+			this.bufferMaxSize = 50000;
+			this.capacity = 500;
+			this.kWay = 4;
 		} else {
 			this.bufferMaxSize = 80000;
+			this.capacity = 1000;
+			this.kWay = 7;
 		}
-		this.kWay = 7;
-		this.capacity = 1000;
 
 		this.first = true;
 		this.preSet = true;
@@ -110,6 +115,7 @@ public class ExternalSort implements Operator {
 //					System.out.println(tableName + " inside k :: "+ k + " capacity :: " + capacity + " :: "+ " fileEntry ::"+fileEntry);
 					if (fileEntry == null) {
 						buffer.put(i, datum);
+						datum = null;
 						return true;
 					}
 				}
@@ -118,6 +124,7 @@ public class ExternalSort implements Operator {
 					datum.add(tempDatum);
 				}
 				buffer.put(i, datum);
+				datum = null;
 //				printMemory("Readfile End");
 				return true;
 			} else {
@@ -149,16 +156,22 @@ public class ExternalSort implements Operator {
 			for (int i = 0; i < datumfield.length; i++) {
 //				System.out.println("datumfield :: "+ datumfield[i] + " colType[i] :: "+ colType[i]);
 				if (colType[i] == 0) {
-					tempDatum[i] = new Datum.dLong(datumfield[i], colList[i]);
+					tempDatum[i] = new Datum.dLong(Long.parseLong(datumfield[i]), colList[i]);
 				} else if (colType[i] == 1) {
 //					System.out.println("Decimal Field Length :: " +datumfield[i].length());
 //					System.out.println("Decimal Dot position :: " + datumfield[i].indexOf("."));
-					tempDatum[i] = new Datum.dDecimal(datumfield[i],
-							colList[i], datumfield[i].length() - datumfield[i].indexOf(".")-1);
+					tempDatum[i] = new Datum.dDecimal(Double.valueOf(datumfield[i]),
+							colList[i], 4);
 				} else if (colType[i] == 2) {
 					tempDatum[i] = new Datum.dString(datumfield[i], colList[i]);
 				} else if (colType[i] == 3) {
-					tempDatum[i] = new Datum.dDate(datumfield[i], colList[i]);
+					try {
+						tempDatum[i] = new Datum.dDate(new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+						.parse(datumfield[i]), colList[i]);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 //			System.out.println("-------------------------------------------------------------------");
@@ -316,13 +329,15 @@ public class ExternalSort implements Operator {
 			}
 		}
 		buffer.put(i, tempDatumList);
+		tempDatumList = null;
 		if (buffer.get(i).size() > 0) {
 //			System.out.println("returning readfile with true");
 //			printMemory("readfile end");
 			return true;
 		} else {
 //			System.out.println("returning readfile with false");
-			buffer.remove(i);
+//			buffer.remove(i);
+			buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 //			printMemory("readfile end");
 			return false;
 		}
@@ -787,9 +802,10 @@ public class ExternalSort implements Operator {
 			readFile = masterBuffer.readLine();
 			if (readFile == null) {
 				masterBuffer.close();
-				return null;
+				return tuple;
 			} else {
-				return convertStrToDatum(readFile);
+				tuple = convertStrToDatum(readFile);
+				return tuple;
 			}
 
 		} catch (Exception e) {
