@@ -19,10 +19,10 @@ def setFilePaths(sqlFileName):
     resultFile = os.path.join('..','myresults',resultFileName)
     binFolder = os.path.join('..','bin')
     jsqlJar = os.path.join('..','other','jsqlparser.jar')
-    dataFolder = os.path.join('..','data','LittleBigdataEvaluation')
+    dataFolder = os.path.join('..','data','bigData')
     swapFolder = os.path.join('..','swapDir')
-    sqlFile = os.path.join('..','data','LittleBigDataEvaluation',sqlFileName)
-    expectedFile = os.path.join('..','data','LittleBigDataEvaluation',sys.argv[1].split(".")[0]+".expected.dat")
+    sqlFile = os.path.join('..','data','bigData',sqlFileName)
+    expectedFile = os.path.join('..','data','bigData',sys.argv[1].split(".")[0]+".expected.dat")
 
     return (binFolder, jsqlJar, dataFolder, swapFolder, sqlFile, resultFile, expectedFile)
 
