@@ -66,11 +66,11 @@ public class ExternalSort implements Operator {
 		this.swapDir = swapDir;
 		if(countTable >= 2) {
 			this.bufferMaxSize = 50000;
-			this.capacity = 500;
-			this.kWay = 4;
+			this.capacity = 100;
+			this.kWay = 5;
 		} else {
 			this.bufferMaxSize = 80000;
-			this.capacity = 1000;
+			this.capacity = 3000;
 			this.kWay = 7;
 		}
 
@@ -90,7 +90,9 @@ public class ExternalSort implements Operator {
 
 		// hmap = new HashMap<Integer, ArrayList<Datum[]>>();
 		asc = new ArrayList<Boolean>();
+		buffer = null;
 		buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+		buffread = null;
 		buffread = new ArrayList<BufferedReader>();
 		sortfile();
 //		printMemory("Constructor Ends");
@@ -101,7 +103,8 @@ public class ExternalSort implements Operator {
 		try {
 //			printMemory("Readfile Starts");
 			// System.out.println("br.available :: "+br.available());
-			ArrayList<Datum[]> datum = new ArrayList<Datum[]>(capacity);
+			ArrayList<Datum[]> datum = null;
+			datum = new ArrayList<Datum[]>();
 			Datum[] tempDatum = null;
 			int k = 0;
 			String fileEntry = br.readLine();
@@ -150,6 +153,7 @@ public class ExternalSort implements Operator {
 //		System.out.println(tableName + " ::  colType :: " + Arrays.asList(colType));
 		
 		if (datumStr != null) {
+			tempDatum = null;
 			tempDatum = new Datum[colCount];
 			datumfield = datumStr.split("\\|");
 //			System.out.println(" datumfield :: " + Arrays.asList(datumfield));
@@ -165,13 +169,7 @@ public class ExternalSort implements Operator {
 				} else if (colType[i] == 2) {
 					tempDatum[i] = new Datum.dString(datumfield[i], colList[i]);
 				} else if (colType[i] == 3) {
-					try {
-						tempDatum[i] = new Datum.dDate(new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-						.parse(datumfield[i]), colList[i]);
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					tempDatum[i] = new Datum.dDate(datumfield[i], colList[i]);
 				}
 			}
 //			System.out.println("-------------------------------------------------------------------");
@@ -206,21 +204,32 @@ public class ExternalSort implements Operator {
 	}
 
 	// Used to create a writer for an object stream
-	public void writedata(BufferedWriter out, int i) {
+	public BufferedWriter writedata(BufferedWriter out, int i, String fileName) {
 		try {
 			// System.out.println(out.toString());
 //			printMemory("writedata start");
 			if (i < 0) {
 				convertDatumToStr(out, result);
+				result = null;
+				result = new ArrayList<Datum[]>();
 				out.flush();
+				out.close();
+				out = writeOS(fileName, true);
+//				printMemory("result writedata ends");
+				return out;
 			} else {
 				convertDatumToStr(out, buffer.get(i));
+				buffer.remove(i);
 				out.flush();
+				out.close();
+				out = writeOS(fileName, true);
+//				printMemory("buffer writedata start");
+				return out;
 			}
-//			printMemory("writedata ends");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return out;
 	}
 
 	private String convertDatumToStr(BufferedWriter out, ArrayList<Datum[]> datumList) {
@@ -247,7 +256,8 @@ public class ExternalSort implements Operator {
 	public String convertDatum(Datum[] row) {
 //		printMemory("convertdatum start");
 		Boolean first = true;
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = null;
+		sb = new StringBuilder();
 		if (row != null && row.length != 0) {
 			for (Datum col : row) {
 				if (!first)
@@ -265,13 +275,13 @@ public class ExternalSort implements Operator {
 	}
 
 	// used to create a writer object stream
-	public BufferedWriter writeOS(String fileName) {
+	public BufferedWriter writeOS(String fileName, boolean append) {
 //		printMemory("writeOS start");
 		BufferedWriter out = null;
 		try {
 			// out = new ObjectOutputStream(new FileOutputStream((new
 			// RandomAccessFile(fileName, "rw")).getFD()));
-			out = new BufferedWriter(new FileWriter(fileName));
+			out = new BufferedWriter(new FileWriter(fileName, append));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -296,7 +306,8 @@ public class ExternalSort implements Operator {
 //		System.out.println("Entering readfile ");
 //		printMemory("readfile start");
 		Datum[] oneTupleFromDat = null;
-		ArrayList<Datum[]> tempDatumList = new ArrayList<Datum[]>(bufferMaxSize);
+		ArrayList<Datum[]> tempDatumList = null; 
+		tempDatumList = new ArrayList<Datum[]>();
 		int count = 0;
 		oneTupleFromDat = oper.readOneTuple();
 //		System.out.println(tableName + " :: Entering :: " + preSet + " :: "+ oneTupleFromDat);
@@ -337,6 +348,7 @@ public class ExternalSort implements Operator {
 		} else {
 //			System.out.println("returning readfile with false");
 //			buffer.remove(i);
+			buffer = null;
 			buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 //			printMemory("readfile end");
 			return false;
@@ -366,11 +378,11 @@ public class ExternalSort implements Operator {
 				s = s + index + "].ser";
 				BufferedWriter out = null;
 				if (createNewFile(s)) {
-					out = writeOS(s);
+					out = writeOS(s, false);
 				} else {
 					System.out.println("unable to create a file @ " + s);
 				}
-				writedata(out, i);
+				out = writedata(out, i, s);
 				out.close();
 				buffer = null;
 				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
@@ -406,7 +418,7 @@ public class ExternalSort implements Operator {
 		if (runs == 0) {
 			BufferedWriter out = null;
 			if (createNewFile(masterFile)) {
-				out = writeOS(masterFile);
+				out = writeOS(masterFile, false);
 			} else {
 				System.out.println("unable to create a file @ " + masterFile);
 			}
@@ -455,10 +467,12 @@ public class ExternalSort implements Operator {
 //			 System.out.println("depth :: " + depth + " k :: " + k);
 			if (runcurrent == 1 && i == runs) {
 				secondsort(i - k, k, filenumber, 0);
+				buffer = null;
 				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 				//buffread = new ArrayList<BufferedReader>();
 			} else {
 				secondsort(i - k, k, filenumber, depth);
+				buffer = null;
 				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
 				//buffread = new ArrayList<BufferedReader>();
 			}
@@ -476,7 +490,9 @@ public class ExternalSort implements Operator {
 				depth = depth + 1;
 				k = 0;
 				i = 0;
+				buffer = null;
 				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+				buffread = null;
 				buffread = new ArrayList<BufferedReader>();
 			}
 		}
@@ -489,14 +505,15 @@ public class ExternalSort implements Operator {
 		BufferedWriter out = null;
 		int counter = 1;
 		int numberofemptylists = 0;
-
+		String s = null;
 		int k = start;
 		Datum[] lowest = null;
 //		ArrayList<Datum[]> list1 = null;
 		Datum[] element;
 		int removeindex = -1;
 		boolean check = true;
-		ArrayList<Integer> indexTraversal = new ArrayList<Integer>();
+		ArrayList<Integer> indexTraversal = null; 
+		indexTraversal = new ArrayList<Integer>();
 		for (k = start; k < (start + count); k++)
 			indexTraversal.add(k);
 
@@ -504,6 +521,7 @@ public class ExternalSort implements Operator {
 
 		k = 0;
 		try {
+			result = null; 
 			result = new ArrayList<Datum[]>();
 			while (result.size() < capacity && check) {
 				while (itIndexTrav.hasNext()) {
@@ -561,7 +579,6 @@ public class ExternalSort implements Operator {
 							itIndexTrav = indexTraversal.iterator();
 							continue;
 						} else {
-
 							itIndexTrav.remove();
 							if (buffer.get(k) != null
 									&& buffer.get(k).size() >= 0) {
@@ -574,10 +591,10 @@ public class ExternalSort implements Operator {
 
 								element = null;
 								if (counter == 1) {
-									String s = computeFile(depth, filenumber);
+									s = computeFile(depth, filenumber);
 									//
 									if (createNewFile(s)) {
-										out = writeOS(s);
+										out = writeOS(s, false);
 									} else {
 										System.out
 												.println("unable to create a file @ "
@@ -590,7 +607,7 @@ public class ExternalSort implements Operator {
 									// System.out.print("result last :: ");
 									// printTuple(result);
 									// System.out.println();
-									writedata(out, -2);
+									out = writedata(out, -2, s);
 								}
 
 								result = null;
@@ -600,7 +617,8 @@ public class ExternalSort implements Operator {
 									// System.out.print("buffer last :: ");
 									// printTuple(buffer.get(m));
 									// System.out.println();
-									writedata(out, m);
+									out = writedata(out, m,s);
+									buffer.remove(m);
 								}
 
 								// System.out.println("temp buffer :: ");
@@ -614,7 +632,7 @@ public class ExternalSort implements Operator {
 									// System.out.print("buffer last fin :: ");
 									// printTuple(buffer.get(m));
 									// System.out.println();
-									writedata(out, m);
+									out = writedata(out, m,s);
 
 								}
 								buffer.remove(m);
@@ -628,6 +646,7 @@ public class ExternalSort implements Operator {
 								// System.out.println("Changing check value :: "
 								// + check);
 								// list1 = null;
+								indexTraversal = null;
 								indexTraversal = new ArrayList<Integer>();
 								break;
 
@@ -658,11 +677,11 @@ public class ExternalSort implements Operator {
 				}
 				itIndexTrav = indexTraversal.iterator();
 				if (result.size() == capacity) {
-
+					
 					if (counter == 1) {
-						String s = computeFile(depth, filenumber);
+						s = computeFile(depth, filenumber);
 						if (createNewFile(s)) {
-							out = writeOS(s);
+							out = writeOS(s, false);
 						} else {
 							System.out
 									.println("unable to create a file @ " + s);
@@ -678,12 +697,13 @@ public class ExternalSort implements Operator {
 					// System.out.println("comp buffread :: ");
 					// System.out.println(buffread);
 
-					writedata(out, -2);
+					out = writedata(out, -2, s);
+					result = null;
 					result = new ArrayList<Datum[]>();
 				}
 			}
-			result = null;
-			writedata(out, -2);
+//			result = null;
+//			out = writedata(out, -2, s);
 			out.close();
 //			printMemory("secondsort end");
 		} catch (IOException e) {
@@ -735,6 +755,7 @@ public class ExternalSort implements Operator {
 //		printMemory("computeIndex start");
 		int ind;
 		Column col;
+		index = null;
 		index = new ArrayList<Integer>();
 		Iterator iter = elements.iterator();
 		while (iter.hasNext()) {
@@ -797,6 +818,17 @@ public class ExternalSort implements Operator {
 		try {
 //			System.out.println("Reading out tuple " + tableName);
 			if(this.masterBuffer == null) {
+//				System.out.println("Clearing buffer");
+//				buffer = null;
+//				result = null;
+//				buffread = null;
+//				elements = null;
+//				index = null;
+//				first = null;
+//				tableMap = null;
+//				tableColTypeMap = null;
+//				colType = null;
+//				colList = null;
 				this.masterBuffer = readOS(masterFile);
 			}
 			readFile = masterBuffer.readLine();
@@ -867,9 +899,9 @@ public class ExternalSort implements Operator {
 	}
 	
 	public void printMemory(String name) {
-		
 		System.out.println("----------------------------------------------------");
 		System.out.println("Entering function :: "+ masterFile + " :: "+name);
+		System.out.println(new Date().toString());
 		Runtime runtime = Runtime.getRuntime();
 		System.out.println("Allocated Memory :: "+runtime.maxMemory() / 1024 /1024);
 		System.out.println("Total Memory :: "+ runtime.totalMemory() / 1024 /1024);
