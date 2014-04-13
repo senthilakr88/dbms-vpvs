@@ -56,7 +56,8 @@ public class SortMergeJoinOperator implements Operator {
 	Boolean checkListFlag = false;
 	Boolean noUsualFlag = false;
 	Boolean readMoreFromLeftFlag = false;
-	GenQueue<Datum []> passedRightQueue ;
+	ArrayList<Datum []> passedRightList;
+//	GenQueue<Datum []> passedRightQueue ;
 	Boolean dontReadLeft = false;
 	String rightTable;
 
@@ -65,7 +66,8 @@ public class SortMergeJoinOperator implements Operator {
 		this.left = left;
 		this.right = right;
 		this.expr = expr;
-		this.passedRightQueue = new GenQueue<Datum []>();
+//		this.passedRightQueue = new GenQueue<Datum []>();
+		this.passedRightList = new ArrayList<Datum[]>();
 		this.rightTable = rightTable;
 		parseJoinExpression();
 	}
@@ -107,7 +109,8 @@ public class SortMergeJoinOperator implements Operator {
 					//					System.out.println("1singleright"+rightSingleDatum);
 					//inputDatum2TempList.add(inputDatum2);
 					//Datum[] temp = inputDatum2;
-					passedRightQueue.enqueue(inputDatum2);
+					passedRightList.add(inputDatum2);
+//					passedRightQueue.enqueue(inputDatum2);
 					inputDatum2 =right.readOneTuple();
 			
 					//Datum[] inputDatum2Temp = inputDatum2;
@@ -170,7 +173,8 @@ public class SortMergeJoinOperator implements Operator {
 				
 				//System.out.println("List size"+inputDatum2TempList.size());
 				//if(!inputDatum2TempList.isEmpty()){
-					Iterator<Datum[]> temp = passedRightQueue.iterator();			
+				Iterator<Datum[]> temp = passedRightList.iterator();	
+//					Iterator<Datum[]> temp = passedRightQueue.iterator();			
 					//while(temp.hasNext()){
 						Datum[] getDatum = temp.next();
 						Datum rightSingleDatum=getDatum[rightIndex];
@@ -184,7 +188,8 @@ public class SortMergeJoinOperator implements Operator {
 								//								inputDatum1 = left.readOneTuple();
 								//								leftSingleDatum = inputDatum1[leftIndex];
 							}
-							passedRightQueue.dequeue();
+							passedRightList = new ArrayList<Datum[]>();
+//							passedRightQueue.dequeue();
 						}
 					matchFlag = false;
 					checkListFlag = false;
