@@ -32,7 +32,7 @@ public class Mysorter implements Comparator<Datum[]> {
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t1);
 //				System.out.println(TupleStruct.getTupleTableMap());
-				if(!TupleStruct.isNestedCondition())
+//				if(!TupleStruct.isNestedCondition())
 					isTupleMapPresent = false;
 			}
 			
