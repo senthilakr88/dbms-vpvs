@@ -53,7 +53,6 @@ public class ExternalSort implements Operator {
 	Integer[] colType;
 	Column[] colList;
 	int colCount;
-	Integer bufferPointer;
 
 	// Constructor of ExternalSort
 	public ExternalSort(Operator oper, String tableName, List elements,
@@ -62,9 +61,11 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		this.bufferMaxSize = 100000;
+
+		this.bufferMaxSize = 80000;
 		this.kWay = 7;
-		this.capacity = 10000;
+		this.capacity = 1000;
+
 		this.first = true;
 		this.preSet = true;
 		this.tableName = tableName;
@@ -92,7 +93,7 @@ public class ExternalSort implements Operator {
 		try {
 //			printMemory("Readfile Starts");
 			// System.out.println("br.available :: "+br.available());
-			ArrayList<Datum[]> datum = new ArrayList<Datum[]>();
+			ArrayList<Datum[]> datum = new ArrayList<Datum[]>(capacity);
 			Datum[] tempDatum = null;
 			int k = 0;
 			String fileEntry = br.readLine();
@@ -130,8 +131,6 @@ public class ExternalSort implements Operator {
 
 	private Datum[] convertStrToDatum(String datumStr) {
 //		printMemory("convertStrToDatum starts");
-		ArrayList<Datum[]> tempList = new ArrayList<Datum[]>();
-		String[] newLineSplit;
 		String[] datumfield;
 		Datum[] tempDatum;
 		
@@ -281,7 +280,7 @@ public class ExternalSort implements Operator {
 //		System.out.println("Entering readfile ");
 //		printMemory("readfile start");
 		Datum[] oneTupleFromDat = null;
-		ArrayList<Datum[]> tempDatumList = new ArrayList<Datum[]>();
+		ArrayList<Datum[]> tempDatumList = new ArrayList<Datum[]>(bufferMaxSize);
 		int count = 0;
 		oneTupleFromDat = oper.readOneTuple();
 //		System.out.println(tableName + " :: Entering :: " + preSet + " :: "+ oneTupleFromDat);
@@ -354,9 +353,10 @@ public class ExternalSort implements Operator {
 					System.out.println("unable to create a file @ " + s);
 				}
 				writedata(out, i);
-				buffer.remove(i);
-//				writedata(out, i);
 				out.close();
+				buffer = null;
+				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+//				writedata(out, i);
 				i++;
 			}
 //			 System.out.println("printing tuples from readpage");
@@ -427,7 +427,7 @@ public class ExternalSort implements Operator {
 
 				buffread.add(readOS(s));
 
-				readFile(buffread.get(i), i, bufferMaxSize);
+				readFile(buffread.get(i), i, capacity);
 
 				count--;
 				i++;
@@ -470,7 +470,7 @@ public class ExternalSort implements Operator {
 
 		int k = start;
 		Datum[] lowest = null;
-		ArrayList<Datum[]> list1 = null;
+//		ArrayList<Datum[]> list1 = null;
 		Datum[] element;
 		int removeindex = -1;
 		boolean check = true;
@@ -489,11 +489,19 @@ public class ExternalSort implements Operator {
 					k = itIndexTrav.next();
 					// System.out.println("start :: "+start+" :: "+count);
 					// System.out.println("k :: " + k);
-					list1 = buffer.get(k);
+//					System.out.println("----------------------------------------------");
+//					printTuple(buffer);
+//					System.out.println(buffer.containsKey(k));
+//					System.out.println(buffer.values() !=null);
+//					System.out.println(buffer.values().size() > 0);
+//					
+//					System.out.println("----------------------------------------------");
 					// System.out.print("list1 :: ");
 					// printTuple(list1);
-					if (list1 != null && list1.size() > 0) {
-						element = list1.get(0);
+					element = (buffer.containsKey(k) && buffer.get(k).size() > 0) ? buffer.get(k).get(0) : null;
+//					if (list1 != null && list1.size() > 0) {
+					if (element != null) {
+//						element = list1.get(0);
 						if (first) {
 							TupleStruct.setTupleTableMap(element);
 							TupleStruct.setTupleTableColMap(element);
@@ -542,7 +550,7 @@ public class ExternalSort implements Operator {
 							if (numberofemptylists == (count - 1)) {
 								// System.out.println("writing to list");
 
-								list1 = null;
+								element = null;
 								if (counter == 1) {
 									String s = computeFile(depth, filenumber);
 									//
@@ -639,7 +647,7 @@ public class ExternalSort implements Operator {
 						}
 						counter = 0;
 					}
-					list1 = null;
+					element = null;
 					removeindex = -1;
 					// System.out.println("comp buffer :: ");
 					// printTuple(buffer);

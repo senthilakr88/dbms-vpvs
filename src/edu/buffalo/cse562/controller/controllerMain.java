@@ -12,13 +12,11 @@ public class controllerMain {
 	List<String> sqlFiles;
 	String tableDir;
 	String swapDir;
-	logManager lg;
 	
 	public controllerMain(String[] args) {
 		this.input = args;
 		sqlFiles = new ArrayList<String>();
 		swapDir = null;
-		lg = new logManager();
 	}
 	
 	public void parseInput() {
@@ -34,7 +32,6 @@ public class controllerMain {
 				
 			} else {
 				sqlFiles.add(input[i]);
-				lg.logger.log(Level.INFO, sqlFiles.toString());
 			}
 		}
 //		System.out.println(tableDir);

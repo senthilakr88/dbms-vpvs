@@ -19,13 +19,11 @@ public class SelectionOperator implements Operator {
 	Expression condition;
 	String oneLineFromDat;
 	Boolean isTupleMapPresent;
-	logManager lg;
 	
 	public SelectionOperator(Operator input, Expression condition) {
 		this.input = input;
 		this.condition = condition;
 		this.isTupleMapPresent = true;
-		lg = new logManager();
 	}
 	
 	@Override
@@ -66,11 +64,10 @@ public class SelectionOperator implements Operator {
 //		System.out.println("-------->>"+TupleStruct.getTupleTableMap());
 		if(isTupleMapPresent) {
 			TupleStruct.setTupleTableMap(t);
-			if(!TupleStruct.isNestedCondition())
+//			if(!TupleStruct.isNestedCondition())
 				isTupleMapPresent = false;
 		}
 		CalcTools calc = new CalcTools(t);
-//		lg.logger.log(Level.INFO, "OYOYOYOYOYOYOYOYO");
 		condition2.accept(calc);
 		return calc.getAccumulatorBoolean();
 	}

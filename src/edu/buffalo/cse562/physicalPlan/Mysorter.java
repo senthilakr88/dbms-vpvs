@@ -32,7 +32,7 @@ public class Mysorter implements Comparator<Datum[]> {
 			if(isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(t1);
 //				System.out.println(TupleStruct.getTupleTableMap());
-				if(!TupleStruct.isNestedCondition())
+//				if(!TupleStruct.isNestedCondition())
 					isTupleMapPresent = false;
 			}
 			
@@ -42,7 +42,7 @@ public class Mysorter implements Comparator<Datum[]> {
 			exe.accept(calc1);
 			calc2 = new CalcTools(t2);
 			exe.accept(calc2);
-			
+//			System.out.println("In  Sorting:: " + calc1.getResult() + " : " + calc2.getResult() + " : " + comparison);
 			comparison = TupleStruct.getCompareValue(calc1.getResult(), calc2.getResult(),
 					ele.isAsc());
 			

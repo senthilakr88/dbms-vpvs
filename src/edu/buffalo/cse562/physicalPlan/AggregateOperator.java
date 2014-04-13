@@ -199,8 +199,6 @@ public class AggregateOperator implements Operator {
 
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
-		Object calcOut = calc.getResult();
-		Boolean isColumn = calc.isColumn();
 		if (newItem.getAlias() != null) {
 			// System.out.println("Alias");
 			newCol = new Column(null, newItem.getAlias());
@@ -210,32 +208,32 @@ public class AggregateOperator implements Operator {
 			// System.out.println(newCol.getColumnName());
 		}
 		Datum tempDatum = null;
-		if (calcOut instanceof Long) {
-			String value = calcOut.toString();
-			// String valueWithFuncName = funcName.concat("("+value+")");
-			tempDatum = new Datum.dLong(calcOut.toString(), newCol);
-			// System.out.println("CALC OUTPUT FOR dLONG: "+calcOut.toString());
-			// System.out.println("CALC OUTPUT FOR dLONG: "+newCol);
-			// System.out.println("NEW FUNC VALUE: "+valueWithFuncName);
-			// System.out.println("tempDatum: "+tempDatum.getStringValue());
-		} else if (calcOut instanceof String) {
-			tempDatum = new Datum.dString((String) calcOut, newCol);
-			// System.out.println("CALC OUTPUT FOR DSTRING: "+(String) calcOut);
-			// System.out.println("tempDatum"+tempDatum.getStringValue());
-		} else if (calcOut instanceof Date) {
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			tempDatum = new Datum.dDate(df.format(calcOut), newCol);
-			// System.out.println("tempDatum"+tempDatum.getStringValue());
-
-		} else if (calcOut instanceof Double) {
-			Double value = (Double) calcOut;
-			System.out.println("AGGREGATE");
-			if(isColumn!=null&&isColumn==true){
-				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 2);
+		Datum calcOut = calc.getResult();
+		if (calcOut instanceof dLong) {
+			tempDatum = new dLong((dLong)calcOut);
+			tempDatum.setColumn(newCol);
+		} else if (calcOut instanceof dDecimal) {
+			Boolean isColumn = calc.isColumn();
+			tempDatum = new dDecimal((dDecimal)calcOut);
+			tempDatum.setColumn(newCol);
+			if(isColumn != null && isColumn){
+				((dDecimal)tempDatum).setPrecision(2);
 			} else {
-				tempDatum = new Datum.dDecimal(calcOut.toString(), newCol, 4);
+				((dDecimal)tempDatum).setPrecision(4);
 			}
-//			tempDatum = new Datum.dDecimal(calcOut.toString(), newCol);
+
+		} else if (calcOut instanceof dString) {
+			tempDatum = new dString((dString)calcOut);
+			tempDatum.setColumn(newCol);
+		} else if (calcOut instanceof dDate) {
+			tempDatum = new dDate((dDate)calcOut);
+			tempDatum.setColumn(newCol);
+		} else {
+			try {
+				throw new Exception("GroupBy Not aware of this data type " + calcOut.getStringValue() + calcOut.getColumn());
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 		return tempDatum;
 	}
