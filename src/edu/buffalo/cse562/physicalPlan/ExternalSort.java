@@ -61,8 +61,11 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-
-		this.bufferMaxSize = 80000;
+		if(countTable >= 2) {
+			this.bufferMaxSize = 40000;
+		} else {
+			this.bufferMaxSize = 80000;
+		}
 		this.kWay = 7;
 		this.capacity = 1000;
 
@@ -437,8 +440,12 @@ public class ExternalSort implements Operator {
 //			 System.out.println("depth :: " + depth + " k :: " + k);
 			if (runcurrent == 1 && i == runs) {
 				secondsort(i - k, k, filenumber, 0);
+				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+				//buffread = new ArrayList<BufferedReader>();
 			} else {
 				secondsort(i - k, k, filenumber, depth);
+				buffer = new HashMap<Integer, ArrayList<Datum[]>>();
+				//buffread = new ArrayList<BufferedReader>();
 			}
 
 			filenumber++;
