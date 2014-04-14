@@ -64,7 +64,7 @@ public class ExternalSort implements Operator {
 //		if(countTable >= 2) {
 //			this.bufferMaxSize = 40000;
 //		} else {
-		this.bufferMaxSize = 100000;
+		this.bufferMaxSize = 120000;
 //		}
 		this.kWay = 7;
 		this.capacity = 1000;
