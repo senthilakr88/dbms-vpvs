@@ -11,30 +11,30 @@ import net.sf.jsqlparser.schema.Column;
 
 import java.util.LinkedList;
 
-class GenQueue<E> implements Iterable{
-   private LinkedList<E> list = new LinkedList<E>();
-   public void enqueue(E item) {
-      list.addLast(item);
-   }
-   public E dequeue() {
-      return list.poll();
-   }
-   public boolean hasItems() {
-      return !list.isEmpty();
-   }
-   public int size() {
-      return list.size();
-   }
-   public void addItems(GenQueue<? extends E> q) {
-      while (q.hasItems())
-         list.addLast(q.dequeue());
-   }
-@Override
-public Iterator<E> iterator() {
-	Iterator<E> itr = list.iterator();
-    return itr; 
-}
-}
+//class GenQueue<E> implements Iterable{
+//   private LinkedList<E> list = new LinkedList<E>();
+//   public void enqueue(E item) {
+//      list.addLast(item);
+//   }
+//   public E dequeue() {
+//      return list.poll();
+//   }
+//   public boolean hasItems() {
+//      return !list.isEmpty();
+//   }
+//   public int size() {
+//      return list.size();
+//   }
+//   public void addItems(GenQueue<? extends E> q) {
+//      while (q.hasItems())
+//         list.addLast(q.dequeue());
+//   }
+//@Override
+//public Iterator<E> iterator() {
+//	Iterator<E> itr = list.iterator();
+//    return itr; 
+//}
+//}
 
 /* @author - Vinoth Selvaraju
  * logic - implements sort merge join algorithm that merges two sorted relation (along the join column) with a join key
