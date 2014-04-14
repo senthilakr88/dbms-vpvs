@@ -47,18 +47,18 @@ public class SortMergeJoinOperator implements Operator {
 	Column rightJoinKey;
 	int leftIndex;
 	int rightIndex;
-	Boolean initialDatumReadflag = false;
+	boolean initialDatumReadflag = false;
 //	ArrayList<Datum[]> tempMatchTuple = new ArrayList<Datum[]>();
 //	ArrayList<Datum[]> inputDatum2TempList = new ArrayList<Datum[]>();
-	Boolean matchFlag = false;
+	boolean matchFlag = false;
 	Datum[] inputDatum1 = null;
 	Datum[] inputDatum2 = null;
-	Boolean checkListFlag = false;
-	Boolean noUsualFlag = false;
-	Boolean readMoreFromLeftFlag = false;
+	boolean checkListFlag = false;
+	boolean noUsualFlag = false;
+	boolean readMoreFromLeftFlag = false;
 	ArrayList<Datum []> passedRightList;
 //	GenQueue<Datum []> passedRightQueue ;
-	Boolean dontReadLeft = false;
+	boolean dontReadLeft = false;
 	String rightTable;
 
 	public SortMergeJoinOperator(Operator left, 
@@ -197,7 +197,13 @@ public class SortMergeJoinOperator implements Operator {
 				}
 			}
 		if(inputDatum1==null && inputDatum2==null){
+			leftJoinKey = null;
+			rightJoinKey = null;
+			inputDatum1 = null;
+			inputDatum2 = null;
+			rightTable = null;
 			passedRightList = null;
+			
 		}
 		while(inputDatum1!=null && inputDatum2!=null){
 			//System.out.println("INSIDE WHILE");

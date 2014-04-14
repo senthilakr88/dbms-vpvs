@@ -61,11 +61,11 @@ public class ExternalSort implements Operator {
 		this.oper = oper;
 		this.elements = elements;
 		this.swapDir = swapDir;
-		if(countTable >= 2) {
-			this.bufferMaxSize = 40000;
-		} else {
-			this.bufferMaxSize = 80000;
-		}
+//		if(countTable >= 2) {
+//			this.bufferMaxSize = 40000;
+//		} else {
+		this.bufferMaxSize = 80000;
+//		}
 		this.kWay = 7;
 		this.capacity = 1000;
 
@@ -433,9 +433,9 @@ public class ExternalSort implements Operator {
 			// kWay = 2;
 			if (runs - i >= kWay) {
 				k = kWay;
-				if (runs - i - k < 3) {
-					k = runs - i;
-				}
+//				if (runs - i - k < 3) {
+//					k = runs - i;
+//				}
 			} else {
 				k = runs - i;
 			}
