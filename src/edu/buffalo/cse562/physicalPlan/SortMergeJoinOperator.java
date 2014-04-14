@@ -48,8 +48,8 @@ public class SortMergeJoinOperator implements Operator {
 	int leftIndex;
 	int rightIndex;
 	Boolean initialDatumReadflag = false;
-	ArrayList<Datum[]> tempMatchTuple = new ArrayList<Datum[]>();
-	ArrayList<Datum[]> inputDatum2TempList = new ArrayList<Datum[]>();
+//	ArrayList<Datum[]> tempMatchTuple = new ArrayList<Datum[]>();
+//	ArrayList<Datum[]> inputDatum2TempList = new ArrayList<Datum[]>();
 	Boolean matchFlag = false;
 	Datum[] inputDatum1 = null;
 	Datum[] inputDatum2 = null;
@@ -87,6 +87,7 @@ public class SortMergeJoinOperator implements Operator {
 		//System.out.println("\n-----------------------------");
 		//output Datum[]
 		Datum[] sortMergeJoinedDatum = null;
+		
 		if(initialDatumReadflag == false){
 			//System.out.println("Sort Merge Join working");
 			inputDatum1 = left.readOneTuple();
@@ -195,6 +196,9 @@ public class SortMergeJoinOperator implements Operator {
 					checkListFlag = false;
 				}
 			}
+		if(inputDatum1==null && inputDatum2==null){
+			passedRightList = null;
+		}
 		while(inputDatum1!=null && inputDatum2!=null){
 			//System.out.println("INSIDE WHILE");
 			//get the join attribute datum from each file scan operator
@@ -251,22 +255,22 @@ public class SortMergeJoinOperator implements Operator {
 	 * input - Datum
 	 * output - Datum value in Object
 	 */
-	private Object findDatumValue(Datum singleDatum){
-		Object datumValue = null;
-		if (singleDatum instanceof Datum.dLong) {
-			datumValue = ((Datum.dLong) singleDatum).getValue();
-
-		} else if (singleDatum instanceof Datum.dDate) {
-			datumValue = ((Datum.dDate) singleDatum).getValue();
-
-		} else if (singleDatum instanceof Datum.dString) {
-			datumValue = ((Datum.dString) singleDatum).getValue();
-
-		} else if (singleDatum instanceof Datum.dDecimal) {
-			datumValue = ((Datum.dDecimal) singleDatum).getValue();
-		}
-		return datumValue;
-	}
+//	private Object findDatumValue(Datum singleDatum){
+//		Object datumValue = null;
+//		if (singleDatum instanceof Datum.dLong) {
+//			datumValue = ((Datum.dLong) singleDatum).getValue();
+//
+//		} else if (singleDatum instanceof Datum.dDate) {
+//			datumValue = ((Datum.dDate) singleDatum).getValue();
+//
+//		} else if (singleDatum instanceof Datum.dString) {
+//			datumValue = ((Datum.dString) singleDatum).getValue();
+//
+//		} else if (singleDatum instanceof Datum.dDecimal) {
+//			datumValue = ((Datum.dDecimal) singleDatum).getValue();
+//		}
+//		return datumValue;
+//	}
 
 	/* Compare 2 datum
 	 * input - 2 Datums
@@ -356,17 +360,17 @@ public class SortMergeJoinOperator implements Operator {
 	 * 	input - Datum[] & join column specific to the relation (Column)
 	 * 	output - Datum
 	 */
-	private Datum getDatum(Datum[] inputDatum1, Column joinColumn) {
-		Datum singleDatumValue = null;
-
-		for(int i=0;i<inputDatum1.length;i++){
-			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinColumn.getColumnName().trim())){
-				singleDatumValue = inputDatum1[i];
-				break;
-			}
-		}
-		return singleDatumValue;
-	}
+//	private Datum getDatum(Datum[] inputDatum1, Column joinColumn) {
+//		Datum singleDatumValue = null;
+//
+//		for(int i=0;i<inputDatum1.length;i++){
+//			if(inputDatum1[i].getColumn().getColumnName().trim().equalsIgnoreCase(joinColumn.getColumnName().trim())){
+//				singleDatumValue = inputDatum1[i];
+//				break;
+//			}
+//		}
+//		return singleDatumValue;
+//	}
 
 	/*	get join column datum index from Datum[]
 	 * 	input - Datum[] & join column specific to the relation (Column)
