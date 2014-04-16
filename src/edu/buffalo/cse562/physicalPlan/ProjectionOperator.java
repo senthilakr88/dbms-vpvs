@@ -22,7 +22,6 @@ import net.sf.jsqlparser.statement.select.*;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.physicalPlan.Datum.*;
-import edu.buffalo.cse562.physicalPlan.Tuple;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.SelectItemTools;
 
