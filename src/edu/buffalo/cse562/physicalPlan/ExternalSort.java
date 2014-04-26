@@ -22,6 +22,7 @@ import java.util.Map;
 
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.ColumnFetcher;
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -64,7 +65,7 @@ public class ExternalSort implements Operator {
 //		if(countTable >= 2) {
 //			this.bufferMaxSize = 40000;
 //		} else {
-		this.bufferMaxSize = 120000;
+		this.bufferMaxSize = 100000;
 //		}
 		this.kWay = 7;
 		this.capacity = 1000;

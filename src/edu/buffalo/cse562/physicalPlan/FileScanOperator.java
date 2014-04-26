@@ -13,23 +13,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
 public class FileScanOperator implements Operator {
 	private String dirName;
-	private Map<String, ArrayList<Column>> tableMap;
-	private Map<String, ArrayList<String>> tableColTypeMap;
 	BufferedReader reader;
 	Table tableName;
 	String tablefile;
-	List<Datum[]> buffer;
-	Integer bufferMaxSize;
-	Integer bufferPointer;
-	Boolean isEnd;
 	int count;
-	int ColStartIndex;
-	Map<String, ArrayList<Integer>> tableRemoveCols;
 	String tempTableName;
 	ArrayList<String> colType;
 	ArrayList<Column> colList;
@@ -37,11 +30,10 @@ public class FileScanOperator implements Operator {
 
 	public FileScanOperator(Table tableName, String dirName,
 			Map<String, ArrayList<Column>> tableMap2,
-			Map<String, ArrayList<String>> tableColTypeMap, Map<String, ArrayList<Integer>> tableRemoveCols) {
+			Map<String, ArrayList<String>> tableColTypeMap,
+			Map<String, ArrayList<Integer>> tableRemoveCols) {
 		this.dirName = dirName;
-		this.tableMap = tableMap2;
 		this.tableName = tableName;
-		this.tableColTypeMap = tableColTypeMap;
 		String basePath = dirName + File.separator + tableName.getName()
 				+ ".dat";
 		if (!(new File(basePath).exists())) {
@@ -51,16 +43,29 @@ public class FileScanOperator implements Operator {
 			tablefile = basePath;
 		}
 		resetStream();
-		this.tableRemoveCols = tableRemoveCols;
-		this.bufferMaxSize = 1000;
-		this.bufferPointer = -1;
-		this.buffer = new ArrayList<Datum[]>(bufferMaxSize);
-		this.isEnd = false;
-		this.ColStartIndex = 0;
 		tempTableName = tableName.getName().toLowerCase();
 		colType = tableColTypeMap.get(tempTableName);
-		colList = tableMap.get(tempTableName);
+		colList = tableMap2.get(tempTableName);
 		removeCols = tableRemoveCols.get(tempTableName);
+	}
+
+	public FileScanOperator(Table tableName, String dirName,
+			ArrayList<Column> tableMap, ArrayList<String> tableColTypeMap,
+			ArrayList<Integer> tableRemoveCols) {
+		this.dirName = dirName;
+		this.tableName = tableName;
+		String basePath = dirName + File.separator + tableName.getName()
+				+ ".dat";
+		if (!(new File(basePath).exists())) {
+			tablefile = new File("").getAbsolutePath() + File.separator
+					+ basePath;
+		} else {
+			tablefile = basePath;
+		}
+		resetStream();
+		colType = tableColTypeMap;
+		colList = tableMap;
+		removeCols = tableRemoveCols;
 	}
 
 	/*
@@ -70,66 +75,37 @@ public class FileScanOperator implements Operator {
 	 */
 	@Override
 	public Datum[] readOneTuple() {
-		if (reader == null) {
-			System.out.println("Buffer not initialized for table ::"
-					+ tableName);
-			return null;
-		}
-		Datum[] oneTupleFromDat = null;
-		if (bufferPointer.compareTo(buffer.size() - 1) != 0
-				&& buffer.size() <= bufferMaxSize) {
-			// System.out.println(bufferPointer);
-			++bufferPointer;
-//			 printTuple(buffer.get(bufferPointer));
-			return buffer.get(bufferPointer);
-		} else {
-			bufferPointer = -1;
-			buffer = new ArrayList<Datum[]>(bufferMaxSize);
-			while (buffer.size() < bufferMaxSize && !isEnd) {
-				try {
+		
+		String line = null;
 
-					String line = null;
-
-					if ((line = reader.readLine()) != null) {
-						if (line.equalsIgnoreCase("") || line.isEmpty()) {
-							isEnd = true;
-						}
-						String[] singleTableElement = line.split("\\|");
-
-						// oneTupleFromDat = new
-						// Tuple(convertType(singleTableElement));
-						oneTupleFromDat = convertType(singleTableElement);
-						buffer.add(oneTupleFromDat);
-					} else {
-
-						isEnd = true;
+		try {			
+			if (reader == null) {
+				System.out.println("Buffer not initialized for table ::"
+						+ tableName);
+				return null;
+			}
+			line = reader.readLine();
+			if (line != null) {
+				if (line.equalsIgnoreCase("") || line.isEmpty()) {
+					line = reader.readLine();
+					if(line == null) {
+						return null;
 					}
-
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
-			}
-			if (!isEnd) {
-				++bufferPointer;
-//				 printTuple(buffer.get(bufferPointer));
-				return buffer.get(bufferPointer);
+				String[] singleTableElement = line.split("\\|");
+				return convertType(singleTableElement);
+				 
 			} else {
-				if (bufferPointer.compareTo(buffer.size() - 1) != 0) {
-					// System.out.println(bufferPointer);
-					++bufferPointer;
-//					printTuple(buffer.get(bufferPointer));
-					return buffer.get(bufferPointer);
-				} else {
-//					System.out.println("entered empty");
-					isEnd = false;
-					return null;
-				}
+				return null;
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return null;
+
 	}
-	
+
 	private void printTuple(Datum[] row) {
 		Boolean first = true;
 		if (row != null && row.length != 0) {
@@ -148,20 +124,22 @@ public class FileScanOperator implements Operator {
 	public Datum[] convertType(String[] singleTableElement) {
 		// Map tupleKeyValueMap = new HashMap();
 		String key = null, value = null, type = null;
-		Column col;		
+		Column col;
 		Datum[] t;
-		int i = 0, k=0;
+		int i = 0, k = 0;
 		int count = colList.size();
-					
+
 		t = new Datum[count];
 		while (i < singleTableElement.length) {
-			
-			if(removeCols.contains(i)) {
+
+			if (removeCols != null && removeCols.contains(i)) {
 				i++;
-//				System.out.println("i :: "+ i + " k :: " + k +col.getColumnName() + " :: Not present continuing " );
+				// System.out.println("i :: "+ i + " k :: " + k
+				// +col.getColumnName() + " :: Not present continuing " );
 				continue;
 			}
-//			System.out.println("i :: "+ i + " k :: "+k + " col ::" + col.getColumnName());
+			// System.out.println("i :: "+ i + " k :: "+k + " col ::" +
+			// col.getColumnName());
 			value = singleTableElement[i];
 			col = colList.get(k);
 			type = colType.get(k).toLowerCase();
@@ -173,10 +151,10 @@ public class FileScanOperator implements Operator {
 			} else if (type.equals("decimal")) {
 				// tupleKeyValueMap.put(key, Integer.parseInt(value));
 				t[k] = new Datum.dDecimal(singleTableElement[i], new Column(
-						tableName, col.getColumnName()),4);
+						tableName, col.getColumnName()), 4);
 				// System.out.print(t[i].toComString());
-			} else if (type.equals("string")
-					|| type.startsWith("char") || type.startsWith("varchar")) {
+			} else if (type.equals("string") || type.startsWith("char")
+					|| type.startsWith("varchar")) {
 				// tupleKeyValueMap.put(key, value);
 				t[k] = new Datum.dString(singleTableElement[i], new Column(
 						tableName, col.getColumnName()));
@@ -198,7 +176,7 @@ public class FileScanOperator implements Operator {
 			}
 			i++;
 			k++;
-//			System.out.println("updating i, j, k");
+			// System.out.println("updating i, j, k");
 		}
 		return t;
 
@@ -219,6 +197,6 @@ public class FileScanOperator implements Operator {
 	@Override
 	public void resetTupleMapping() {
 		return;
-		
+
 	}
 }

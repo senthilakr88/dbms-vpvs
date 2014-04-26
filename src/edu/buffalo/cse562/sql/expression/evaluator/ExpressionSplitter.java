@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
-import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.DateValue;

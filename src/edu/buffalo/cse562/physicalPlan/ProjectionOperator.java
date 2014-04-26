@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -21,9 +22,10 @@ import net.sf.jsqlparser.statement.select.*;
 //import net.sf.jsqlparser.statement.select.SelectItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.Operator;
-import edu.buffalo.cse562.physicalPlan.Datum.*;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.SelectItemTools;
+import edu.buffalo.cse562.structure.Datum;
+import edu.buffalo.cse562.structure.Datum.*;
 
 public class ProjectionOperator implements Operator {
 

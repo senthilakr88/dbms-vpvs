@@ -1,5 +1,7 @@
 package edu.buffalo.cse562.physicalPlan;
 
+import edu.buffalo.cse562.structure.Datum;
+
 public class LimitOperator implements Operator{
 
 	Operator oper;

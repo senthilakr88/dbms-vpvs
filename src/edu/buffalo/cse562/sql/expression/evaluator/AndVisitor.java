@@ -3,8 +3,8 @@ package edu.buffalo.cse562.sql.expression.evaluator;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;

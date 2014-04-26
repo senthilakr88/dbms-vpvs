@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 

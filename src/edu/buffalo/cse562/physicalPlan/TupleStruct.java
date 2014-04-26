@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import edu.buffalo.cse562.physicalPlan.Datum.dDate;
-import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
-import edu.buffalo.cse562.physicalPlan.Datum.dLong;
-import edu.buffalo.cse562.physicalPlan.Datum.dString;
+import edu.buffalo.cse562.logicalPlan.buildindexer.Row;
+import edu.buffalo.cse562.structure.Datum;
+import edu.buffalo.cse562.structure.Datum.dDate;
+import edu.buffalo.cse562.structure.Datum.dDecimal;
+import edu.buffalo.cse562.structure.Datum.dLong;
+import edu.buffalo.cse562.structure.Datum.dString;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
@@ -34,7 +36,7 @@ public class TupleStruct {
 	public static void setJoinCondition(Boolean joinCondition) {
 		TupleStruct.joinCondition = joinCondition;
 	}
-	
+
 	public static Column[] getTupleTableColMap() {
 		return tupleTableColMap;
 	}
@@ -42,13 +44,13 @@ public class TupleStruct {
 	public static Integer[] getTupleTableColTypeMap() {
 		return tuplecolTypeMap;
 	}
-	
+
 	public static void setTupleTableColMap(Datum[] element) {
 		int index;
 		tupleTableColMap = new Column[element.length];
 		tuplecolTypeMap = new Integer[element.length];
 		for (index = 0; index < element.length; index++) {
-//			System.out.println("Tuple Struct Building on index :: " + index);
+			// System.out.println("Tuple Struct Building on index :: " + index);
 			Datum row = (Datum) element[index];
 			if (row instanceof dLong) {
 				tuplecolTypeMap[index] = 0;
@@ -61,19 +63,20 @@ public class TupleStruct {
 			}
 			tupleTableColMap[index] = row.getColumn();
 		}
-//		System.out.println("Tuple Struct moving out of tuple col map :: " + index);
-		
+		// System.out.println("Tuple Struct moving out of tuple col map :: " +
+		// index);
+
 	}
 
 	public static void setTupleTableMap(Datum[] t) {
 		int index;
 		tupleTableMap = new ArrayList<String>(t.length);
-//		System.out.println("---------------------------------------------------------");
+		// System.out.println("---------------------------------------------------------");
 		for (index = 0; index < t.length; index++) {
 			Datum row = (Datum) t[index];
 			if (row.getColumn().getColumnName() != null) {
 				Table tableName = row.getColumn().getTable();
-				
+
 				String datumColumn = row.getColumn().getColumnName()
 						.toLowerCase();
 				// System.out.println(row.getColumn().getColumnName());
@@ -81,13 +84,14 @@ public class TupleStruct {
 					String alias = tableName.getAlias();
 					String tableNameStr = tableName.getName();
 					if (alias != null) {
-//						System.out.println("alias "+ " :: "+ alias+" datumColumn :: "+datumColumn);
+						// System.out.println("alias "+ " :: "+
+						// alias+" datumColumn :: "+datumColumn);
 						tupleTableMap.add(alias.toLowerCase() + "."
 								+ datumColumn);
-					} else if (joinCondition &&  tableNameStr!= null) {
-//						System.out.println("tableNameStr "+ " :: "+ tableNameStr+" datumColumn :: "+datumColumn);
-						tupleTableMap.add(tableNameStr + "."
-								+ datumColumn);
+					} else if (joinCondition && tableNameStr != null) {
+						// System.out.println("tableNameStr "+ " :: "+
+						// tableNameStr+" datumColumn :: "+datumColumn);
+						tupleTableMap.add(tableNameStr.toLowerCase() + "." + datumColumn);
 					} else {
 						// System.out.println(tableName + " :: " + datumColumn);
 						tupleTableMap.add(datumColumn);
@@ -101,8 +105,8 @@ public class TupleStruct {
 			}
 
 		}
-//		System.out.println("TupleStruct" + tupleTableMap);
-//		System.out.println("---------------------------------------------------------");
+		// System.out.println("TupleStruct" + tupleTableMap);
+		// System.out.println("---------------------------------------------------------");
 	}
 
 	public static List<String> getTupleTableMap() {
@@ -135,9 +139,9 @@ public class TupleStruct {
 	public static int getColIndex(Datum[] tuple, Column column) {
 		int index = -1;
 		List<String> tupleTableMap = getTupleTableMap();
-		// System.out.println(tupleTableMap);
+//		System.out.println(tupleTableMap);
 		String columnName = column.getWholeColumnName().toLowerCase();
-		// System.out.println(columnName);
+//		System.out.println(columnName);
 		if (tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);
 		}
@@ -202,7 +206,8 @@ public class TupleStruct {
 		} else if (t1 instanceof dString) {
 			String value1 = ((dString) t1).getValue();
 			String value2 = ((dString) t2).getValue();
-//			System.out.println("value 1 :: " + value1 + " value2 :: " + value2);
+			// System.out.println("value 1 :: " + value1 + " value2 :: " +
+			// value2);
 			int comp = value1.compareTo(value2);
 			// System.out.println("compare value :: " +comp);
 			return compHelper(comp, asc);
@@ -216,13 +221,47 @@ public class TupleStruct {
 		}
 
 	}
-	
+
 	public static int getCompareValue(Datum t1, Datum t2, boolean asc) {
-			int comp = t1.compareTo(t2);
-			// System.out.println(comp);
-			return compHelper(comp, asc);
+		int comp = t1.compareTo(t2);
+		// System.out.println(comp);
+		return compHelper(comp, asc);
 	}
 
+	public static int getCompareValue(Datum[] t1, Datum[] t2) {
+		int comp;
+//		System.out.println("-----------------------------");
+//		printTuple(t1);
+//		printTuple(t2);
+//		System.out.println("-----------------------------");
+		for (int i = 0; i < t1.length; i++) {
+			if (i >= t2.length) {
+				return 0;
+			}
+			comp = t1[i].compareTo(t2[i]);
+			if (comp != 0) {
+				return comp;
+			}
+		}
+		return 0;
+
+	}
+
+	private static void printTuple(Datum[] row) {
+		Boolean first = true;
+		if (row != null && row.length != 0) {
+			for (Datum col : row) {
+				if (!first)
+					System.out.print("|" + col);
+				else {
+					System.out.print(col);
+					first = false;
+				}
+			}
+			System.out.println();
+		}
+	}
+	
 	private static int compHelper(int comp, boolean asc) {
 		if (comp == 0) {
 			return comp;
@@ -235,7 +274,35 @@ public class TupleStruct {
 				return -1;
 		}
 	}
-
-
+	
+	
+	public static List<String> getColString(List<Column> t1) {
+		List<String> colStr = new ArrayList<String>();
+//		System.out.println("getColString :: " + t1);
+		for(int i=0; i < t1.size();i++) {
+			colStr.add(t1.get(i).getColumnName());
+		}
+//		System.out.println("colStr :: "+colStr);
+		return colStr;
+	}
+	
+	public static List<Integer> getColPositions(List<String> t1, List<String> t2) {
+		List<Integer> colPos = new ArrayList<Integer>();
+//		System.out.println(t1);
+//		System.out.println(t2);
+		for(int i=0; i < t2.size();i++) {
+			colPos.add(t1.indexOf(t2.get(i)));
+		}	
+//		System.out.println(colPos);
+		return colPos;
+	}
+	
+	public static Datum[] getDatum(Datum[] datum, List<Integer> col) {
+		Datum[] newDatum = new Datum[col.size()];
+		for(int i=0;i<col.size();i++){
+			newDatum[i] = datum[col.get(i)]; 
+		}
+		return newDatum;
+	}
 
 }

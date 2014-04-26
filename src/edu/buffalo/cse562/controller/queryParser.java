@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
+import edu.buffalo.cse562.logicalPlan.buildindexer;
 import edu.buffalo.cse562.logicalPlan.components;
 import edu.buffalo.cse562.physicalPlan.Operator;
 import edu.buffalo.cse562.utilities.fileReader;
@@ -29,14 +30,22 @@ public class queryParser {
 	List<String> sqlFiles;
 	List<String> sqlQueryList;
 	components comp;
+	buildindexer bi;
 	String tableDir;
 	String swapDir;
+	String indexDir;
+	String preCompDir;
+	boolean isBuild;
 
-	public queryParser(String tableDir, String swapDir, List<String> sqlFiles) {
+	public queryParser(String tableDir, String swapDir, List<String> sqlFiles, String indexDir, String preCompDir, boolean isBuild) {
 		this.sqlFiles = sqlFiles;
 		this.tableDir = tableDir;
 		this.swapDir = swapDir;
 		this.comp = new components();
+		this.indexDir = indexDir;
+		this.preCompDir = preCompDir;
+		this.isBuild = isBuild;
+		this.bi = new buildindexer(tableDir, indexDir, preCompDir);
 	}
 
 	public void interpretFile() {
@@ -72,58 +81,45 @@ public class queryParser {
 				 * @author - vino logic - create a hashMap with table name as
 				 * the key and array list of column names as value
 				 */
-				if (statement instanceof CreateTable) {
-					CreateTable createTableStatement = (CreateTable) statement;
-					ArrayList<Column> columnNameList = new ArrayList<Column>();
-					ArrayList<String> columnTypeList = new ArrayList<String>();
-					ArrayList<ColumnDefinition> columnDefinitionList = (ArrayList) createTableStatement
-							.getColumnDefinitions();
-					Table table = createTableStatement.getTable();
-					String tableName = createTableStatement.getTable()
-							.getName().toLowerCase();
-					for (ColumnDefinition s : columnDefinitionList) {
-						columnNameList
-						.add(new Column(table, s.getColumnName()));
-						columnTypeList.add(s.getColDataType().toString());
+				if(isBuild) {
+					if (statement instanceof CreateTable) {
+//						System.out.println("Entering build part of create statement");
+						bi.parseStatement((CreateTable) statement);
 					}
-					// Adding table name and column names to the map
-					comp.addColsToTable(table, columnNameList);
-					comp.addColsTypeToTable(tableName, columnTypeList);
-					comp.setTableDirectory(tableDir);
-					comp.setSwapDirectory(swapDir);
-					// Printing the contents of the HashMap
+				} else {
+					 if (statement instanceof Select) {
+						comp.initializeParam();
+						SelectBody selectStmt = ((Select) statement)
+								.getSelectBody();
+						if (selectStmt instanceof PlainSelect) {
 
-				} else if (statement instanceof Select) {
-					comp.initializeParam();
-					SelectBody selectStmt = ((Select) statement)
-							.getSelectBody();
-					if (selectStmt instanceof PlainSelect) {
+							PlainSelect plainSelect = (PlainSelect) selectStmt;
+							comp.addProjectStmts(plainSelect.getSelectItems());
+							comp.setSelectBody(selectStmt);
+							// plainSelect.getFromItem().toString());
+							comp.setFromItems(plainSelect.getFromItem());
+							comp.addWhereConditions(plainSelect.getWhere());
+							comp.addOrderBy(plainSelect.getOrderByElements());
+							comp.addJoins(plainSelect.getJoins());
+							comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
+							comp.addLimit(plainSelect.getLimit());
+							comp.setSql(plainSelect.toString());
+							
+							Operator oper = comp.executePhysicalPlan();
+							if(oper!=null)
+								comp.processTuples(oper);
+							comp.resetParam();
+						} else {
+							System.out
+							.println("Select type of statement !!! still not handled");
+						}
 
-						PlainSelect plainSelect = (PlainSelect) selectStmt;
-						comp.addProjectStmts(plainSelect.getSelectItems());
-						comp.setSelectBody(selectStmt);
-						// plainSelect.getFromItem().toString());
-						comp.setFromItems(plainSelect.getFromItem());
-						comp.addWhereConditions(plainSelect.getWhere());
-						comp.addOrderBy(plainSelect.getOrderByElements());
-						comp.addJoins(plainSelect.getJoins());
-						comp.addFileSize(fileSizeComp(plainSelect.getJoins()));
-						comp.addLimit(plainSelect.getLimit());
-						comp.setSql(plainSelect.toString());
-						
-						Operator oper = comp.executePhysicalPlan();
-						if(oper!=null)
-							comp.processTuples(oper);
-						comp.resetParam();
 					} else {
 						System.out
-						.println("Select type of statement !!! still not handled");
+						.println("Not a create or select statement !!! Skipped from validation");
 					}
-
-				} else {
-					System.out
-					.println("Not a create or select statement !!! Skipped from validation");
 				}
+				
 			} catch (JSQLParserException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

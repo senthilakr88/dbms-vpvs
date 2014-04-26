@@ -21,7 +21,6 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.physicalPlan.AggregateOperator;
 import edu.buffalo.cse562.physicalPlan.BNLJoinOperator;
-import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.ExternalSort;
 import edu.buffalo.cse562.physicalPlan.FromItemParser;
 import edu.buffalo.cse562.physicalPlan.GroupbyOperator;
@@ -38,6 +37,7 @@ import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
 import edu.buffalo.cse562.sql.expression.evaluator.ColumnFetcher;
 import edu.buffalo.cse562.sql.expression.evaluator.EqualityCheck;
 import edu.buffalo.cse562.sql.expression.evaluator.ExpressionSplitter;
+import edu.buffalo.cse562.structure.Datum;
 
 public class components {
 

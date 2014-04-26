@@ -21,8 +21,8 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import edu.buffalo.cse562.logger.logManager;
-import edu.buffalo.cse562.physicalPlan.Datum;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
+import edu.buffalo.cse562.structure.Datum;
 
 public class SelectItemTools extends AbstractSelectItemVisitor {
 	private String type;

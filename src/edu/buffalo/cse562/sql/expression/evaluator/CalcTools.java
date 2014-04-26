@@ -20,12 +20,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import edu.buffalo.cse562.logger.logManager;
-import edu.buffalo.cse562.physicalPlan.Datum;
-import edu.buffalo.cse562.physicalPlan.Datum.dLong;
-import edu.buffalo.cse562.physicalPlan.Datum.dDate;
-import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
-import edu.buffalo.cse562.physicalPlan.Datum.dString;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
+import edu.buffalo.cse562.structure.Datum;
+import edu.buffalo.cse562.structure.Datum.dDate;
+import edu.buffalo.cse562.structure.Datum.dDecimal;
+import edu.buffalo.cse562.structure.Datum.dLong;
+import edu.buffalo.cse562.structure.Datum.dString;
 
 public class CalcTools extends AbstractExpressionVisitor {
 	private Datum accumulator;

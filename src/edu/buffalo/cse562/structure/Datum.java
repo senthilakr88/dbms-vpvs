@@ -1,4 +1,4 @@
-package edu.buffalo.cse562.physicalPlan;
+package edu.buffalo.cse562.structure;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -16,7 +16,7 @@ import java.util.Locale;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
-public interface Datum{
+public interface Datum extends Serializable{
 
 	public String toString();
 	// public String toComString();

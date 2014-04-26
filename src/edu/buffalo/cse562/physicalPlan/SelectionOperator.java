@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import edu.buffalo.cse562.logger.logManager;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.structure.Datum;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;

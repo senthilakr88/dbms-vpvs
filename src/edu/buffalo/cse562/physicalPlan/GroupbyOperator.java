@@ -13,11 +13,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import edu.buffalo.cse562.physicalPlan.Datum.dDate;
-import edu.buffalo.cse562.physicalPlan.Datum.dDecimal;
-import edu.buffalo.cse562.physicalPlan.Datum.dLong;
-import edu.buffalo.cse562.physicalPlan.Datum.dString;
 import edu.buffalo.cse562.sql.expression.evaluator.CalcTools;
+import edu.buffalo.cse562.structure.Datum;
+import edu.buffalo.cse562.structure.Datum.dDate;
+import edu.buffalo.cse562.structure.Datum.dDecimal;
+import edu.buffalo.cse562.structure.Datum.dLong;
+import edu.buffalo.cse562.structure.Datum.dString;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
