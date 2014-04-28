@@ -149,6 +149,8 @@ public class buildindexer {
 			}
 			recman.commit();
 			recman.clearCache();
+			pkTreeMap.clear();
+			recman.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
