@@ -15,11 +15,13 @@ import jdbm.SecondaryTreeMap;
 import edu.buffalo.cse562.physicalPlan.FileScanOperator;
 import edu.buffalo.cse562.physicalPlan.TupleStruct;
 import edu.buffalo.cse562.structure.Datum;
+import edu.buffalo.cse562.structure.Datum.Row;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
+
 
 public class buildindexer {
 
@@ -61,26 +63,6 @@ public class buildindexer {
 		buildIndex();
 	}
 
-	public static class Row implements Serializable, Comparable<Row> {
-
-		private static final long serialVersionUID = 1L;
-		public Datum[] data;
-
-		public Row(Datum[] data) {
-			this.data = data;
-		}
-
-		@Override
-		public int compareTo(Row o) {
-			return TupleStruct.getCompareValue(this.data, o.data);
-		}
-		
-		public Datum[] getDatum() {
-			return data;
-		}
-
-	}
-
 	public static class seckeyExtract<Row> implements
 			SecondaryKeyExtractor<Row, Row, Row> {
 
@@ -92,7 +74,7 @@ public class buildindexer {
 
 		@Override
 		public Row extractSecondaryKey(Row key, Row value) {
-			Row row = (Row) new buildindexer.Row(TupleStruct.getDatum(((buildindexer.Row)value).getDatum(), colPos)); 
+			Row row = (Row) new Datum.Row(TupleStruct.getDatum(((Datum.Row)value).getDatum(), colPos)); 
 			return row;
 		}
 	}

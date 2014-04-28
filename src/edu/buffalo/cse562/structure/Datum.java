@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import edu.buffalo.cse562.physicalPlan.TupleStruct;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
@@ -807,6 +808,26 @@ public interface Datum extends Serializable{
 		public Datum subtract(Datum rightValue) {
 			System.out.println("Subtract not implemented for Date :: Datum Class");
 			return null;
+		}
+
+	}
+	
+	public class Row implements Serializable, Comparable<Row> {
+
+		private static final long serialVersionUID = 1L;
+		public Datum[] data;
+
+		public Row(Datum[] data) {
+			this.data = data;
+		}
+
+		@Override
+		public int compareTo(Row o) {
+			return TupleStruct.getCompareValue(this.data, o.data);
+		}
+		
+		public Datum[] getDatum() {
+			return data;
 		}
 
 	}

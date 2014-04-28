@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import edu.buffalo.cse562.logicalPlan.buildindexer.Row;
 import edu.buffalo.cse562.structure.Datum;
 import edu.buffalo.cse562.structure.Datum.dDate;
 import edu.buffalo.cse562.structure.Datum.dDecimal;
