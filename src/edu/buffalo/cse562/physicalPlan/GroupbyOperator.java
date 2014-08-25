@@ -103,6 +103,7 @@ public class GroupbyOperator implements Operator {
 		ArrayList<String> datumColumnName = null;
 		while (readOneTupleFromOper != null) {
 			// System.out.println("NEW TUPLE READ");
+//			printTuple(readOneTupleFromOper);
 			if (isTupleMapPresent) {
 				TupleStruct.setTupleTableMap(readOneTupleFromOper);
 //				System.out.println(TupleStruct.getTupleTableMap());
@@ -138,7 +139,7 @@ public class GroupbyOperator implements Operator {
 			Datum[] newSelectItemsArray = new Datum[selectExpressionList.size()];
 			Map<Integer, String> fnMap = new HashMap<Integer, String>();
 			for (int itr = 0; itr < selectExpressionList.size(); itr++) {
-				// System.out.println("EXPRESSION"+countExpression);
+//				 System.out.println("EXPRESSION"+countExpression);
 				SelectExpressionItem newItem = selectExpressionList.get(itr);
 				Expression e = newItem.getExpression();
 				
@@ -153,7 +154,7 @@ public class GroupbyOperator implements Operator {
 					Function aggregateFunction = (Function) e;
 					// aggregareFunctionList.add(aggregateFunction);
 					funcName = aggregateFunction.getName();
-					//System.out.println("FUNC NAME IN CHECK:"+funcName);
+//					System.out.println("FUNC NAME IN CHECK:"+funcName);
 					fnMap.put(itr, funcName);
 				} else {
 					fnMap.put(itr, "col");
@@ -163,8 +164,8 @@ public class GroupbyOperator implements Operator {
 				
 //				printTuple(tempDatum);
 				
-				if ("count".equalsIgnoreCase(funcName)) {
-					countValue = String.valueOf(((dLong)calc.getCountResult()).getValue());
+				if ("count".equalsIgnoreCase(funcName) && !newItem.toString().contains("*")) {
+					countValue = calc.getCountResult().getStringValue();
 					//System.out.println("PRINT COUNT VALUE"+ countValue);
 				}
 				newSelectItemsArray[itr] = tempDatum;
@@ -392,7 +393,7 @@ public class GroupbyOperator implements Operator {
 	private Datum getDatum(CalcTools calc, SelectExpressionItem newItem) {
 		Column newCol = null;
 //		Object calcOut = calc.getResult();
-//		System.out.println(newItem.toString());
+//		System.out.println("newItem :: "+newItem.toString());
 //		System.out.println(calcOut.toString());
 		if (newItem.getAlias() != null) {
 //			 System.out.println("Alias :: "+ newItem.getAlias());
@@ -431,7 +432,8 @@ public class GroupbyOperator implements Operator {
 				e1.printStackTrace();
 			}
 		}
-		
+//		System.out.println("Temp Tuple :: ");
+//		printTuple(tempDatum);
 		return tempDatum;
 	}
 

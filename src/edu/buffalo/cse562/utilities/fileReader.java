@@ -43,10 +43,10 @@ public class fileReader {
 			String fileNm = fileName
 					.substring(fileName.lastIndexOf(File.separator) + 1,
 							fileName.length());
-			if (!fileNm.toLowerCase().startsWith("tpch")) {
-				normalQuery = true;
-			} else {
+			if (fileNm.toLowerCase().startsWith("tpch") || fileNm.toLowerCase().startsWith("query")) {
 				tchpQuery = true;
+			} else {
+				normalQuery = true;
 			}
 			BufferedReader buf = new BufferedReader(new FileReader(file));
 			while ((line = buf.readLine()) != null) {
@@ -56,7 +56,7 @@ public class fileReader {
 				else if (line.startsWith("--"))
 					continue;
 				else {
-					if (line.contains("--"))
+					if (line.contains("--") && (line.indexOf("--") > line.indexOf(";")))
 						line = line.substring(0, line.indexOf("--"));
 					if (normalQuery) {
 						contents.add(line);

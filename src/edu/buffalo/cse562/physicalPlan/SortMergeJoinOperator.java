@@ -93,7 +93,10 @@ public class SortMergeJoinOperator implements Operator {
 			//System.out.println("Sort Merge Join working");
 			inputDatum1 = left.readOneTuple();
 			inputDatum2 = right.readOneTuple();
-			
+			if(inputDatum1 == null || inputDatum2 == null){
+				System.out.println("DATUM 2 is null");
+				return null;
+			}
 			leftIndex = getDatumIndex(inputDatum1,leftJoinKey);
 			rightIndex = getDatumIndex(inputDatum2,rightJoinKey);
 //			System.out.println(leftJoinKey.getWholeColumnName() + " :: " + leftIndex);

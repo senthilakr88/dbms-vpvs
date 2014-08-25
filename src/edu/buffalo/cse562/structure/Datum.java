@@ -17,7 +17,7 @@ import edu.buffalo.cse562.physicalPlan.TupleStruct;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 
-public interface Datum extends Serializable{
+public interface Datum {
 
 	public String toString();
 	// public String toComString();
@@ -32,9 +32,10 @@ public interface Datum extends Serializable{
 	public Datum subtract(Datum rightValue);
 	public Datum divide(Datum rightValue);
 	public int compareTo(Datum rightValue);
+	public void setAliasName(String aliasName);
+
 	
-	
-	public class dLong implements Datum, Serializable, Comparable<Datum> {
+	public class dLong implements Datum, Serializable {
 
 		Long value;
 		String columnName;
@@ -42,16 +43,16 @@ public interface Datum extends Serializable{
 		String schemaName;
 		String aliasName;
 
+		public void setAliasName(String aliasName) {
+			this.aliasName = aliasName;
+		}
+
 		public Column getColumn() {
 			Table tab = new Table(schemaName, tableName);
 			tab.setAlias(aliasName);
 			return new Column(tab, columnName);			
 		}
 
-		// public void setColumn(Column column) {
-		// this.column = column;
-		// }
-		
 		public dLong(dLong d) {
 			this(d.value, d.getColumn());
 		}
@@ -172,18 +173,9 @@ public interface Datum extends Serializable{
 
 		@Override
 		public String getStringValue() {
-
 			return value.toString();
-
 		}
 
-//		@Override
-//		public int compareTo(Datum[] tuple) {
-//			int index = TupleStruct.getColIndex(tuple, getColumn());
-//			Object key = TupleStruct.getKey(tuple, index);
-//			return value.compareTo((Long) key);
-//		}
-		
 		@Override
 		public Datum add(Datum rightValue) {
 			if(rightValue instanceof dDecimal){
@@ -211,7 +203,12 @@ public interface Datum extends Serializable{
 
 		@Override
 		public int compareTo(Datum rightValue) {
-			return this.value.compareTo(((dLong)rightValue).getValue());
+			if(rightValue.getClass() == dLong.class){
+				return this.value.compareTo(((dLong)rightValue).getValue());
+			} else {
+				Long value = Long.parseLong(((dDecimal)rightValue).getStringValue());
+				return this.value.compareTo(value);
+			}
 		}
 
 		@Override
@@ -248,13 +245,6 @@ public interface Datum extends Serializable{
 				return new dLong((this.value - ((dLong)rightValue).getValue()), null);
 			}
 		}
-
-//		@Override
-//		public int compareTo(Datum[] tuple) {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-
 	}
 
 	public class dDecimal implements Datum, Serializable {
@@ -272,7 +262,9 @@ public interface Datum extends Serializable{
 			return new Column(tab, columnName);		
 		}
 		
-
+		public void setAliasName(String aliasName) {
+			this.aliasName = aliasName;
+		}
 		
 		@Override
 		public void setColumn(Column col) {
@@ -298,10 +290,6 @@ public interface Datum extends Serializable{
 //			System.out.println("---------------------------------------------------------");
 			
 		}
-
-		// public void setColumn(Column column) {
-		// this.column = column;
-		// }
 
 		public dDecimal(dDecimal d) {
 			this(d.value, d.getColumn(), d.precision);
@@ -403,13 +391,6 @@ public interface Datum extends Serializable{
 			return value.toString();
 		}
 
-//		@Override
-//		public int compareTo(Datum[] tuple) {
-//			int index = TupleStruct.getColIndex(tuple, getColumn());
-//			Object key = TupleStruct.getKey(tuple, index);
-//			return value.compareTo((Double) key);
-//		}
-
 		@Override
 		public Datum add(Datum rightValue) {
 			if(rightValue.getClass() == dDecimal.class){
@@ -440,7 +421,12 @@ public interface Datum extends Serializable{
 
 		@Override
 		public int compareTo(Datum rightValue) {
-			return this.value.compareTo(((dDecimal)rightValue).getValue());
+			if(rightValue.getClass() == dDecimal.class){
+				return this.value.compareTo(((dDecimal)rightValue).getValue());
+			} else {
+				Double value = (double) ((dLong)rightValue).getValue();
+				return this.value.compareTo(value);
+			}
 		}
 		
 		public Column compCol(Column rightCol) {
@@ -484,14 +470,13 @@ public interface Datum extends Serializable{
 
 		public void setPrecision(int i) {
 			this.precision = i;
-			
 		}
-
+		
 	}
 
 	public class dString implements Datum, Serializable {
 
-		private String value;
+		String value;
 		String columnName;
 		String tableName;
 		String schemaName;
@@ -511,6 +496,10 @@ public interface Datum extends Serializable{
 		
 		public dString(dString d) {
 			this(d.value, d.getColumn());
+		}
+		
+		public void setAliasName(String aliasName) {
+			this.aliasName = aliasName;
 		}
 		
 		public Column getColumn() {
@@ -596,13 +585,6 @@ public interface Datum extends Serializable{
 			return value.toString();
 		}
 
-//		@Override
-//		public int compareTo(Datum[] tuple) {
-//			int index = TupleStruct.getColIndex(tuple, getColumn());
-//			Object key = TupleStruct.getKey(tuple, index);
-//			return value.compareTo((String) key);
-//		}
-
 		void readObjectNoData() throws ObjectStreamException {
 			throw new InvalidObjectException("Stream data required");
 		}
@@ -620,6 +602,7 @@ public interface Datum extends Serializable{
 
 		@Override
 		public int compareTo(Datum rightValue) {
+//			System.out.println("value "+this.value);
 			return this.value.compareTo(((dString)rightValue).getValue());
 		}
 
@@ -635,15 +618,14 @@ public interface Datum extends Serializable{
 			return null;
 		}
 		
-		
 	}
 
 	public class dDate implements Datum, Serializable {
 
 		Date value;
-		int year;
-		int month;
-		int day;
+//		int year;
+//		int month;
+//		int day;
 		String columnName;
 		String tableName;
 		String schemaName;
@@ -658,17 +640,17 @@ public interface Datum extends Serializable{
 				// System.out.println(value.toString());
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(value);
-				if (value != null) {
-					// year = value.getYear();
-					year = cal.get(Calendar.YEAR);
-
-					// month = value.getMonth();
-					month = cal.get(Calendar.MONTH) + 1;
-
-					// day = value.getDay();
-					day = cal.get(Calendar.DAY_OF_MONTH);
-
-				}
+//				if (value != null) {
+//					// year = value.getYear();
+//					year = cal.get(Calendar.YEAR);
+//
+//					// month = value.getMonth();
+//					month = cal.get(Calendar.MONTH) + 1;
+//
+//					// day = value.getDay();
+//					day = cal.get(Calendar.DAY_OF_MONTH);
+//
+//				}
 				if (col != null) {
 					this.columnName = col.getColumnName();
 					if (col.getTable() != null) {
@@ -685,6 +667,10 @@ public interface Datum extends Serializable{
 
 		public dDate(dDate d) {
 			this(d.value, d.getColumn());
+		}
+		
+		public void setAliasName(String aliasName) {
+			this.aliasName = aliasName;
 		}
 		
 		public dDate(Date s, Column col) {
@@ -727,12 +713,11 @@ public interface Datum extends Serializable{
 			return value;
 		}
 
-		// public void setValue(Date value) {
-		// this.value = value;
-		// }
-
 		public String toString() {
-			return String.format("%04d-%02d-%02d", year, month, day);
+			SimpleDateFormat ft = 
+				      new SimpleDateFormat ("yyyy-MM-dd");
+//			return String.format("%04d-%02d-%02d", year, month, day);
+			return ft.format(value);
 		}
 
 		// public String toComString() {
@@ -764,16 +749,11 @@ public interface Datum extends Serializable{
 
 		@Override
 		public String getStringValue() {
-			// TODO Auto-generated method stub
-			return null;
+			SimpleDateFormat ft = 
+				      new SimpleDateFormat ("yyyy-MM-dd");
+//			return String.format("%04d-%02d-%02d", year, month, day);
+			return ft.format(value);
 		}
-
-//		@Override
-//		public int compareTo(Datum[] tuple) {
-//			int index = TupleStruct.getColIndex(tuple, getColumn());
-//			Object key = TupleStruct.getKey(tuple, index);
-//			return value.compareTo((Date) key);
-//		}
 
 		@Override
 		public Datum add(Datum rightValue) {
@@ -809,7 +789,7 @@ public interface Datum extends Serializable{
 			System.out.println("Subtract not implemented for Date :: Datum Class");
 			return null;
 		}
-
+		
 	}
 	
 	public class Row implements Serializable, Comparable<Row> {
@@ -828,6 +808,23 @@ public interface Datum extends Serializable{
 		
 		public Datum[] getDatum() {
 			return data;
+		}
+		
+		public String toString() {
+			StringBuilder str = new StringBuilder();
+			Boolean first = true;
+			if (data != null && data.length != 0) {
+				for (Datum col : data) {
+					if (!first)
+						str.append("|" + col);
+					else {
+						str.append(col);
+						first = false;
+					}
+				}
+				str.append("\n");
+			}
+			return str.toString();
 		}
 
 	}

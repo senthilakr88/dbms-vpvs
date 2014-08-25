@@ -19,6 +19,18 @@ public class TupleStruct {
 	static Integer[] tuplecolTypeMap;
 	static boolean joinCondition;
 	static boolean nestedCondition = false;
+	static List<String> inFlyTables;
+
+	public static List<String> getInFlyTables() {
+		return inFlyTables;
+	}
+
+	public static void addInFlyTables(String table) {
+		if(inFlyTables == null) {
+			inFlyTables = new ArrayList<String>();
+		}
+		inFlyTables.add(table);
+	}
 
 	public static boolean isNestedCondition() {
 		return nestedCondition;
@@ -83,8 +95,8 @@ public class TupleStruct {
 					String alias = tableName.getAlias();
 					String tableNameStr = tableName.getName();
 					if (alias != null) {
-						// System.out.println("alias "+ " :: "+
-						// alias+" datumColumn :: "+datumColumn);
+//						 System.out.println("alias "+ " :: "+
+//						 alias+" datumColumn :: "+datumColumn);
 						tupleTableMap.add(alias.toLowerCase() + "."
 								+ datumColumn);
 					} else if (joinCondition && tableNameStr != null) {
@@ -146,7 +158,42 @@ public class TupleStruct {
 		}
 		return index;
 	}
+	
+	public static int getColIndex(List<Column> colList, Column column) {
+		int index = -1;
+		String columnName = column.getColumnName().toLowerCase();
+//		System.out.println(columnName);
+		if (colList != null) {
+			for(int i=0;i<colList.size();i++) {
+				String colNm = colList.get(i).getColumnName().toLowerCase();
+				if(colNm.equals(columnName)) {
+					return i;
+				}
+				
+			}
+			
+		}
+		return index;
+	}
 
+	
+	public static int getColIndex(List<Column> colList, String column) {
+		int index = -1;
+		System.out.println("colList :: "+colList);
+		System.out.println("column :: "+column);
+		if (colList != null) {
+			for(int i=0;i<colList.size();i++) {
+				String colNm = colList.get(i).getColumnName().toLowerCase();
+				if(colNm.equals(column)) {
+					return i;
+				}
+				
+			}
+			
+		}
+		return index;
+	}
+	
 	public static int compare(Object leftKey2, Object rightKey2) {
 		if (leftKey2 instanceof String && rightKey2 instanceof String) {
 			// System.out.println((String) leftKey2 + " :: " + (String)
@@ -304,4 +351,36 @@ public class TupleStruct {
 		return newDatum;
 	}
 
+	public static ArrayList getShrList(ArrayList masterList, List<Integer> col) {
+		ArrayList copyList = new ArrayList<>();
+		for(int i=0;i<masterList.size();i++) {
+			if(col.contains(i))
+				copyList.add(masterList.get(i));
+		}
+		return copyList;
+	}
+	
+	public static ArrayList<Column> getShrColList(ArrayList<Column> masterList, List<Integer> col, String alias) {
+		ArrayList<Column> copyList = new ArrayList<Column>();
+		for(int i=0;i<masterList.size();i++) {
+			if(col.contains(i)) {
+				Column colTemp = masterList.get(i);
+				if(alias != null)
+					colTemp.setTable(new Table(colTemp.getTable().getSchemaName(), alias));
+				copyList.add(colTemp);
+			}				
+		}
+		return copyList;
+	}
+	
+	public static ArrayList getCleanerList(
+			ArrayList masterList, ArrayList<Integer> removeCols) {
+		ArrayList copyList = new ArrayList<>();
+		for(int i=0;i<masterList.size();i++) {
+			if(!removeCols.contains(i))
+				copyList.add(masterList.get(i));
+		}
+		return copyList;
+	}
+	
 }

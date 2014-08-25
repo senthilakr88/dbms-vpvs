@@ -44,9 +44,14 @@ public class FileScanOperator implements Operator {
 		}
 		resetStream();
 		tempTableName = tableName.getName().toLowerCase();
-		colType = tableColTypeMap.get(tempTableName);
-		colList = tableMap2.get(tempTableName);
 		removeCols = tableRemoveCols.get(tempTableName);
+		if(removeCols != null && removeCols.size() > 0) {
+			colType = TupleStruct.getCleanerList(tableColTypeMap.get(tempTableName),removeCols);
+			colList = TupleStruct.getCleanerList(tableMap2.get(tempTableName),removeCols);
+		} else {
+			colType = tableColTypeMap.get(tempTableName);
+			colList = tableMap2.get(tempTableName);
+		}
 	}
 
 	public FileScanOperator(Table tableName, String dirName,
@@ -63,9 +68,14 @@ public class FileScanOperator implements Operator {
 			tablefile = basePath;
 		}
 		resetStream();
-		colType = tableColTypeMap;
-		colList = tableMap;
 		removeCols = tableRemoveCols;
+		if(removeCols != null && removeCols.size() > 0) {
+			colType = TupleStruct.getCleanerList(tableColTypeMap, removeCols);
+			colList = TupleStruct.getCleanerList(tableMap, removeCols);;
+		} else {
+			colType = tableColTypeMap;
+			colList = tableMap;
+		}
 	}
 
 	/*

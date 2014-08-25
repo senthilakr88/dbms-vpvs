@@ -46,7 +46,7 @@ public class CalcTools extends AbstractExpressionVisitor {
 		return accumulator;
 	}
 	
-	public Object getCountResult() {
+	public Datum getCountResult() {
 //		Object accTemp = this.accCount;
 //		this.accCount = null;
 		return accCount;
@@ -113,27 +113,39 @@ public class CalcTools extends AbstractExpressionVisitor {
 		if(firstEntry==null){
 			columnValue = column;
 		}
+//		System.out.println("columnName :: "+column);
 		tupleTableMap = TupleStruct.getTupleTableMap();
 		String columnName = column.getWholeColumnName().toLowerCase();
 		if(tupleTableMap.contains(columnName)) {
 			index = tupleTableMap.indexOf(columnName);
 		}
 		
+		if(index == -1) {
+			for(int i=0;i<tupleTableMap.size();i++) {
+				if(tupleTableMap.get(i).contains(columnName)) {
+					index = i;
+					break;
+				}
+			}
+		}
+//		System.out.println("Came to get column value 2");
 //		System.out.println("-------------------------------------------");
 //		System.out.println("Visit Column Method");
 //		System.out.println(tupleTableMap);
 //		System.out.println(columnName);		
 //		System.out.println("-------------------------------------------");
 //		Datum row = t[index];
+
+//		System.out.println(index + " : " + columnName + " : "+tupleTableMap);
 		
 		accumulator = t[index];
-		
+//		System.out.println("accumulator :: " + accumulator);
 		if(isColumnOnly==null) {
 			isColumnOnly = true;
 		}
 		
 
-//		System.out.println(index + " : " + columnName + " : "+tupleTableMap);
+
 		
 //		if (row instanceof Datum.dLong) {
 //			accumulator = ((Datum.dLong) row).getValue();
@@ -373,13 +385,14 @@ public class CalcTools extends AbstractExpressionVisitor {
 //        this.accumulator = Long.parseLong(String.valueOf(1));
         this.accumulator = new Datum.dLong(Long.parseLong(String.valueOf(1)), null);
         TupleStruct.setTupleTableMap(this.t);
+//        System.out.println(TupleStruct.getTupleTableMap());
         CalcTools ct = new CalcTools(this.t);
         Expression e = (Expression) eList.get(0);
 //        System.out.println("Expression :: "+eList.toString());
         e.accept(ct);
 //        System.out.println("Setting count accum");
         this.accCount = ct.getResult();
-//        System.out.println("Setting accum");
+//        System.out.println("Setting accum" + this.accCount);
         this.accumulator = new Datum.dLong(Long.parseLong(String.valueOf(1)), null);
     }
     

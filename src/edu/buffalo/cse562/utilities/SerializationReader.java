@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import edu.buffalo.cse562.physicalPlan.Datum;
+import edu.buffalo.cse562.structure.Datum;
 
 public class SerializationReader {
 
