@@ -1,0 +1,104 @@
+#!/usr/bin/python
+
+# Instructions
+# Go into the 'src' folder
+# Ensure that this file has execute permissions
+# Usage: testpy <sqlfilename>
+# Example testpy tpch1.sql
+
+import datetime
+import os
+import sys
+
+def createResultFolder():
+    if not os.path.exists(os.path.join(os.getcwd(),'..','myresults',)):
+        os.makedirs(os.path.join(os.getcwd(),'..','myresults',));
+
+def setFilePaths(sqlFileName):
+    resultFileName = sqlFileName.split(".")[0]+datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")+".dat"
+    resultFile = os.path.join('..','myresults',resultFileName)
+    binFolder = os.path.join('..','bin')
+    jsqlJar = os.path.join('..','other','jsqlparser.jar')
+    dataFolder = os.path.join('..','data','tpchdata')
+    swapFolder = os.path.join('..','swapDir')
+    sqlFile = os.path.join('..','data','tpchdata',sqlFileName)
+    expectedFile = os.path.join('..','data','tpchdata',sys.argv[1].split(".")[0]+".expected.dat")
+    #print binFolder, jsqlJar
+    print expectedFile
+    return (binFolder, jsqlJar, dataFolder, swapFolder, sqlFile, resultFile, expectedFile)
+
+
+def runCode(paths, withSwap):
+    # print paths
+    start_time = datetime.datetime.now()
+    if withSwap:
+        #print "with swap"
+        command = "java -cp "+paths[0]+";"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" --swap "+paths[3]+" /"+paths[4]+" > "+paths[5]
+        print command
+        os.system(command)
+    else:
+        #print "without swap"
+        os.system("java -cp "+paths[0]+";"+paths[1]+" edu.buffalo.cse562.Main --data /"+paths[2]+" /"+paths[4]+" > "+paths[5])
+
+    end_time = datetime.datetime.now()
+    return start_time, end_time
+
+def createSwapFolder():
+    if not os.path.exists(os.path.join(os.getcwd(),'..','swapDir',)):
+        os.makedirs(os.path.join(os.getcwd(),'..','swapDir',))
+
+def compareFile(fp):
+    try: 
+        """import filecmp
+        
+        print filecmp.cmp(fp[5],fp[6])
+		"""
+        print "Is the result generated and expected same? :"
+        f1 = open(fp[5]).readlines()
+        f2 = open(fp[6]).readlines()
+		
+        i,count = 0, 0
+        flag = True
+        l1 = len(f1)
+        l2 = len(f2)
+        while i < l1 and i<l2:
+            if f1[i] != f2[i]:
+              print i
+              print f1[i]
+              print f2[i]
+              flag = False
+            else:
+              count+=1		  
+            i+=1  
+        print count, flag
+    except:
+        print "Unable to compare files"
+
+def purgeSwapFolder():
+    import shutil
+    #if not os.path.exists(os.path.join(os.getcwd(),'..','swapDir',)):
+    os.system("rm -rf ../swapDir/*")
+
+def printTimeDiff(times):
+    diff = times[1]-times[0]
+    print "Time taken for query evaluation: ",
+    print diff
+    print "In seconds: ",
+    print diff.seconds
+    # print diff.microseconds
+
+
+if __name__=='__main__':
+    createResultFolder()
+    sqlFileName = sys.argv[1]
+    if ('--no-swap' in sys.argv):
+        withSwap = False
+    else:
+        withSwap = True
+    print "For file: ", sqlFileName
+    fp = setFilePaths(sqlFileName)
+    purgeSwapFolder()
+    createSwapFolder()
+    # print fp
+    printTimeDiff(runCode(fp,withSwap))
+    compareFile(fp)
